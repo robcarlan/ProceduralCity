@@ -1,3 +1,19 @@
 
 Constraints
 Roads need to be edited to fit constraints. needs to see the rest of the world i.e. clipping, snapping to roads
+Rtree
+
+1. Rebuild without UI files
+2. Basic graphics of straight line roads
+	i.e. get most UI functionality down
+	Render crossings / end points
+- Design architecture for L System
+Start with curved roads idk
+	Read through that Paper gonna be a difficult one
+3. Basic L-System
+4. Split into lots etc.
+
+
+.....Road Styles
+.... Special buildings
+.....Better Texturing
