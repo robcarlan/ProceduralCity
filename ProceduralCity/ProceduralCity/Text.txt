@@ -1,0 +1,5 @@
+
+Constraints
+Roads need to be edited to fit constraints. needs to see the rest of the world i.e. clipping, snapping to roads
+
+Rtree
