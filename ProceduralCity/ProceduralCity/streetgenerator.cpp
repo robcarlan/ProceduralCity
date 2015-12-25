@@ -1,5 +1,4 @@
 #include "streetgenerator.h"
-#include "StreetGen.h"
 
 StreetGenerator::StreetGenerator(QWidget *parent)
 	: QMainWindow(parent)
@@ -33,7 +32,7 @@ void StreetGenerator::on_buttonHMap_clicked() {
 
 	for (int i = 0; i < generated.size(); i++) {
 		QString result(tr(generated.at(i).getEnd().printPoint().c_str()));
-		QMessageBox *lol = new QMessageBox(QMessageBox::Icon::Information, QString("Box"), result);
+        QMessageBox *lol = new QMessageBox(QMessageBox::Icon::Information, QString("Box"), result);
 		lol->show();
 	}
 }

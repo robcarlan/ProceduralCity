@@ -3,10 +3,10 @@
 #include "Road.h"
 
 #include <iostream>
-#include <String.h>
+#include <string.h>
 
 #ifndef Q_MOC_RUN 
-#include <boost\random.hpp>
+#include <boost/random.hpp>
 #endif
 
 ///Main Class handling street generation

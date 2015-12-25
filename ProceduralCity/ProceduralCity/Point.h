@@ -2,8 +2,8 @@
 #include <string>
 
 #ifndef Q_MOC_RUN 
-#include <boost\geometry\geometries\point.hpp>
-#include <boost\geometry\geometry.hpp>
+#include <boost/geometry/geometries/point.hpp>
+#include <boost/geometry/geometry.hpp>
 #endif
 
 //Defines a 2d point in cartesian space

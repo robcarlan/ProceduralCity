@@ -4,14 +4,27 @@
 
 TEMPLATE = app
 TARGET = ProceduralCity
-DESTDIR = ../Win32/Debug
+win32:DESTDIR = ../Win32/Debug
+unix:DESTDIR = ../Linux/Debug
 QT += core opengl widgets gui
 CONFIG += debug
-DEFINES += WIN64 QT_DLL QT_OPENGL_LIB QT_WIDGETS_LIB
+
+if(win32) {
+ DEFINES += WIN64
+}
+
+if(unix) { 
+ DEFINES += UNIX
+ message("Linux")
+}
+DEFINES += QT_DLL QT_OPENGL_LIB QT_WIDGETS_LIB
 INCLUDEPATH += ./GeneratedFiles \
     . \
-    ./GeneratedFiles/Debug \
-	F:\boost_1_59_0
+    ./GeneratedFiles/Debug
+# "Include boost libraries" 
+win32:INCLUDEPATH += F:\boost_1_59_0
+unix:INCLUDEPATH += /home/rob/boost_1_59_0
+
 LIBS += -lopengl32 \
     -lglu32
 DEPENDPATH += .

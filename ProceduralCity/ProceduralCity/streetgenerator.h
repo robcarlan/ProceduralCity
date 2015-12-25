@@ -6,7 +6,7 @@
 
 #include <QMainWindow>
 #include <QWidget>
-#include <qmessagebox.h>
+#include <QMessageBox>
 #include <QFileDialog>
 #include <QFile>
 #include "StreetGen.h"
