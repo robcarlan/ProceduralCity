@@ -14,30 +14,36 @@ using namespace boost::geometry;
 
 void StreetGen::Run() {
 	
-	//Just generate some random straight roads to render.
+	//Just generate some random straight roads to render
 
 	boost::random::mt19937 rng;
-	rng.seed();
-	boost::random::uniform_int_distribution<> gen(-128, 128);
+	rng.seed(static_cast<unsigned int>(std::time(0)));
+	boost::random::uniform_int_distribution<> genX(topLeft.getX(), bottomRight.getX());
+	boost::random::uniform_int_distribution<> genY(bottomRight.getY(), topLeft.getY());
 	
+	generatedRoads->clear();
+
 	int numRoads = 32;
-
 	for (int itrNum = 0; itrNum < 32; itrNum++) {
-		Point p1 = Point(gen(rng), gen(rng));
-		Point p2 = Point(gen(rng), gen(rng));
+		Point* p1 = new Point(genX(rng), genY(rng));
+		Point* p2 = new Point(genX(rng), genY(rng));
 
-		StraightRoad newRoad = StraightRoad(p1, p2);
-		generatedRoads.push_back(newRoad);
-
-		std::cout << newRoad.printRoad() << std::endl;
+		StraightRoad *newRoad = new StraightRoad(*p1, *p2);
+		generatedRoads->push_back(*newRoad);
 	}
 	
 }
 
+std::vector<Road>* StreetGen::getGenerated() {
+	Run();
+	return generatedRoads;
+}
+
 StreetGen::StreetGen()
 {
-	topLeft = Point(-128.0f, -128.0f);
-	bottomRight = Point(128.0f, 128.0f);
+	generatedRoads = new std::vector<Road>();
+	topLeft = Point(0.0f, 600.0f);
+	bottomRight = Point(1200.0f, 0.0f);
 }
 
 

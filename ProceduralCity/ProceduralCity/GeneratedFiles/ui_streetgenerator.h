@@ -13,6 +13,7 @@
 #include <QtWidgets/QAction>
 #include <QtWidgets/QApplication>
 #include <QtWidgets/QButtonGroup>
+#include <QtWidgets/QCheckBox>
 #include <QtWidgets/QComboBox>
 #include <QtWidgets/QFrame>
 #include <QtWidgets/QGridLayout>
@@ -22,13 +23,14 @@
 #include <QtWidgets/QMainWindow>
 #include <QtWidgets/QMenu>
 #include <QtWidgets/QMenuBar>
-#include <QtWidgets/QOpenGLWidget>
 #include <QtWidgets/QPushButton>
 #include <QtWidgets/QScrollBar>
 #include <QtWidgets/QSlider>
 #include <QtWidgets/QStatusBar>
 #include <QtWidgets/QToolBar>
 #include <QtWidgets/QWidget>
+#include "glimagepreview.h"
+#include "qstreetrenderwidget.h"
 
 QT_BEGIN_NAMESPACE
 
@@ -40,13 +42,14 @@ public:
     QWidget *centralWidget;
     QFrame *frame;
     QGridLayout *gridLayout;
-    QScrollBar *horizontalScrollBar;
-    QSlider *horizontalSlider;
-    QScrollBar *verticalScrollBar;
+    QScrollBar *scrlHPosition;
+    QSlider *hSlideRenderScale;
+    QScrollBar *scrolVPosition;
+    QStreetRenderWidget *streetRender;
     QGroupBox *groupBox;
-    QOpenGLWidget *openGLWidget;
-    QOpenGLWidget *openGLWidget_2;
-    QOpenGLWidget *openGLWidget_3;
+    GLImagePreview *hMapRender;
+    GLImagePreview *popMapRender;
+    GLImagePreview *geogMapRender;
     QLabel *labelHMap;
     QPushButton *buttonHMap;
     QLabel *labelPMap;
@@ -58,10 +61,11 @@ public:
     QLabel *label_4;
     QLabel *label_5;
     QGroupBox *groupBox_3;
-    QPushButton *pushButton_4;
-    QPushButton *pushButton_5;
+    QPushButton *cmdGenerateStreets;
+    QPushButton *cmdSaveOutput;
     QLabel *label_6;
-    QPushButton *pushButton_6;
+    QPushButton *cmdSaveOutputImage;
+    QCheckBox *chkShowVerts;
     QMenuBar *menuBar;
     QMenu *menuWindows;
     QToolBar *mainToolBar;
@@ -87,38 +91,45 @@ public:
         gridLayout->setSpacing(6);
         gridLayout->setContentsMargins(11, 11, 11, 11);
         gridLayout->setObjectName(QStringLiteral("gridLayout"));
-        horizontalScrollBar = new QScrollBar(frame);
-        horizontalScrollBar->setObjectName(QStringLiteral("horizontalScrollBar"));
-        horizontalScrollBar->setMaximum(10000);
-        horizontalScrollBar->setOrientation(Qt::Horizontal);
+        scrlHPosition = new QScrollBar(frame);
+        scrlHPosition->setObjectName(QStringLiteral("scrlHPosition"));
+        scrlHPosition->setMaximum(10000);
+        scrlHPosition->setOrientation(Qt::Horizontal);
 
-        gridLayout->addWidget(horizontalScrollBar, 1, 1, 1, 1);
+        gridLayout->addWidget(scrlHPosition, 1, 1, 1, 1);
 
-        horizontalSlider = new QSlider(frame);
-        horizontalSlider->setObjectName(QStringLiteral("horizontalSlider"));
-        horizontalSlider->setOrientation(Qt::Horizontal);
+        hSlideRenderScale = new QSlider(frame);
+        hSlideRenderScale->setObjectName(QStringLiteral("hSlideRenderScale"));
+        hSlideRenderScale->setOrientation(Qt::Horizontal);
+        hSlideRenderScale->setInvertedAppearance(false);
+        hSlideRenderScale->setTickPosition(QSlider::NoTicks);
 
-        gridLayout->addWidget(horizontalSlider, 2, 1, 1, 1);
+        gridLayout->addWidget(hSlideRenderScale, 2, 1, 1, 1);
 
-        verticalScrollBar = new QScrollBar(frame);
-        verticalScrollBar->setObjectName(QStringLiteral("verticalScrollBar"));
-        verticalScrollBar->setMaximum(10000);
-        verticalScrollBar->setOrientation(Qt::Vertical);
+        scrolVPosition = new QScrollBar(frame);
+        scrolVPosition->setObjectName(QStringLiteral("scrolVPosition"));
+        scrolVPosition->setMaximum(10000);
+        scrolVPosition->setOrientation(Qt::Vertical);
 
-        gridLayout->addWidget(verticalScrollBar, 0, 2, 1, 1);
+        gridLayout->addWidget(scrolVPosition, 0, 2, 1, 1);
+
+        streetRender = new QStreetRenderWidget(frame);
+        streetRender->setObjectName(QStringLiteral("streetRender"));
+
+        gridLayout->addWidget(streetRender, 0, 1, 1, 1);
 
         groupBox = new QGroupBox(centralWidget);
         groupBox->setObjectName(QStringLiteral("groupBox"));
         groupBox->setGeometry(QRect(10, 650, 941, 271));
-        openGLWidget = new QOpenGLWidget(groupBox);
-        openGLWidget->setObjectName(QStringLiteral("openGLWidget"));
-        openGLWidget->setGeometry(QRect(10, 20, 300, 200));
-        openGLWidget_2 = new QOpenGLWidget(groupBox);
-        openGLWidget_2->setObjectName(QStringLiteral("openGLWidget_2"));
-        openGLWidget_2->setGeometry(QRect(320, 20, 300, 200));
-        openGLWidget_3 = new QOpenGLWidget(groupBox);
-        openGLWidget_3->setObjectName(QStringLiteral("openGLWidget_3"));
-        openGLWidget_3->setGeometry(QRect(630, 20, 300, 200));
+        hMapRender = new GLImagePreview(groupBox);
+        hMapRender->setObjectName(QStringLiteral("hMapRender"));
+        hMapRender->setGeometry(QRect(10, 20, 300, 200));
+        popMapRender = new GLImagePreview(groupBox);
+        popMapRender->setObjectName(QStringLiteral("popMapRender"));
+        popMapRender->setGeometry(QRect(320, 20, 300, 200));
+        geogMapRender = new GLImagePreview(groupBox);
+        geogMapRender->setObjectName(QStringLiteral("geogMapRender"));
+        geogMapRender->setGeometry(QRect(630, 20, 300, 200));
         labelHMap = new QLabel(groupBox);
         labelHMap->setObjectName(QStringLiteral("labelHMap"));
         labelHMap->setGeometry(QRect(20, 230, 201, 21));
@@ -153,18 +164,21 @@ public:
         groupBox_3 = new QGroupBox(centralWidget);
         groupBox_3->setObjectName(QStringLiteral("groupBox_3"));
         groupBox_3->setGeometry(QRect(960, 650, 411, 271));
-        pushButton_4 = new QPushButton(groupBox_3);
-        pushButton_4->setObjectName(QStringLiteral("pushButton_4"));
-        pushButton_4->setGeometry(QRect(260, 190, 141, 31));
-        pushButton_5 = new QPushButton(groupBox_3);
-        pushButton_5->setObjectName(QStringLiteral("pushButton_5"));
-        pushButton_5->setGeometry(QRect(260, 230, 141, 31));
+        cmdGenerateStreets = new QPushButton(groupBox_3);
+        cmdGenerateStreets->setObjectName(QStringLiteral("cmdGenerateStreets"));
+        cmdGenerateStreets->setGeometry(QRect(260, 190, 141, 31));
+        cmdSaveOutput = new QPushButton(groupBox_3);
+        cmdSaveOutput->setObjectName(QStringLiteral("cmdSaveOutput"));
+        cmdSaveOutput->setGeometry(QRect(260, 230, 141, 31));
         label_6 = new QLabel(groupBox_3);
         label_6->setObjectName(QStringLiteral("label_6"));
         label_6->setGeometry(QRect(10, 20, 151, 41));
-        pushButton_6 = new QPushButton(groupBox_3);
-        pushButton_6->setObjectName(QStringLiteral("pushButton_6"));
-        pushButton_6->setGeometry(QRect(140, 230, 111, 31));
+        cmdSaveOutputImage = new QPushButton(groupBox_3);
+        cmdSaveOutputImage->setObjectName(QStringLiteral("cmdSaveOutputImage"));
+        cmdSaveOutputImage->setGeometry(QRect(140, 230, 111, 31));
+        chkShowVerts = new QCheckBox(groupBox_3);
+        chkShowVerts->setObjectName(QStringLiteral("chkShowVerts"));
+        chkShowVerts->setGeometry(QRect(10, 60, 121, 31));
         StreetGenerator->setCentralWidget(centralWidget);
         menuBar = new QMenuBar(StreetGenerator);
         menuBar->setObjectName(QStringLiteral("menuBar"));
@@ -184,6 +198,10 @@ public:
         menuWindows->addAction(actionTexture_Generator);
 
         retranslateUi(StreetGenerator);
+        QObject::connect(buttonPMap, SIGNAL(clicked()), StreetGenerator, SLOT(on_buttonPMap_clicked()));
+        QObject::connect(buttonGMap, SIGNAL(clicked()), StreetGenerator, SLOT(on_buttonGMap_clicked()));
+        QObject::connect(chkShowVerts, SIGNAL(stateChanged(int)), streetRender, SLOT(setDrawVertices(int)));
+        QObject::connect(cmdGenerateStreets, SIGNAL(clicked()), StreetGenerator, SLOT(onClickGenerate()));
 
         QMetaObject::connectSlotsByName(StreetGenerator);
     } // setupUi
@@ -211,10 +229,11 @@ public:
         label_4->setText(QApplication::translate("StreetGenerator", "Street Style", 0));
         label_5->setText(QApplication::translate("StreetGenerator", "Various Inputs....", 0));
         groupBox_3->setTitle(QApplication::translate("StreetGenerator", "Controls", 0));
-        pushButton_4->setText(QApplication::translate("StreetGenerator", "Generate", 0));
-        pushButton_5->setText(QApplication::translate("StreetGenerator", "Save...", 0));
+        cmdGenerateStreets->setText(QApplication::translate("StreetGenerator", "Generate", 0));
+        cmdSaveOutput->setText(QApplication::translate("StreetGenerator", "Save...", 0));
         label_6->setText(QApplication::translate("StreetGenerator", "Various Output Parameters", 0));
-        pushButton_6->setText(QApplication::translate("StreetGenerator", "Save Image", 0));
+        cmdSaveOutputImage->setText(QApplication::translate("StreetGenerator", "Save Image", 0));
+        chkShowVerts->setText(QApplication::translate("StreetGenerator", "Show Vertices", 0));
         menuWindows->setTitle(QApplication::translate("StreetGenerator", "Windows", 0));
     } // retranslateUi
 

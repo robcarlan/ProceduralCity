@@ -20,13 +20,18 @@ public:
 	~StreetGenerator();
 
 private slots:
-	void on_comboBox_activated(const QString &arg1);
-	void on_pushButton_clicked();
+	void onClickGenerate();
 
+	void on_comboBox_activated(const QString &arg1);
+
+	void on_pushButton_clicked();
 	void on_buttonHMap_clicked();
+	void on_buttonPMap_clicked();
+	void on_buttonGMap_clicked();
 
 private:
 	Ui::StreetGenerator ui;
+	StreetGen generator;
 	QFileDialog fd;
 	QString getFileChoice();
 };
