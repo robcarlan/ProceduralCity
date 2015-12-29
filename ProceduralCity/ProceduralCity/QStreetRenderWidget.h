@@ -1,5 +1,6 @@
 #pragma once
 #include "StreetGen.h"
+#include "Road.h"
 
 #include <qopenglwidget.h>
 #include <QtOpenGL>
@@ -17,8 +18,8 @@ public:
 
 	void initialiseRenderer(StreetGen *generator);
 
+private slots:
 	//Controls handling scroll
-
 	void onHorizontalScroll(int scrollPosition);
 	void onVerticalScroll(int scrollPosition);
 	void onScaleChange(int scrollPosition);
@@ -29,8 +30,11 @@ protected:
 	
 	//Local Space 
 	QRectF bounds;
+	static const float SCALE_EXPONENT;
 	float scaleFactor;
-	float xCenter, yCenter;
+	float inverseScale;
+	QPointF center;
+	QPointF size;
 
 	QOpenGLTexture *background;
 	StreetGen *generator;
@@ -54,5 +58,9 @@ protected:
 
 	void paintRoads(QPainter &painter);
 	void paintVertices(QPainter &painter);
+
+	//Specific drawing
+	void paintRoad(QPainter &painter, Road *toDraw);
+	QPointF toScreenSpace(QPointF worldPoint);
 };
 

@@ -202,6 +202,9 @@ public:
         QObject::connect(buttonGMap, SIGNAL(clicked()), StreetGenerator, SLOT(on_buttonGMap_clicked()));
         QObject::connect(chkShowVerts, SIGNAL(stateChanged(int)), streetRender, SLOT(setDrawVertices(int)));
         QObject::connect(cmdGenerateStreets, SIGNAL(clicked()), StreetGenerator, SLOT(onClickGenerate()));
+        QObject::connect(scrlHPosition, SIGNAL(valueChanged(int)), streetRender, SLOT(onHorizontalScroll(int)));
+        QObject::connect(scrolVPosition, SIGNAL(valueChanged(int)), streetRender, SLOT(onVerticalScroll(int)));
+        QObject::connect(hSlideRenderScale, SIGNAL(valueChanged(int)), streetRender, SLOT(onScaleChange(int)));
 
         QMetaObject::connectSlotsByName(StreetGenerator);
     } // setupUi

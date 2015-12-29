@@ -374,6 +374,9 @@
    <header>qstreetrenderwidget.h</header>
    <slots>
     <slot>setDrawVertices(int)</slot>
+    <slot>onHorizontalScroll(int)</slot>
+    <slot>onVerticalScroll(int)</slot>
+    <slot>onScaleChange(int)</slot>
    </slots>
   </customwidget>
   <customwidget>
@@ -445,6 +448,54 @@
     <hint type="destinationlabel">
      <x>1134</x>
      <y>956</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>scrlHPosition</sender>
+   <signal>valueChanged(int)</signal>
+   <receiver>streetRender</receiver>
+   <slot>onHorizontalScroll(int)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>498</x>
+     <y>637</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>1020</x>
+     <y>452</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>scrolVPosition</sender>
+   <signal>valueChanged(int)</signal>
+   <receiver>streetRender</receiver>
+   <slot>onVerticalScroll(int)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>1339</x>
+     <y>521</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>1240</x>
+     <y>491</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>hSlideRenderScale</sender>
+   <signal>valueChanged(int)</signal>
+   <receiver>streetRender</receiver>
+   <slot>onScaleChange(int)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>513</x>
+     <y>662</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>509</x>
+     <y>569</y>
     </hint>
    </hints>
   </connection>

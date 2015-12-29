@@ -12,15 +12,18 @@ using namespace boost::geometry;
 //	return 0;
 //}
 
+
+void StreetGen::setSeed(int seed) {
+	rng.seed(seed);
+}
+
+void StreetGen::setSeed() {
+	rng.seed(static_cast<unsigned int>(std::time(0)));
+}
+
 void StreetGen::Run() {
 	
-	//Just generate some random straight roads to render
-
-	boost::random::mt19937 rng;
-	rng.seed(static_cast<unsigned int>(std::time(0)));
-	boost::random::uniform_int_distribution<> genX(topLeft.getX(), bottomRight.getX());
-	boost::random::uniform_int_distribution<> genY(bottomRight.getY(), topLeft.getY());
-	
+	//Just generate some random straight roads to render	
 	generatedRoads->clear();
 
 	int numRoads = 32;
@@ -35,19 +38,34 @@ void StreetGen::Run() {
 }
 
 std::vector<Road>* StreetGen::getGenerated() {
-	Run();
 	return generatedRoads;
 }
 
-StreetGen::StreetGen()
-{
+StreetGen::StreetGen() {
 	generatedRoads = new std::vector<Road>();
-	topLeft = Point(0.0f, 600.0f);
-	bottomRight = Point(1200.0f, 0.0f);
+	setSize(Point(2048.0f, 2048.0f));
 }
 
 
 StreetGen::~StreetGen()
 {
 
+}
+
+void StreetGen::setHeightMap(QImage & hMap) {
+	this->hMap = QImage(hMap);
+}
+
+void StreetGen::setPopMap(QImage & pMap) {
+	this->pMap = QImage(pMap);
+}
+
+void StreetGen::setGeogMap(QImage & gMap) {
+	this->gMap = QImage(gMap);
+}
+
+void StreetGen::setSize(Point newSize) {
+	size = newSize;
+	genX = boost::random::uniform_int_distribution<>(0, size.getX());
+	genY = boost::random::uniform_int_distribution<>(0, size.getY());
 }

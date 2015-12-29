@@ -3,6 +3,8 @@
 #include "Point.h"
 
 #include <vector>
+#include <qpainter.h>
+#include <qline.h>
 
 //typedef boost::geometry::model::d2::point_xy<float> Point;
 

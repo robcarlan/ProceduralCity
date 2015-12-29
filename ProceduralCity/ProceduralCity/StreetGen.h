@@ -1,6 +1,7 @@
 #pragma once
 
 #include "Road.h"
+#include "StreetManager.h"
 
 #include <iostream>
 #include <string.h>
@@ -16,9 +17,13 @@ class StreetGen
 {
 protected:
 	std::vector<Road> *generatedRoads;
+	boost::random::mt19937 rng;
+	boost::random::uniform_int_distribution<> genX, genY;
+
+	StreetManager streets;
 
 	//World space of the drawing area
-	Point topLeft, bottomRight;
+	Point size;
 
 	//We need a way of representing the coordinate system
 
@@ -26,10 +31,24 @@ protected:
 	QImage hMap, gMap, pMap;
 
 public:
-	void Run();
 
+	//Functions to control the system
+	void Run();
+	//Performs one iteration of the L-System
+	void nextIteration();
+	//Restarts the system to an initial state
+	void initialise();
+
+
+	//Set parameters
 	void setHeightMap(QImage &hMap);
-	void unloadHMap();
+	void setPopMap(QImage &pMap);
+	void setGeogMap(QImage &gMap);
+	void setSize(Point newSize);
+
+	void setSeed(int seed);
+	///Seeds with current system time
+	void setSeed();
 
 	//Add functions to get items which satisfy a query
 	std::vector<Road>* getGenerated();
