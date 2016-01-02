@@ -5,11 +5,12 @@
 #include <vector>
 #include <qpainter.h>
 #include <qline.h>
+#include <qgraphicsitem.h>
 
 //typedef boost::geometry::model::d2::point_xy<float> Point;
 
 ///Abstract class defining a simple road. 
-class Road {
+class Road : public QGraphicsItem {
 public:
 	Road(Point start, Point end);
 	~Road();
@@ -17,8 +18,14 @@ public:
 	//std::vector<Road> getConnected();
 	Point getStart();
 	Point getEnd();
+	static const float PEN_WIDTH;
+	QRectF bounds;
 
 	std::string printRoad();
+	QRectF boundingRect() const;
+	void paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget);
+	QRectF boundsFromPointPair(Point s, Point e);
+
 protected:
 	Point start, end;
 

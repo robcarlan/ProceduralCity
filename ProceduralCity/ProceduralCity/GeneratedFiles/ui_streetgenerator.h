@@ -15,8 +15,7 @@
 #include <QtWidgets/QButtonGroup>
 #include <QtWidgets/QCheckBox>
 #include <QtWidgets/QComboBox>
-#include <QtWidgets/QFrame>
-#include <QtWidgets/QGridLayout>
+#include <QtWidgets/QFormLayout>
 #include <QtWidgets/QGroupBox>
 #include <QtWidgets/QHeaderView>
 #include <QtWidgets/QLabel>
@@ -24,10 +23,11 @@
 #include <QtWidgets/QMenu>
 #include <QtWidgets/QMenuBar>
 #include <QtWidgets/QPushButton>
-#include <QtWidgets/QScrollBar>
-#include <QtWidgets/QSlider>
+#include <QtWidgets/QRadioButton>
+#include <QtWidgets/QSpinBox>
 #include <QtWidgets/QStatusBar>
 #include <QtWidgets/QToolBar>
+#include <QtWidgets/QVBoxLayout>
 #include <QtWidgets/QWidget>
 #include "glimagepreview.h"
 #include "qstreetrenderwidget.h"
@@ -40,12 +40,6 @@ public:
     QAction *actionBuilding_Generator;
     QAction *actionTexture_Generator;
     QWidget *centralWidget;
-    QFrame *frame;
-    QGridLayout *gridLayout;
-    QScrollBar *scrlHPosition;
-    QSlider *hSlideRenderScale;
-    QScrollBar *scrolVPosition;
-    QStreetRenderWidget *streetRender;
     QGroupBox *groupBox;
     GLImagePreview *hMapRender;
     GLImagePreview *popMapRender;
@@ -56,6 +50,9 @@ public:
     QPushButton *buttonPMap;
     QLabel *labelGMap;
     QPushButton *buttonGMap;
+    QPushButton *cmdClearHeight;
+    QPushButton *cmdClearPop;
+    QPushButton *cmdClearGeog;
     QGroupBox *groupBox_2;
     QComboBox *comboBox;
     QLabel *label_4;
@@ -65,11 +62,29 @@ public:
     QPushButton *cmdSaveOutput;
     QLabel *label_6;
     QPushButton *cmdSaveOutputImage;
+    QWidget *widget;
+    QVBoxLayout *verticalLayout;
+    QGroupBox *groupBox_4;
+    QWidget *widget1;
+    QVBoxLayout *verticalLayout_2;
+    QRadioButton *radShowPopulation;
+    QRadioButton *radShowGeography;
+    QRadioButton *radShowHeightmap;
+    QRadioButton *radShowNone;
     QCheckBox *chkShowVerts;
+    QPushButton *cmdReset;
+    QPushButton *cmdStep;
+    QWidget *widget2;
+    QFormLayout *formLayout;
+    QLabel *label;
+    QSpinBox *intSeedValue;
+    QCheckBox *chkTimeSeed;
+    QStreetRenderWidget *streetRender;
     QMenuBar *menuBar;
     QMenu *menuWindows;
     QToolBar *mainToolBar;
     QStatusBar *statusBar;
+    QButtonGroup *buttonGroup;
 
     void setupUi(QMainWindow *StreetGenerator)
     {
@@ -82,42 +97,6 @@ public:
         actionTexture_Generator->setObjectName(QStringLiteral("actionTexture_Generator"));
         centralWidget = new QWidget(StreetGenerator);
         centralWidget->setObjectName(QStringLiteral("centralWidget"));
-        frame = new QFrame(centralWidget);
-        frame->setObjectName(QStringLiteral("frame"));
-        frame->setGeometry(QRect(270, 10, 1091, 641));
-        frame->setFrameShape(QFrame::Box);
-        frame->setFrameShadow(QFrame::Raised);
-        gridLayout = new QGridLayout(frame);
-        gridLayout->setSpacing(6);
-        gridLayout->setContentsMargins(11, 11, 11, 11);
-        gridLayout->setObjectName(QStringLiteral("gridLayout"));
-        scrlHPosition = new QScrollBar(frame);
-        scrlHPosition->setObjectName(QStringLiteral("scrlHPosition"));
-        scrlHPosition->setMaximum(10000);
-        scrlHPosition->setOrientation(Qt::Horizontal);
-
-        gridLayout->addWidget(scrlHPosition, 1, 1, 1, 1);
-
-        hSlideRenderScale = new QSlider(frame);
-        hSlideRenderScale->setObjectName(QStringLiteral("hSlideRenderScale"));
-        hSlideRenderScale->setOrientation(Qt::Horizontal);
-        hSlideRenderScale->setInvertedAppearance(false);
-        hSlideRenderScale->setTickPosition(QSlider::NoTicks);
-
-        gridLayout->addWidget(hSlideRenderScale, 2, 1, 1, 1);
-
-        scrolVPosition = new QScrollBar(frame);
-        scrolVPosition->setObjectName(QStringLiteral("scrolVPosition"));
-        scrolVPosition->setMaximum(10000);
-        scrolVPosition->setOrientation(Qt::Vertical);
-
-        gridLayout->addWidget(scrolVPosition, 0, 2, 1, 1);
-
-        streetRender = new QStreetRenderWidget(frame);
-        streetRender->setObjectName(QStringLiteral("streetRender"));
-
-        gridLayout->addWidget(streetRender, 0, 1, 1, 1);
-
         groupBox = new QGroupBox(centralWidget);
         groupBox->setObjectName(QStringLiteral("groupBox"));
         groupBox->setGeometry(QRect(10, 650, 941, 271));
@@ -135,19 +114,28 @@ public:
         labelHMap->setGeometry(QRect(20, 230, 201, 21));
         buttonHMap = new QPushButton(groupBox);
         buttonHMap->setObjectName(QStringLiteral("buttonHMap"));
-        buttonHMap->setGeometry(QRect(230, 230, 75, 23));
+        buttonHMap->setGeometry(QRect(244, 230, 61, 23));
         labelPMap = new QLabel(groupBox);
         labelPMap->setObjectName(QStringLiteral("labelPMap"));
         labelPMap->setGeometry(QRect(330, 230, 201, 21));
         buttonPMap = new QPushButton(groupBox);
         buttonPMap->setObjectName(QStringLiteral("buttonPMap"));
-        buttonPMap->setGeometry(QRect(540, 230, 75, 23));
+        buttonPMap->setGeometry(QRect(554, 230, 61, 23));
         labelGMap = new QLabel(groupBox);
         labelGMap->setObjectName(QStringLiteral("labelGMap"));
         labelGMap->setGeometry(QRect(640, 230, 201, 21));
         buttonGMap = new QPushButton(groupBox);
         buttonGMap->setObjectName(QStringLiteral("buttonGMap"));
-        buttonGMap->setGeometry(QRect(850, 230, 75, 23));
+        buttonGMap->setGeometry(QRect(864, 230, 61, 23));
+        cmdClearHeight = new QPushButton(groupBox);
+        cmdClearHeight->setObjectName(QStringLiteral("cmdClearHeight"));
+        cmdClearHeight->setGeometry(QRect(180, 230, 61, 23));
+        cmdClearPop = new QPushButton(groupBox);
+        cmdClearPop->setObjectName(QStringLiteral("cmdClearPop"));
+        cmdClearPop->setGeometry(QRect(490, 230, 61, 23));
+        cmdClearGeog = new QPushButton(groupBox);
+        cmdClearGeog->setObjectName(QStringLiteral("cmdClearGeog"));
+        cmdClearGeog->setGeometry(QRect(800, 230, 61, 23));
         groupBox_2 = new QGroupBox(centralWidget);
         groupBox_2->setObjectName(QStringLiteral("groupBox_2"));
         groupBox_2->setGeometry(QRect(10, 10, 251, 641));
@@ -176,9 +164,94 @@ public:
         cmdSaveOutputImage = new QPushButton(groupBox_3);
         cmdSaveOutputImage->setObjectName(QStringLiteral("cmdSaveOutputImage"));
         cmdSaveOutputImage->setGeometry(QRect(140, 230, 111, 31));
-        chkShowVerts = new QCheckBox(groupBox_3);
+        widget = new QWidget(groupBox_3);
+        widget->setObjectName(QStringLiteral("widget"));
+        widget->setGeometry(QRect(10, 60, 161, 161));
+        verticalLayout = new QVBoxLayout(widget);
+        verticalLayout->setSpacing(6);
+        verticalLayout->setContentsMargins(11, 11, 11, 11);
+        verticalLayout->setObjectName(QStringLiteral("verticalLayout"));
+        verticalLayout->setContentsMargins(0, 0, 0, 0);
+        groupBox_4 = new QGroupBox(widget);
+        groupBox_4->setObjectName(QStringLiteral("groupBox_4"));
+        widget1 = new QWidget(groupBox_4);
+        widget1->setObjectName(QStringLiteral("widget1"));
+        widget1->setGeometry(QRect(10, 14, 141, 121));
+        verticalLayout_2 = new QVBoxLayout(widget1);
+        verticalLayout_2->setSpacing(6);
+        verticalLayout_2->setContentsMargins(11, 11, 11, 11);
+        verticalLayout_2->setObjectName(QStringLiteral("verticalLayout_2"));
+        verticalLayout_2->setContentsMargins(0, 0, 0, 0);
+        radShowPopulation = new QRadioButton(widget1);
+        buttonGroup = new QButtonGroup(StreetGenerator);
+        buttonGroup->setObjectName(QStringLiteral("buttonGroup"));
+        buttonGroup->addButton(radShowPopulation);
+        radShowPopulation->setObjectName(QStringLiteral("radShowPopulation"));
+
+        verticalLayout_2->addWidget(radShowPopulation);
+
+        radShowGeography = new QRadioButton(widget1);
+        buttonGroup->addButton(radShowGeography);
+        radShowGeography->setObjectName(QStringLiteral("radShowGeography"));
+
+        verticalLayout_2->addWidget(radShowGeography);
+
+        radShowHeightmap = new QRadioButton(widget1);
+        buttonGroup->addButton(radShowHeightmap);
+        radShowHeightmap->setObjectName(QStringLiteral("radShowHeightmap"));
+
+        verticalLayout_2->addWidget(radShowHeightmap);
+
+        radShowNone = new QRadioButton(widget1);
+        buttonGroup->addButton(radShowNone);
+        radShowNone->setObjectName(QStringLiteral("radShowNone"));
+
+        verticalLayout_2->addWidget(radShowNone);
+
+        chkShowVerts = new QCheckBox(widget1);
         chkShowVerts->setObjectName(QStringLiteral("chkShowVerts"));
-        chkShowVerts->setGeometry(QRect(10, 60, 121, 31));
+
+        verticalLayout_2->addWidget(chkShowVerts);
+
+
+        verticalLayout->addWidget(groupBox_4);
+
+        cmdReset = new QPushButton(groupBox_3);
+        cmdReset->setObjectName(QStringLiteral("cmdReset"));
+        cmdReset->setGeometry(QRect(260, 110, 141, 31));
+        cmdStep = new QPushButton(groupBox_3);
+        cmdStep->setObjectName(QStringLiteral("cmdStep"));
+        cmdStep->setGeometry(QRect(260, 150, 141, 31));
+        widget2 = new QWidget(groupBox_3);
+        widget2->setObjectName(QStringLiteral("widget2"));
+        widget2->setGeometry(QRect(236, 40, 171, 70));
+        formLayout = new QFormLayout(widget2);
+        formLayout->setSpacing(6);
+        formLayout->setContentsMargins(11, 11, 11, 11);
+        formLayout->setObjectName(QStringLiteral("formLayout"));
+        formLayout->setContentsMargins(0, 0, 0, 0);
+        label = new QLabel(widget2);
+        label->setObjectName(QStringLiteral("label"));
+
+        formLayout->setWidget(2, QFormLayout::LabelRole, label);
+
+        intSeedValue = new QSpinBox(widget2);
+        intSeedValue->setObjectName(QStringLiteral("intSeedValue"));
+        intSeedValue->setMinimum(-1000000000);
+        intSeedValue->setMaximum(1000000000);
+
+        formLayout->setWidget(2, QFormLayout::FieldRole, intSeedValue);
+
+        chkTimeSeed = new QCheckBox(widget2);
+        chkTimeSeed->setObjectName(QStringLiteral("chkTimeSeed"));
+
+        formLayout->setWidget(3, QFormLayout::FieldRole, chkTimeSeed);
+
+        streetRender = new QStreetRenderWidget(centralWidget);
+        streetRender->setObjectName(QStringLiteral("streetRender"));
+        streetRender->setGeometry(QRect(270, 20, 1101, 631));
+        streetRender->setFrameShape(QFrame::Box);
+        streetRender->setFrameShadow(QFrame::Sunken);
         StreetGenerator->setCentralWidget(centralWidget);
         menuBar = new QMenuBar(StreetGenerator);
         menuBar->setObjectName(QStringLiteral("menuBar"));
@@ -200,11 +273,19 @@ public:
         retranslateUi(StreetGenerator);
         QObject::connect(buttonPMap, SIGNAL(clicked()), StreetGenerator, SLOT(on_buttonPMap_clicked()));
         QObject::connect(buttonGMap, SIGNAL(clicked()), StreetGenerator, SLOT(on_buttonGMap_clicked()));
-        QObject::connect(chkShowVerts, SIGNAL(stateChanged(int)), streetRender, SLOT(setDrawVertices(int)));
         QObject::connect(cmdGenerateStreets, SIGNAL(clicked()), StreetGenerator, SLOT(onClickGenerate()));
-        QObject::connect(scrlHPosition, SIGNAL(valueChanged(int)), streetRender, SLOT(onHorizontalScroll(int)));
-        QObject::connect(scrolVPosition, SIGNAL(valueChanged(int)), streetRender, SLOT(onVerticalScroll(int)));
-        QObject::connect(hSlideRenderScale, SIGNAL(valueChanged(int)), streetRender, SLOT(onScaleChange(int)));
+        QObject::connect(radShowPopulation, SIGNAL(toggled(bool)), StreetGenerator, SLOT(on_radPopClicked()));
+        QObject::connect(radShowGeography, SIGNAL(toggled(bool)), StreetGenerator, SLOT(on_radGeogClicked()));
+        QObject::connect(radShowHeightmap, SIGNAL(toggled(bool)), StreetGenerator, SLOT(on_radHeightClicked()));
+        QObject::connect(chkShowVerts, SIGNAL(toggled(bool)), streetRender, SLOT(setDrawVertices(bool)));
+        QObject::connect(cmdReset, SIGNAL(clicked()), StreetGenerator, SLOT(onClickReset()));
+        QObject::connect(cmdStep, SIGNAL(clicked()), StreetGenerator, SLOT(onClickStep()));
+        QObject::connect(cmdSaveOutput, SIGNAL(clicked()), StreetGenerator, SLOT(onClickSave()));
+        QObject::connect(cmdSaveOutputImage, SIGNAL(clicked()), StreetGenerator, SLOT(onClickSaveImage()));
+        QObject::connect(radShowNone, SIGNAL(clicked()), StreetGenerator, SLOT(on_radNoneClicked()));
+        QObject::connect(cmdClearHeight, SIGNAL(clicked()), StreetGenerator, SLOT(clearHeightmap()));
+        QObject::connect(cmdClearPop, SIGNAL(clicked()), StreetGenerator, SLOT(clearPopmap()));
+        QObject::connect(cmdClearGeog, SIGNAL(clicked()), StreetGenerator, SLOT(clearGeogmap()));
 
         QMetaObject::connectSlotsByName(StreetGenerator);
     } // setupUi
@@ -214,9 +295,6 @@ public:
         StreetGenerator->setWindowTitle(QApplication::translate("StreetGenerator", "StreetGenerator", 0));
         actionBuilding_Generator->setText(QApplication::translate("StreetGenerator", "Building Generator", 0));
         actionTexture_Generator->setText(QApplication::translate("StreetGenerator", "Texture Generator", 0));
-#ifndef QT_NO_TOOLTIP
-        frame->setToolTip(QApplication::translate("StreetGenerator", "<html><head/><body><p><br/></p></body></html>", 0));
-#endif // QT_NO_TOOLTIP
         groupBox->setTitle(QApplication::translate("StreetGenerator", "Inputs", 0));
         labelHMap->setText(QApplication::translate("StreetGenerator", "Height Map: ......", 0));
         buttonHMap->setText(QApplication::translate("StreetGenerator", "Browse", 0));
@@ -224,6 +302,9 @@ public:
         buttonPMap->setText(QApplication::translate("StreetGenerator", "Browse", 0));
         labelGMap->setText(QApplication::translate("StreetGenerator", "Geography: ...", 0));
         buttonGMap->setText(QApplication::translate("StreetGenerator", "Browse", 0));
+        cmdClearHeight->setText(QApplication::translate("StreetGenerator", "Clear", 0));
+        cmdClearPop->setText(QApplication::translate("StreetGenerator", "Clear", 0));
+        cmdClearGeog->setText(QApplication::translate("StreetGenerator", "Clear", 0));
         groupBox_2->setTitle(QApplication::translate("StreetGenerator", "Inputs", 0));
         comboBox->clear();
         comboBox->insertItems(0, QStringList()
@@ -236,7 +317,16 @@ public:
         cmdSaveOutput->setText(QApplication::translate("StreetGenerator", "Save...", 0));
         label_6->setText(QApplication::translate("StreetGenerator", "Various Output Parameters", 0));
         cmdSaveOutputImage->setText(QApplication::translate("StreetGenerator", "Save Image", 0));
+        groupBox_4->setTitle(QApplication::translate("StreetGenerator", "Render Options", 0));
+        radShowPopulation->setText(QApplication::translate("StreetGenerator", "Show Population", 0));
+        radShowGeography->setText(QApplication::translate("StreetGenerator", "Show Geography", 0));
+        radShowHeightmap->setText(QApplication::translate("StreetGenerator", "Show Heightmap", 0));
+        radShowNone->setText(QApplication::translate("StreetGenerator", "Show None", 0));
         chkShowVerts->setText(QApplication::translate("StreetGenerator", "Show Vertices", 0));
+        cmdReset->setText(QApplication::translate("StreetGenerator", "Initialise / Reset", 0));
+        cmdStep->setText(QApplication::translate("StreetGenerator", "Step...", 0));
+        label->setText(QApplication::translate("StreetGenerator", "Seed:", 0));
+        chkTimeSeed->setText(QApplication::translate("StreetGenerator", "Use system time", 0));
         menuWindows->setTitle(QApplication::translate("StreetGenerator", "Windows", 0));
     } // retranslateUi
 

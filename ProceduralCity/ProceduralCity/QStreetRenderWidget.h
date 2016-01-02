@@ -2,17 +2,21 @@
 #include "StreetGen.h"
 #include "Road.h"
 
-#include <qopenglwidget.h>
+#include <qgraphicsview.h>
 #include <QtOpenGL>
 #include <qopengltexture.h>
 #include <qrect.h>
 #include <qpainter.h>
 
-class QStreetRenderWidget : public QOpenGLWidget {
+class QStreetRenderWidget : public QFrame {
 	Q_OBJECT
 
 public:
-	QStreetRenderWidget(QFrame * parent);
+	QSlider *zoomSlider;
+	QGraphicsView *view;
+
+
+	QStreetRenderWidget(QWidget * parent);
 	QStreetRenderWidget();
 	~QStreetRenderWidget();
 
@@ -27,29 +31,14 @@ private slots:
 	void setDrawVertices(bool drawVertices);
 
 protected:
-	
-	//Local Space 
-	QRectF bounds;
-	static const float SCALE_EXPONENT;
-	float scaleFactor;
-	float inverseScale;
-	QPointF center;
-	QPointF size;
-
-	QOpenGLTexture *background;
 	StreetGen *generator;
 
-	float streetRenderWidth;
 	bool drawStreetVertices;
 
-	QPen roadPen;
-	QColor roadColour;
-
-	void calculateViewRectangle();
-
+	void onViewChange();
+	void setBackground(QImage *bg);
 	///Called on start up, initialise variables
 	void initializeGL();
-
 	///Called when we need to rerender the scene
 	void paintEvent(QPaintEvent * e);
 
@@ -61,6 +50,5 @@ protected:
 
 	//Specific drawing
 	void paintRoad(QPainter &painter, Road *toDraw);
-	QPointF toScreenSpace(QPointF worldPoint);
 };
 

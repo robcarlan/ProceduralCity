@@ -20,17 +20,31 @@ void GLImagePreview::setImage(QString filePath) {
 	repaint();
 }
 
+void GLImagePreview::clear() {
+	imgSet = false;
+	update();
+}
+
+bool GLImagePreview::isSet() {
+	return imgSet;
+}
+
 QImage* GLImagePreview::getImage() {
 	return img;
 }
 
 void GLImagePreview::paintEvent(QPaintEvent * e) {
 	//No image to paint
-	if (!imgSet) return;
+
 
 	QPainter painter;
 	painter.begin(this);
 	painter.setRenderHint(QPainter::Antialiasing);
-	painter.drawImage(this->rect(),*img);
+
+	if (!imgSet) 
+		painter.fillRect(this->rect(), Qt::GlobalColor::black);
+	else  
+		painter.drawImage(this->rect(), *img);
+
 	painter.end();
 }

@@ -15,6 +15,8 @@ public:
 
 	QImage* getImage();
 	void setImage(QString filePath);
+	void clear();
+	bool isSet();
 
 	void paintEvent(QPaintEvent * e);
 

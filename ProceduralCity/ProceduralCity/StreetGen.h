@@ -11,6 +11,9 @@
 #include <boost/random.hpp>
 #endif
 
+#include <list>
+#include "Variable.h"
+
 ///Main Class handling street generation
 ///Stores input parameters / output parameters as well as genearting functions.
 class StreetGen
@@ -20,12 +23,15 @@ protected:
 	boost::random::mt19937 rng;
 	boost::random::uniform_int_distribution<> genX, genY;
 
-	StreetManager streets;
+	//Manage l sys
+	std::list<Variable> current;
+	std::list<InsertionVar> roadsToInsert;
 
 	//World space of the drawing area
 	Point size;
 
-	//We need a way of representing the coordinate system
+	bool ready, finished;
+	bool useHeight, useGeog, usePop;
 
 	//Store a local copy of each image, that we can sample. QImage provides suitable behaviour
 	QImage hMap, gMap, pMap;
@@ -38,12 +44,15 @@ public:
 	void nextIteration();
 	//Restarts the system to an initial state
 	void initialise();
-
+	//Returns true if the system is ready to generate the streets.
+	bool isReady();
+	bool isFinished();
 
 	//Set parameters
-	void setHeightMap(QImage &hMap);
-	void setPopMap(QImage &pMap);
-	void setGeogMap(QImage &gMap);
+
+	void setHeightMap(QImage &hMap, bool use);
+	void setPopMap(QImage &pMap, bool use);
+	void setGeogMap(QImage &gMap, bool use);
 	void setSize(Point newSize);
 
 	void setSeed(int seed);
@@ -51,6 +60,9 @@ public:
 	void setSeed();
 
 	//Add functions to get items which satisfy a query
+
+	QGraphicsScene *getScene();
+	StreetManager streets;
 	std::vector<Road>* getGenerated();
 
 	StreetGen();

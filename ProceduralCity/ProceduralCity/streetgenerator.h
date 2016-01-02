@@ -20,7 +20,12 @@ public:
 	~StreetGenerator();
 
 private slots:
+	
 	void onClickGenerate();
+	void onClickReset();
+	void onClickStep();
+	void onClickSave();
+	void onClickSaveImage();
 
 	void on_comboBox_activated(const QString &arg1);
 
@@ -28,12 +33,29 @@ private slots:
 	void on_buttonHMap_clicked();
 	void on_buttonPMap_clicked();
 	void on_buttonGMap_clicked();
+	void clearHeightmap();
+	void clearGeogmap();
+	void clearPopmap();
+
+	void on_radPopClicked();
+	void on_radGeogClicked();
+	void on_radHeightClicked();
+	void on_radNoneClicked();
 
 private:
 	Ui::StreetGenerator ui;
 	StreetGen generator;
 	QFileDialog fd;
+
+	static const int DEFAULT_SIZE_X;
+	static const int DEFAULT_SIZE_Y;
+
+	QPoint size;
+
+	void initialiseSystem();
 	QString getFileChoice();
+
+
 };
 
 #endif // STREETGENERATOR_H
