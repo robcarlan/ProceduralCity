@@ -1,35 +1,25 @@
 #include "Point.h"
 
 std::string Point::printPoint() {
-	float x = this->get<0>();
-	float y = this->get<1>();
-
 	std::ostringstream stream;
-	stream << "{ " << x << ", " << y << " }";
+	stream << "{ " << x() << ", " << y() << " }";
 	return stream.str();
 }
 
-float Point::getX() {
-	return this->get<0>();
+float Point::getDistanceSq(const Point p2) const {
+	float x = p2.x() - this->x();
+	float y = p2.y() - this->y();
+	return (x*x + y*y);
 }
 
-float Point::getY() {
-	return this->get<1>();
+Point::Point(QPointF val) : QPointF(val) {
 }
 
-void Point::setX(float newX) {
-	this->set<0>(newX);
+Point::Point(float x, float y)
+	: QPointF(x, y) {
 }
 
-void Point::setY(float newY) {
-	this->set<1>(newY);
-}
-
-Point::Point(float x, float y) 
-	: boost::geometry::model::point<float, 2, boost::geometry::cs::cartesian>(x, y) {
-}
-
-Point::Point() {
+Point::Point() : QPointF() {
 }
 
 

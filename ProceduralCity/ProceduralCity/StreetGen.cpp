@@ -10,6 +10,248 @@ void StreetGen::setSeed() {
 	rng.seed(static_cast<unsigned int>(std::time(0)));
 }
 
+void StreetGen::applyLocalConstraints(Variable *toCheck) {
+
+	//does it change i state
+	
+	//Fail when depth exceeds max
+	if (toCheck->rules.depth > 5) toCheck->state = solutionState::FAILED;
+	else toCheck->state = solutionState::SUCCEED;
+
+	toCheck->state = solutionState::SUCCEED;
+
+	std::vector<StreetManager::intersectionRec> intersections;
+	Road temp = Road(toCheck->road.start, toCheck->road.end);
+	streets.getIntersectingEdges(Road(toCheck->road.start, toCheck->road.end), intersections);
+
+	if (intersections.size() > 0) {
+		//We have found some intersections, get the closest.
+		auto minIntersect = std::min_element(intersections.begin(), intersections.end(),
+			[toCheck](const StreetManager::intersectionRec& arg1, const StreetManager::intersectionRec& arg2)
+				{ return (arg1.first.getDistanceSq(toCheck->road.start) < arg2.first.getDistanceSq(toCheck->road.start));  });
+
+		toCheck->road.end = minIntersect->first;
+		toCheck->state = solutionState::FAILED;
+		//Add a crossing
+	}
+}
+
+StreetGen::VarList* StreetGen::applyGlobalConstraints(ruleAttr rules, roadAttr roads) {
+	//Create 3 sets of new variables
+	int BRANCH1 = 1;
+	int BRANCH2 = 2;
+	int ROAD = 3;
+
+	//Initialise the new set of variables
+	ruleAttr nrules[3];
+	roadAttr nroads[3];
+	int delay[3];
+	boost::random::uniform_real_distribution<float> uniform = boost::random::uniform_real_distribution<float>();
+
+	QPointF distance = roads.end - roads.start;
+
+	for (int i = 0; i < 3; i++) {
+		nrules[i] = rules;
+		//Increment depth
+		nrules[i].depth++;
+		nroads[i] = roads;
+		float scale = uniform(rng);
+		nroads[i].start += distance * scale;
+		delay[i] = i;
+	}
+
+	//Calculate the new values
+
+	//Set branches to point at right angle
+	nroads[BRANCH1].angle += math::half_pi<float>() + uniform(rng);
+	nroads[BRANCH2].angle -= math::half_pi<float>() + uniform(rng);
+	nroads[ROAD].angle -= math::half_pi<float>() + uniform(rng);
+
+	//Set all roads to have some new length
+	float newLength = 30.0f + uniform(rng) * 50.0f;
+	nroads[BRANCH1].length += newLength;
+	newLength = 30.0f + uniform(rng) * 50.0f;
+	nroads[BRANCH2].length += newLength;
+	newLength = 30.0f + uniform(rng) * 50.0f;
+	nroads[ROAD].length += newLength;
+
+	//Calculate new end positions
+	for (int i = 0; i < 3; i++) {
+		//Create unit vector in direction
+		nroads[i].angle = math::mod<float>(nroads[i].angle, math::two_pi<float>());
+		Point unit = Point(cosf(nroads[i].angle), sinf(nroads[i].angle));
+		unit *= nroads[i].length;
+		nroads[i].end = nroads[i].start + unit;
+	}
+
+	//Create the new variables, and return them.
+
+	Variable *branch1 = new Variable(variableType::BRANCH, delay[BRANCH1], nrules[BRANCH1], nroads[BRANCH1]);
+	Variable *branch2 = new Variable(variableType::BRANCH, delay[BRANCH2], nrules[BRANCH2], nroads[BRANCH2]);
+	Variable *road = new Variable(variableType::ROAD, delay[ROAD], nrules[ROAD], nroads[ROAD]);
+	Variable *insertion = new Variable(variableType::INSERTION, delay[ROAD], nrules[ROAD], nroads[ROAD]);
+	insertion->state = solutionState::UNASSIGNED;
+
+	VarList* newList = new VarList();
+	newList->push_back(*branch1);
+	newList->push_back(*branch2);
+	newList->push_back(*road);
+	newList->push_back(*insertion);
+
+	return newList;
+}
+
+//Splice new variables into position, then remove all empty variables
+void StreetGen::afterIteration() {
+	//Only replace if toInsert isn't empty
+	if (toInsert.empty()) return;
+
+	VarIterator it = current.begin();
+	std::list<std::pair<VarIterator, VarList>>::iterator replaceItr = toInsert.begin();
+
+	while (it != current.end()) {
+		//Delete all e variables
+		//TODO :: hopefully redundant
+		if (it->varType == variableType::EMPTY)
+			it = current.erase(it);
+
+		//Check if there are any productions to replace
+		if (replaceItr == toInsert.end()) break;
+
+		//Insert all new productions
+		if (it == replaceItr->first) {
+			//Empty production -> delete current variable
+			if (replaceItr->second.size() == 0) {
+				it = current.erase(it);
+				replaceItr++;
+				if (it == current.end()) break;
+				else continue;
+			} else {
+				//Replace current variable with new productions
+				current.splice(it, replaceItr->second);
+				it = current.erase(it);
+				it--;
+			}
+
+			replaceItr++;
+		}
+
+		it++;
+	}
+
+	//We should have reached the end of all productions
+	assert(replaceItr == toInsert.end());
+
+	toInsert.clear();
+}
+
+void StreetGen::insertProduction(VarIterator before, VarList after) {
+	//toInsert.emplace_front(std::pair<VarIterator, VarList>(before, after));
+}
+
+StreetGen::VarList StreetGen::getInitialProduction() {
+	VarList initial;
+	ruleAttr emptyRule;
+	roadAttr emptyRoad;
+	initial.push_front(Variable(variableType::INSERTION, 0, emptyRule, getInitialRoadAttr()));
+	initial.push_front(Variable(variableType::ROAD, 0, getInitialRuleAttr(), emptyRoad));
+
+	return initial;
+}
+
+ruleAttr StreetGen::getInitialRuleAttr() {
+	//eventually pass these as parameters
+	ruleAttr rules;
+	rules.depth = 0;
+
+	return rules;
+}
+
+roadAttr StreetGen::getInitialRoadAttr() {
+	//eventually pass these as paramters
+	roadAttr road;
+	road.angle = 0.0f;
+	road.start = Point(500, 500);
+	road.end = Point(600, 700);
+	road.length = math::sqrt(road.start.getDistanceSq(road.end));
+
+	return road;
+}
+
+//Applies the L System rules to the current variable. Returns the productions in VarList productions. Specific road creation behaviour
+//is obtained by calls to LocalConstraints and GlobalConstraints
+bool StreetGen::applyRule(VarIterator currentVar, VarList *productions) {
+	//VarList productions;
+	assert(productions->empty());
+	VarIterator left;
+	VarIterator right;
+
+	switch (currentVar->varType) {
+	case variableType::BRANCH : 
+		//Production 6
+		if (currentVar->delay < 0) return true;
+		else if (currentVar->delay > 0) {
+			//Production 4, reduce delay
+			currentVar->delay--;
+			return false;
+		}
+		else {
+			//Production 5. Create new Road and Insertion module
+			productions->push_front(Variable(variableType::INSERTION, 0, currentVar->rules, currentVar->road));
+			productions->push_front(Variable(variableType::ROAD, 0, currentVar->rules, currentVar->road));
+			return true;
+		}
+		break;
+	case variableType::INSERTION:
+		//Production 7 - If a road with delay < 0 preceeds this, delete the variable.
+		left = currentVar;
+		left--;
+		if (left->varType == variableType::ROAD && left->delay < 0) {
+			return true;
+		}
+		else if (currentVar->state == solutionState::UNASSIGNED) {
+			//Production 8. Unassigned insertion. Call local constraints to attempt to adjust the parameters.
+			applyLocalConstraints(&(*currentVar));
+
+		}
+		else {
+			//Production 9. If successful, the Road variable at production 2 will obtain the data needed from this variable to extend the system.
+			return true;
+		}
+		break;
+	case variableType::ROAD :
+		right = currentVar;
+		right++;
+
+		//Production 1 - delete roads which have expired
+		if (currentVar->delay < 0) {
+			return true;
+		}
+		//Production 3, delete roads next to failed insertions.
+		else if (right->state == solutionState::FAILED) {
+			return true;
+		} else {
+			//Production 2 - right iterator is a succeeded insertion. Create new branches / road / insertion module with parameters set by
+			//global goals. Add this road and vertices to the system.
+			if (right->varType == variableType::INSERTION && right->state == solutionState::SUCCEED) {
+				BOOST_FOREACH(Variable lol, *applyGlobalConstraints(currentVar->rules, right->road) ) {
+					productions->push_back(lol);
+				}
+
+				//TODO :: Properly insert into new system, with roac crossings
+				streets.insertRoad(new Road(currentVar->road.start, currentVar->road.end));
+
+				return true;
+			}
+		}
+			
+		break;
+	default: break;
+	}
+
+	return false;
+}
+
 void StreetGen::Run() {
 	
 	while (!finished) {
@@ -18,25 +260,47 @@ void StreetGen::Run() {
 }
 
 void StreetGen::nextIteration() {
-	if (finished) return;
+	assert(toInsert.empty());
 
-	for (int itrNum = 0; itrNum < 4; itrNum++) {
-		Point* p1 = new Point(genX(rng), genY(rng));
-		Point* p2 = new Point(genX(rng), genY(rng));
+	printProductions();
 
-		StraightRoad *newRoad = new StraightRoad(*p1, *p2);
-		getScene()->addItem(newRoad);
+	bool changed = false;
+	//Apply rules to each element in turn, track for finish
+	VarIterator it = current.begin();
+	VarList *productions = new VarList();
+
+	while (it != current.end()) {
+		if (applyRule(it, productions)) {
+			//Production has occured, add this to the list
+			toInsert.emplace_back(it, VarList(*productions));
+			productions->clear();
+			changed = true;
+		}
+
+		it++;
 	}
 
-	finished = getScene()->items().count() > 32;
+	delete productions;
+
+	afterIteration();
+
+	finished = !changed;
+	iterationCount++;
+
+	streets.getScene()->update();
 }
 
 //
 void StreetGen::initialise() {
-	streets.clearRoads();
+	streets.reset();
+
+	current.clear();
+	toInsert.clear();
+	current = getInitialProduction();
 
 	ready = true;
 	finished = false;
+	iterationCount = 0;
 }
 
 bool StreetGen::isReady() {
@@ -45,6 +309,26 @@ bool StreetGen::isReady() {
 
 bool StreetGen::isFinished() {
 	return finished;
+}
+
+void StreetGen::printProductions() {
+
+	std::string varString;
+
+	qDebug() << "Iteration: " << iterationCount << ", nodes: " << current.size();
+
+	for (VarIterator it = current.begin(); it != current.end(); it++) {
+		varString += it->toString();
+	};
+	qDebug() << varString.data();
+
+	if (current.size() == 0)
+		qDebug() << "NO PRODUCTIONS";
+
+	qDebug() << "";
+	qDebug() << "Roads generated: " << streets.roadCount();
+	qDebug() << "Verts generated: " << streets.vertCount();
+	qDebug() << "ITEMS COUNT: " << streets.getScene()->items().count();
 }
 
 std::vector<Road>* StreetGen::getGenerated() {
@@ -82,8 +366,8 @@ void StreetGen::setGeogMap(QImage & gMap, bool use) {
 
 void StreetGen::setSize(Point newSize) {
 	size = newSize;
-	genX = boost::random::uniform_int_distribution<>(0, size.getX());
-	genY = boost::random::uniform_int_distribution<>(0, size.getY());
+	genX = boost::random::uniform_int_distribution<>(0, size.x());
+	genY = boost::random::uniform_int_distribution<>(0, size.y());
 }
 
 QGraphicsScene *StreetGen::getScene() {

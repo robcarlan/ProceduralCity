@@ -146,6 +146,8 @@ void StreetGenerator::initialiseSystem() {
 	if (ui.chkTimeSeed->isChecked())
 		generator.setSeed();
 	else generator.setSeed(ui.intSeedValue->value());
+
+	generator.streets.renderVertices(true);
 }
 
 QString StreetGenerator::getFileChoice() {

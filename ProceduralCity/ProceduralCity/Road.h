@@ -1,6 +1,7 @@
 #pragma once
 
 #include "Point.h"
+#include "RoadIntersection.h"
 
 #include <vector>
 #include <qpainter.h>
@@ -8,32 +9,42 @@
 #include <qgraphicsitem.h>
 
 //typedef boost::geometry::model::d2::point_xy<float> Point;
-
+class RoadIntersection;
 ///Abstract class defining a simple road. 
-class Road : public QGraphicsItem {
+class Road : public QGraphicsItem, public QLineF {
 public:
 	Road(Point start, Point end);
+	Road(Road &road);
 	~Road();
 
-	//std::vector<Road> getConnected();
-	Point getStart();
-	Point getEnd();
+	std::vector<RoadIntersection*> intersections;
+	Point getStart() const;
+	Point getEnd() const;
+	void setStart(Point start);
+	void setEnd(Point end);
+
 	static const float PEN_WIDTH;
 	QRectF bounds;
 
 	std::string printRoad();
-	QRectF boundingRect() const;
-	void paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget);
-	QRectF boundsFromPointPair(Point s, Point e);
-
-protected:
-	Point start, end;
 
 	//std::vector<Road, Point> connected;
-	//std::vector<Point> intersections;
+	std::vector<RoadIntersection*>* getIntersections();
+	//Remove an intersection from this. i.e. when a road is deleted.
+	void deleteIntersection(RoadIntersection* toDelete);
+	//Add an intersection incident on to this road
+	void addIntersection(RoadIntersection* toCreate);
+
+	bool operator== (const Road compare);
+	QRectF boundingRect() const;
+
+protected:
+
+	void paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget);
+	QRectF boundsFromPointPair(Point s, Point e);
+	Point start, end;
 
 	//TODO :: Main / Minor Roads
-
 	//TODO :: Roads to be of various types, i.e. Normal roads, Overground Roads (which ignore clipping over roads), Underground, Bridges ...
 };
 
