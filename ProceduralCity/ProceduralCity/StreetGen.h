@@ -1,6 +1,5 @@
 #pragma once
 
-#include "Road.h"
 #include "StreetManager.h"
 
 #include <iostream>
@@ -18,6 +17,7 @@
 
 ///Main Class handling street generation
 ///Stores input parameters / output parameters as well as generating functions.
+
 //To allow for different behaviour, we can subclass / parameterise by RuleAttr / RoadAttr types
 class StreetGen
 {
@@ -35,6 +35,10 @@ protected:
 
 	void applyLocalConstraints(Variable *toCheck);
 	VarList* applyGlobalConstraints(ruleAttr rules, roadAttr roads);
+
+
+	//After a variable succeeds, we need to add it correctly to the system
+	void addRoadToSystem(roadAttr roads);
 
 	void afterIteration();
 

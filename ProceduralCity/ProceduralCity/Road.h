@@ -14,7 +14,7 @@ class RoadIntersection;
 class Road : public QGraphicsItem, public QLineF {
 public:
 	Road(Point start, Point end);
-	Road(Road &road);
+	Road(const Road &road);
 	~Road();
 
 	std::vector<RoadIntersection*> intersections;

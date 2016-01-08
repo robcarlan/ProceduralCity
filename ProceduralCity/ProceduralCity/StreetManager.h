@@ -8,13 +8,17 @@
 
 #ifndef Q_MOC_RUN 
 #include <boost\geometry\index\rtree.hpp>
+#include <boost\geometry.hpp>
 #include <boost\foreach.hpp>
+#include <boost\function_output_iterator.hpp>
+#include <boost\geometry\geometries\point_xy.hpp>
 #endif
+
+using namespace boost::geometry;
+
 ///Used by StreetGenerator to handle storing roads and crossings. Allows methods to add / remove / connect these items, as well as spatial queries.
 class StreetManager {
 private:
-	//Internally managed by an rtree
-	//boost::geometry::index::rtree<
 	//Manage connected roads
 
 	QGraphicsScene *scene;
@@ -25,9 +29,19 @@ private:
 	QGraphicsItemGroup *intersectionsRender;
 	QGraphicsItemGroup *roadsRender;
 
-	//Just to make it work init
-	std::vector<Road*> roads;
-	std::vector<RoadIntersection*> intersections;
+	typedef boost::geometry::model::d2::point_xy<float> BOOST_POINT;
+	typedef boost::geometry::model::segment<BOOST_POINT> BOOST_SEGMENT;
+	typedef std::pair<BOOST_POINT, RoadIntersection*> intersectionIndex;
+	typedef std::pair<BOOST_SEGMENT, Road*> roadIndex;
+
+	BOOST_POINT toBoostPoint(Point val);
+	BOOST_SEGMENT toBoostSegment(Road *val);
+
+	//Rtree<Point>
+	boost::geometry::index::rtree<intersectionIndex, index::linear<16>> intersectionTree;
+	//Rtree<Segment>
+	boost::geometry::index::rtree<roadIndex, index::linear<16>> roadTree;
+
 	bool renderVerts;
 
 public:
@@ -53,7 +67,8 @@ public:
 	void reset();
 
 	//Returns all vertices within radius of queryPoint, returns in vector nearby
-	void getNearbyVertices(RoadIntersection queryPoint, double radius, std::vector<RoadIntersection*>& nearby);
+	void getNearbyVertices(Point queryPoint, double radius, std::vector<RoadIntersection*>& nearby);
+	intersectionRec* getClosest(Point queryPoint, std::vector<intersectionRec>& nearby);
 
 	//Returns all edges which collide with edge. Returns the colliding edges with their intersection, in vector nearby.
 	void getIntersectingEdges(Road edge, std::vector<intersectionRec>& nearby);

@@ -5,7 +5,7 @@ const float RoadIntersection::boxWidth = 10.0f;
 ///Called when a point is created
 void RoadIntersection::calculateBoundingBox() {
 	boundingBox.setX(location.x() - boxWidth / 2);
-	boundingBox.setY(location.y() + boxWidth / 2);
+	boundingBox.setY(location.y() - boxWidth / 2);
 	boundingBox.setWidth(boxWidth);
 	boundingBox.setHeight(boxWidth);
 }
@@ -42,18 +42,32 @@ bool RoadIntersection::removeRoad(Road *road) {
 
 RoadIntersection::RoadIntersection(Point Position, Road *creator, Road *incidentOnto) : QGraphicsItem() {
 	this->location = Position;
+	this->setPos(location);
 	parent = creator;
 	connected.push_front(creator);
 	connected.push_front(incidentOnto);
 
 	isCrossing = true;
+	calculateBoundingBox();
 }
 
 RoadIntersection::RoadIntersection(Point Position, Road *creator) : QGraphicsItem() {
 	this->location = Position;
+	this->setPos(location);
 	parent = creator;
 
 	isCrossing = false;
+	calculateBoundingBox();
+}
+
+RoadIntersection::RoadIntersection(const RoadIntersection &road) : QGraphicsItem() {
+	this->location = road.location;
+	this->setPos(location);
+	this->boundingBox = road.boundingBox;
+	this->isCrossing = road.isCrossing;
+	this->parent = road.parent;
+	this->connected = road.connected;
+	calculateBoundingBox();
 }
 
 RoadIntersection::RoadIntersection() : QGraphicsItem() {

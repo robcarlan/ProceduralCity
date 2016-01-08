@@ -1,5 +1,13 @@
 #include "StreetManager.h"
 
+StreetManager::BOOST_POINT StreetManager::toBoostPoint(Point val) {
+	return  boost::geometry::model::d2::point_xy<float>(val.x(), val.y());
+}
+
+StreetManager::BOOST_SEGMENT StreetManager::toBoostSegment(Road *val) {
+	return boost::geometry::model::segment<BOOST_POINT>(toBoostPoint(val->getStart()), toBoostPoint(val->getEnd()));
+}
+
 void StreetManager::setPop(QImage *pop) {
 	this->pop = *pop;
 	//Create the pixmap now for the scene
@@ -53,11 +61,11 @@ void StreetManager::renderVertices(bool renderVerts) {
 }
 
 int StreetManager::roadCount() {
-	return roads.size();
+	return roadTree.size();
 }
 
 int StreetManager::vertCount() {
-	return intersections.size();
+	return intersectionTree.size();
 }
 
 StreetManager::StreetManager() {
@@ -80,36 +88,73 @@ void StreetManager::reset() {
 
 	bg = nullptr;
 
-	intersections.clear();
-	roads.clear();
+	roadTree.clear();
+	intersectionTree.clear();
 
 	QList<QGraphicsItem*> emptyRoads = QList<QGraphicsItem*>();
 	QList<QGraphicsItem*> emptyIntersections = QList<QGraphicsItem*>();
 	intersectionsRender = scene->createItemGroup(emptyIntersections);
 	roadsRender = scene->createItemGroup(emptyRoads);
-	
+	scene->setSceneRect(QRectF(-100, -100, 2248, 2248));
+
 	intersectionsRender->setVisible(renderVerts);
 }
 
+StreetManager::intersectionRec* StreetManager::getClosest(Point queryPoint, std::vector<intersectionRec>& nearby) {
+	StreetManager::intersectionRec* smallest = nearby.begin().operator->();
+
+	//Vector method
+	for (std::vector<intersectionRec>::iterator it = nearby.begin(); it != nearby.end(); it++) {
+		if (queryPoint.getDistanceSq(it->first) < queryPoint.getDistanceSq(smallest->first) && !queryPoint.isWithinBounds(it->first, 1.0f))
+			smallest = it.operator->();
+	}
+
+	return smallest;
+}
+
 //Naive method, but it's okay at the moment
-void StreetManager::getNearbyVertices(RoadIntersection queryPoint, double radius, std::vector<RoadIntersection*>& nearby) {
-	BOOST_FOREACH(RoadIntersection *val, intersections) {
-		if (queryPoint.location.getDistanceSq(val->location) < radius)
-			nearby.push_back(val);
+void StreetManager::getNearbyVertices(Point queryPoint, double radius, std::vector<RoadIntersection*>& nearby) {
+	//Vector method
+	//BOOST_FOREACH(RoadIntersection *val, intersections) {
+	//	if (queryPoint.getDistanceSq(val->location) < radius && !queryPoint.isWithinBounds(val->location, 1.0f))
+	//		nearby.push_back(val);
+	//}
+	std::vector<intersectionIndex> result;
+
+	intersectionTree.query(boost::geometry::index::nearest(toBoostPoint(queryPoint), 3), std::back_inserter(result));
+	//	boost::make_function_output_iterator([nearby](intersectionIndex const& val) {
+	//		nearby.push_back(val.second);
+	//	}));
+	for (std::vector<intersectionIndex>::iterator it = result.begin(); it != result.end(); it++) {
+		nearby.push_back(it->second);
 	}
 }
 
 //Naive method, but it's alright at the moment
 void StreetManager::getIntersectingEdges(Road edge, std::vector<intersectionRec>& nearby) {
-	BOOST_FOREACH(Road *val, roads) {
-		if (edge.boundingRect().intersects(val->boundingRect())) {
-			//Possible collision, check further
-			QPointF * intersectPoint = new QPointF;
-			QLineF::IntersectType intersectType = val->intersect(edge, intersectPoint);
+	//BOOST_FOREACH(Road *val, roads) {
+	//	//if(true) {
+	//	if (edge.boundingRect().intersects(val->boundingRect())) {
+	//		//Possible collision, check further
+	//		QPointF * intersectPoint = new QPointF;
+	//		QLineF::IntersectType intersectType = val->intersect(edge, intersectPoint);
 
-			if (intersectType == QLineF::IntersectType::BoundedIntersection) 
-				nearby.push_back(intersectionRec(Point(*intersectPoint), val));
-		}
+	//		if (intersectType == QLineF::IntersectType::BoundedIntersection)
+	//			if (!edge.getStart().isWithinBounds(*intersectPoint, 1.0f))
+	//				nearby.push_back(intersectionRec(Point(*intersectPoint), val));
+	//	}
+	//}
+
+	std::vector<roadIndex> result;
+	roadTree.query(boost::geometry::index::intersects(toBoostSegment(&edge)), std::back_inserter(result));
+
+	for (std::vector<roadIndex>::iterator it = result.begin(); it != result.end(); it++) {
+		std::unique_ptr<QPointF> intersectPoint(new QPointF);
+		QLineF::IntersectType intersectType = it->second->intersect(edge, intersectPoint.get());
+
+		if (intersectType == QLineF::IntersectType::BoundedIntersection)
+			if (!edge.getStart().isWithinBounds(*intersectPoint, 1.0f))
+				nearby.push_back(intersectionRec(Point(*intersectPoint), it->second));
 	}
 }
 
@@ -148,14 +193,22 @@ void StreetManager::connectToNewIntersection(RoadIntersection * start, Road * ne
 
 }
 void StreetManager::insertRoad(Road * toAdd) {
-	roads.push_back(toAdd);
+	//Vector style
+	//roads.push_back(toAdd);
+
+	//Rtree
+	roadTree.insert(std::make_pair(toBoostSegment(toAdd), toAdd));
 
 	QGraphicsLineItem *road = scene->addLine(QLineF(toAdd->getStart(), toAdd->getEnd()));
 	roadsRender->addToGroup(road);
 }
 
 void StreetManager::insertIntersection(RoadIntersection * toAdd) {
-	intersections.push_back(toAdd);
-	//intersectionsRender->addToGroup(toAdd);
-	scene->addRect(toAdd->x(), toAdd->y(), 10, 10);
+	//Vector style
+	//intersections.push_back(toAdd);
+
+	//Rtree
+	intersectionTree.insert(std::make_pair(toBoostPoint(toAdd->location), toAdd));
+
+	scene->addRect(toAdd->boundingRect());
 }

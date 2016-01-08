@@ -11,36 +11,72 @@ void StreetGen::setSeed() {
 }
 
 void StreetGen::applyLocalConstraints(Variable *toCheck) {
-
-	//does it change i state
-	
-	//Fail when depth exceeds max
-	if (toCheck->rules.depth > 5) toCheck->state = solutionState::FAILED;
-	else toCheck->state = solutionState::SUCCEED;
-
-	toCheck->state = solutionState::SUCCEED;
+	const float extendRadius = 10.0f;
+	const float minDistanceSq = 10.0f;
 
 	std::vector<StreetManager::intersectionRec> intersections;
 	Road temp = Road(toCheck->road.start, toCheck->road.end);
-	streets.getIntersectingEdges(Road(toCheck->road.start, toCheck->road.end), intersections);
+	streets.getIntersectingEdges(temp, intersections);
+
+	bool culled = false;
 
 	if (intersections.size() > 0) {
 		//We have found some intersections, get the closest.
-		auto minIntersect = std::min_element(intersections.begin(), intersections.end(),
-			[toCheck](const StreetManager::intersectionRec& arg1, const StreetManager::intersectionRec& arg2)
-				{ return (arg1.first.getDistanceSq(toCheck->road.start) < arg2.first.getDistanceSq(toCheck->road.start));  });
-
+		auto minIntersect = streets.getClosest(toCheck->road.start, intersections);
 		toCheck->road.end = minIntersect->first;
-		toCheck->state = solutionState::FAILED;
-		//Add a crossing
+		//toCheck->state = solutionState::FAILED;
+		//Add a crossing, leave target as null as we need to create this
+		toCheck->road.targetRoad = minIntersect->second;
+		toCheck->state = solutionState::SUCCEED;
+		culled = true;
+	} else { //Road does not intersect, so lets see if it is near to an existing crossing.
+
+		//TEMPORARY
+		toCheck->state = solutionState::SUCCEED;
+		return;
+
+		std::vector<RoadIntersection *> existingIntersections;
+		streets.getNearbyVertices(toCheck->road.end, extendRadius, existingIntersections);
+		bool connectToIntersection = false;
+
+		if (existingIntersections.size() > 0) {
+			//we may be able to extend the road to join an intersection
+
+			//sort by closest, then attach to the first intersection which doesn't intersect other lines
+			BOOST_FOREACH(RoadIntersection *it, existingIntersections) {
+				streets.getIntersectingEdges(Road(toCheck->road.start, it->location), intersections);
+				if (intersections.size() == 0 && toCheck->road.start.getDistanceSq(it->location) > minDistanceSq) {
+					toCheck->road.end = it->location;
+					connectToIntersection = true; culled = true;
+					break;
+				}
+			}
+		}
+
+		//Extend the road by a maximum radius, then see if it intersects.
+		if (!connectToIntersection) {
+			QLineF norm = temp.normalVector();
+			norm.setLength(extendRadius);
+			Point extended = Point(toCheck->road.start.x() + norm.dx(), toCheck->road.start.y() + norm.dy());
+			streets.getIntersectingEdges(Road(toCheck->road.start, extended), intersections);
+
+			if (intersections.size() > 0 && toCheck->road.start.getDistanceSq(extended) > minDistanceSq) {
+				toCheck->road.end = extended;
+				connectToIntersection = true;
+				culled = true;
+			}
+		}
 	}
+
+	if (culled) toCheck->state = solutionState::SUCCEED;
+	else toCheck->state = solutionState::SUCCEED;
 }
 
 StreetGen::VarList* StreetGen::applyGlobalConstraints(ruleAttr rules, roadAttr roads) {
 	//Create 3 sets of new variables
-	int BRANCH1 = 1;
-	int BRANCH2 = 2;
-	int ROAD = 3;
+	int BRANCH1 = 0;
+	int BRANCH2 = 1;
+	int ROAD = 2;
 
 	//Initialise the new set of variables
 	ruleAttr nrules[3];
@@ -58,14 +94,15 @@ StreetGen::VarList* StreetGen::applyGlobalConstraints(ruleAttr rules, roadAttr r
 		float scale = uniform(rng);
 		nroads[i].start += distance * scale;
 		delay[i] = i;
+		//nroads[i].branchFromParent(roads.);
 	}
 
 	//Calculate the new values
 
 	//Set branches to point at right angle
-	nroads[BRANCH1].angle += math::half_pi<float>() + uniform(rng);
-	nroads[BRANCH2].angle -= math::half_pi<float>() + uniform(rng);
-	nroads[ROAD].angle -= math::half_pi<float>() + uniform(rng);
+	nroads[BRANCH1].angle += math::half_pi<float>();// +uniform(rng);
+	nroads[BRANCH2].angle -= math::half_pi<float>(); // +uniform(rng);
+	nroads[ROAD].angle -= math::half_pi<float>();// +uniform(rng);
 
 	//Set all roads to have some new length
 	float newLength = 30.0f + uniform(rng) * 50.0f;
@@ -99,6 +136,28 @@ StreetGen::VarList* StreetGen::applyGlobalConstraints(ruleAttr rules, roadAttr r
 	newList->push_back(*insertion);
 
 	return newList;
+}
+
+void StreetGen::addRoadToSystem(roadAttr roads) {
+	//Create first intersection if necessary
+	std::vector<RoadIntersection*> nearby;
+
+	//If nearby just attach to existing one
+	//TODO ie when starting at an existing intersection
+	RoadIntersection *start = new RoadIntersection(roads.start, roads.parentRoad);
+	//streets.getNearbyVertices(*start, 5.0f, nearby); 
+	Road *road = new Road(roads.start, roads.end);
+
+	//Create second intersection if necessary
+	if (roads.targetRoad != nullptr) {
+		//Check to see if we need to connect to an intersection / use old
+
+		streets.connectToNewIntersection(start, road, roads.targetRoad);
+	}
+	else {
+		//Create the new empty crossing
+		streets.branchRoad(start, road);
+	}
 }
 
 //Splice new variables into position, then remove all empty variables
@@ -213,6 +272,10 @@ bool StreetGen::applyRule(VarIterator currentVar, VarList *productions) {
 			//Production 8. Unassigned insertion. Call local constraints to attempt to adjust the parameters.
 			applyLocalConstraints(&(*currentVar));
 
+			//Succeed => Safe to add to system
+			if (currentVar->state == solutionState::SUCCEED)
+				addRoadToSystem(currentVar->road);
+
 		}
 		else {
 			//Production 9. If successful, the Road variable at production 2 will obtain the data needed from this variable to extend the system.
@@ -239,7 +302,7 @@ bool StreetGen::applyRule(VarIterator currentVar, VarList *productions) {
 				}
 
 				//TODO :: Properly insert into new system, with roac crossings
-				streets.insertRoad(new Road(currentVar->road.start, currentVar->road.end));
+				//addRoadToSystem(currentVar->rules, right->road);
 
 				return true;
 			}

@@ -10,6 +10,26 @@ struct ruleAttr {
 struct roadAttr {
 	float length, angle;
 	Point start, end;
+	//null => create an intersection at start
+	RoadIntersection *branchSource;
+	//null => create an intersection at end
+	RoadIntersection *target;
+
+	//The road that generated this.
+	Road *parentRoad;
+	//Incident road, if exists.
+	Road *targetRoad;
+
+	void createFromIntersection(RoadIntersection *source) {
+		branchSource = source;
+		start = source->location;
+	}
+
+	void branchFromParent(Road *parent) {
+		this->parentRoad = parent;
+	}
+
+	
 };
 
 enum Zone {

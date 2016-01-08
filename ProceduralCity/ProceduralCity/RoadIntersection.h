@@ -7,11 +7,9 @@ class Road;
 
 class RoadIntersection : public QGraphicsItem {
 protected:
-	static const float boxWidth;
 	QRectF boundingBox;
 
 	void calculateBoundingBox();
-	QRectF boundingRect() const;
 	void paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget);
 
 public:
@@ -28,11 +26,14 @@ public:
 	void attachRoad(Road *road);
 	//Returns true if no other intersection exists
 	bool removeRoad(Road *road);
+	QRectF boundingRect() const;
+	static const float boxWidth;
 
 	///Create a crossing from creator, and attach it onto the incident road.
 	RoadIntersection(Point Position, Road *creator, Road *incidentOnto);
 	///Create an intersection which isn't a crossing
 	RoadIntersection(Point Position, Road *creator);
+	RoadIntersection(const RoadIntersection &road);
 	RoadIntersection();
 	~RoadIntersection();
 };

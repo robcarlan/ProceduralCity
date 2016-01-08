@@ -12,7 +12,7 @@ Road::Road(Point start, Point end) : QGraphicsItem(), QLineF(start, end) {
 	bounds = boundsFromPointPair(start, end);
 }
 
-Road::Road(Road & road) : QLineF(road) {
+Road::Road(const Road &road) : QLineF(road) {
 	this->bounds = road.bounds;
 	start = road.getStart();
 	end = road.getEnd();

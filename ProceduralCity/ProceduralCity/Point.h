@@ -14,7 +14,8 @@ class Point :
 public:
 	std::string printPoint();
 
-	float getDistanceSq(const Point p2) const;
+	float getDistanceSq(const QPointF p2) const;
+	bool isWithinBounds(const QPointF p2, float epsilon);
 
 	Point(QPointF val);
 	Point(float x, float y);
