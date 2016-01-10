@@ -1,5 +1,7 @@
+TODO :: 
+Major / Minor Roads
+Splining roads together
 
-Constraints
-Roads need to be edited to fit constraints. needs to see the rest of the world i.e. clipping, snapping to roads
+Image sampling
 
-Rtree
+Structure to manage delay iteration more efficiently. Priority Queue?

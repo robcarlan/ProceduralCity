@@ -20,6 +20,8 @@ struct roadAttr {
 	//Incident road, if exists.
 	Road *targetRoad;
 
+	bool connected;
+
 	void createFromIntersection(RoadIntersection *source) {
 		branchSource = source;
 		start = source->location;

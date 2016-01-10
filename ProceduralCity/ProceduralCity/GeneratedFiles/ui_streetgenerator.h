@@ -62,10 +62,10 @@ public:
     QPushButton *cmdSaveOutput;
     QLabel *label_6;
     QPushButton *cmdSaveOutputImage;
-    QWidget *widget;
+    QWidget *layoutWidget;
     QVBoxLayout *verticalLayout;
     QGroupBox *groupBox_4;
-    QWidget *widget1;
+    QWidget *layoutWidget1;
     QVBoxLayout *verticalLayout_2;
     QRadioButton *radShowPopulation;
     QRadioButton *radShowGeography;
@@ -74,7 +74,7 @@ public:
     QCheckBox *chkShowVerts;
     QPushButton *cmdReset;
     QPushButton *cmdStep;
-    QWidget *widget2;
+    QWidget *layoutWidget2;
     QFormLayout *formLayout;
     QLabel *label;
     QSpinBox *intSeedValue;
@@ -152,6 +152,11 @@ public:
         groupBox_3 = new QGroupBox(centralWidget);
         groupBox_3->setObjectName(QStringLiteral("groupBox_3"));
         groupBox_3->setGeometry(QRect(960, 650, 411, 271));
+        QSizePolicy sizePolicy(QSizePolicy::Expanding, QSizePolicy::Preferred);
+        sizePolicy.setHorizontalStretch(1);
+        sizePolicy.setVerticalStretch(0);
+        sizePolicy.setHeightForWidth(groupBox_3->sizePolicy().hasHeightForWidth());
+        groupBox_3->setSizePolicy(sizePolicy);
         cmdGenerateStreets = new QPushButton(groupBox_3);
         cmdGenerateStreets->setObjectName(QStringLiteral("cmdGenerateStreets"));
         cmdGenerateStreets->setGeometry(QRect(260, 190, 141, 31));
@@ -164,25 +169,25 @@ public:
         cmdSaveOutputImage = new QPushButton(groupBox_3);
         cmdSaveOutputImage->setObjectName(QStringLiteral("cmdSaveOutputImage"));
         cmdSaveOutputImage->setGeometry(QRect(140, 230, 111, 31));
-        widget = new QWidget(groupBox_3);
-        widget->setObjectName(QStringLiteral("widget"));
-        widget->setGeometry(QRect(10, 60, 161, 161));
-        verticalLayout = new QVBoxLayout(widget);
+        layoutWidget = new QWidget(groupBox_3);
+        layoutWidget->setObjectName(QStringLiteral("layoutWidget"));
+        layoutWidget->setGeometry(QRect(10, 60, 161, 161));
+        verticalLayout = new QVBoxLayout(layoutWidget);
         verticalLayout->setSpacing(6);
         verticalLayout->setContentsMargins(11, 11, 11, 11);
         verticalLayout->setObjectName(QStringLiteral("verticalLayout"));
         verticalLayout->setContentsMargins(0, 0, 0, 0);
-        groupBox_4 = new QGroupBox(widget);
+        groupBox_4 = new QGroupBox(layoutWidget);
         groupBox_4->setObjectName(QStringLiteral("groupBox_4"));
-        widget1 = new QWidget(groupBox_4);
-        widget1->setObjectName(QStringLiteral("widget1"));
-        widget1->setGeometry(QRect(10, 14, 141, 121));
-        verticalLayout_2 = new QVBoxLayout(widget1);
+        layoutWidget1 = new QWidget(groupBox_4);
+        layoutWidget1->setObjectName(QStringLiteral("layoutWidget1"));
+        layoutWidget1->setGeometry(QRect(10, 14, 141, 121));
+        verticalLayout_2 = new QVBoxLayout(layoutWidget1);
         verticalLayout_2->setSpacing(6);
         verticalLayout_2->setContentsMargins(11, 11, 11, 11);
         verticalLayout_2->setObjectName(QStringLiteral("verticalLayout_2"));
         verticalLayout_2->setContentsMargins(0, 0, 0, 0);
-        radShowPopulation = new QRadioButton(widget1);
+        radShowPopulation = new QRadioButton(layoutWidget1);
         buttonGroup = new QButtonGroup(StreetGenerator);
         buttonGroup->setObjectName(QStringLiteral("buttonGroup"));
         buttonGroup->addButton(radShowPopulation);
@@ -190,25 +195,25 @@ public:
 
         verticalLayout_2->addWidget(radShowPopulation);
 
-        radShowGeography = new QRadioButton(widget1);
+        radShowGeography = new QRadioButton(layoutWidget1);
         buttonGroup->addButton(radShowGeography);
         radShowGeography->setObjectName(QStringLiteral("radShowGeography"));
 
         verticalLayout_2->addWidget(radShowGeography);
 
-        radShowHeightmap = new QRadioButton(widget1);
+        radShowHeightmap = new QRadioButton(layoutWidget1);
         buttonGroup->addButton(radShowHeightmap);
         radShowHeightmap->setObjectName(QStringLiteral("radShowHeightmap"));
 
         verticalLayout_2->addWidget(radShowHeightmap);
 
-        radShowNone = new QRadioButton(widget1);
+        radShowNone = new QRadioButton(layoutWidget1);
         buttonGroup->addButton(radShowNone);
         radShowNone->setObjectName(QStringLiteral("radShowNone"));
 
         verticalLayout_2->addWidget(radShowNone);
 
-        chkShowVerts = new QCheckBox(widget1);
+        chkShowVerts = new QCheckBox(layoutWidget1);
         chkShowVerts->setObjectName(QStringLiteral("chkShowVerts"));
 
         verticalLayout_2->addWidget(chkShowVerts);
@@ -222,27 +227,27 @@ public:
         cmdStep = new QPushButton(groupBox_3);
         cmdStep->setObjectName(QStringLiteral("cmdStep"));
         cmdStep->setGeometry(QRect(260, 150, 141, 31));
-        widget2 = new QWidget(groupBox_3);
-        widget2->setObjectName(QStringLiteral("widget2"));
-        widget2->setGeometry(QRect(236, 40, 171, 70));
-        formLayout = new QFormLayout(widget2);
+        layoutWidget2 = new QWidget(groupBox_3);
+        layoutWidget2->setObjectName(QStringLiteral("layoutWidget2"));
+        layoutWidget2->setGeometry(QRect(236, 40, 171, 70));
+        formLayout = new QFormLayout(layoutWidget2);
         formLayout->setSpacing(6);
         formLayout->setContentsMargins(11, 11, 11, 11);
         formLayout->setObjectName(QStringLiteral("formLayout"));
         formLayout->setContentsMargins(0, 0, 0, 0);
-        label = new QLabel(widget2);
+        label = new QLabel(layoutWidget2);
         label->setObjectName(QStringLiteral("label"));
 
         formLayout->setWidget(2, QFormLayout::LabelRole, label);
 
-        intSeedValue = new QSpinBox(widget2);
+        intSeedValue = new QSpinBox(layoutWidget2);
         intSeedValue->setObjectName(QStringLiteral("intSeedValue"));
         intSeedValue->setMinimum(-1000000000);
         intSeedValue->setMaximum(1000000000);
 
         formLayout->setWidget(2, QFormLayout::FieldRole, intSeedValue);
 
-        chkTimeSeed = new QCheckBox(widget2);
+        chkTimeSeed = new QCheckBox(layoutWidget2);
         chkTimeSeed->setObjectName(QStringLiteral("chkTimeSeed"));
 
         formLayout->setWidget(3, QFormLayout::FieldRole, chkTimeSeed);
@@ -250,6 +255,11 @@ public:
         streetRender = new QStreetRenderWidget(centralWidget);
         streetRender->setObjectName(QStringLiteral("streetRender"));
         streetRender->setGeometry(QRect(270, 20, 1101, 631));
+        QSizePolicy sizePolicy1(QSizePolicy::Maximum, QSizePolicy::Maximum);
+        sizePolicy1.setHorizontalStretch(1);
+        sizePolicy1.setVerticalStretch(1);
+        sizePolicy1.setHeightForWidth(streetRender->sizePolicy().hasHeightForWidth());
+        streetRender->setSizePolicy(sizePolicy1);
         streetRender->setFrameShape(QFrame::Box);
         streetRender->setFrameShadow(QFrame::Sunken);
         StreetGenerator->setCentralWidget(centralWidget);

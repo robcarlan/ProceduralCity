@@ -22,6 +22,10 @@
 class StreetGen
 {
 protected:
+	static const float extendRadius;
+	static const float minDistanceSq;
+	static const float minLength;
+
 	std::vector<Road> *generatedRoads;
 	boost::random::mt19937 rng;
 	boost::random::uniform_int_distribution<> genX, genY;
@@ -34,6 +38,11 @@ protected:
 	std::list<std::pair<VarIterator,VarList>> toInsert;
 
 	void applyLocalConstraints(Variable *toCheck);
+
+	//Functions for local Constraints
+	//Tries to clip the line into a legal region. Returns true if the line is successfully placed.
+	bool tryMakeLegal(Variable *toCheck, Road *tempRoad, bool &connectedToIntersection);
+
 	VarList* applyGlobalConstraints(ruleAttr rules, roadAttr roads);
 
 

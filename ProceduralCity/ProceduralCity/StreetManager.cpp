@@ -100,10 +100,10 @@ void StreetManager::reset() {
 	intersectionsRender->setVisible(renderVerts);
 }
 
+//Simple search on intersections to find the closest intersection
 StreetManager::intersectionRec* StreetManager::getClosest(Point queryPoint, std::vector<intersectionRec>& nearby) {
 	StreetManager::intersectionRec* smallest = nearby.begin().operator->();
 
-	//Vector method
 	for (std::vector<intersectionRec>::iterator it = nearby.begin(); it != nearby.end(); it++) {
 		if (queryPoint.getDistanceSq(it->first) < queryPoint.getDistanceSq(smallest->first) && !queryPoint.isWithinBounds(it->first, 1.0f))
 			smallest = it.operator->();
@@ -112,46 +112,34 @@ StreetManager::intersectionRec* StreetManager::getClosest(Point queryPoint, std:
 	return smallest;
 }
 
-//Naive method, but it's okay at the moment
 void StreetManager::getNearbyVertices(Point queryPoint, double radius, std::vector<RoadIntersection*>& nearby) {
-	//Vector method
-	//BOOST_FOREACH(RoadIntersection *val, intersections) {
-	//	if (queryPoint.getDistanceSq(val->location) < radius && !queryPoint.isWithinBounds(val->location, 1.0f))
-	//		nearby.push_back(val);
-	//}
+
 	std::vector<intersectionIndex> result;
 
+	//Perform knn to find 3 nearest neighbours.
 	intersectionTree.query(boost::geometry::index::nearest(toBoostPoint(queryPoint), 3), std::back_inserter(result));
-	//	boost::make_function_output_iterator([nearby](intersectionIndex const& val) {
-	//		nearby.push_back(val.second);
-	//	}));
+
 	for (std::vector<intersectionIndex>::iterator it = result.begin(); it != result.end(); it++) {
-		nearby.push_back(it->second);
+		QPointF pt = QPointF(it->first.x(), it->first.y());
+
+		//The result is only knn, so may not be within desired bounds at all.
+		if (queryPoint.isWithinBounds(pt, 10.0f))
+			nearby.push_back(it->second);
 	}
 }
 
-//Naive method, but it's alright at the moment
 void StreetManager::getIntersectingEdges(Road edge, std::vector<intersectionRec>& nearby) {
-	//BOOST_FOREACH(Road *val, roads) {
-	//	//if(true) {
-	//	if (edge.boundingRect().intersects(val->boundingRect())) {
-	//		//Possible collision, check further
-	//		QPointF * intersectPoint = new QPointF;
-	//		QLineF::IntersectType intersectType = val->intersect(edge, intersectPoint);
-
-	//		if (intersectType == QLineF::IntersectType::BoundedIntersection)
-	//			if (!edge.getStart().isWithinBounds(*intersectPoint, 1.0f))
-	//				nearby.push_back(intersectionRec(Point(*intersectPoint), val));
-	//	}
-	//}
 
 	std::vector<roadIndex> result;
+
+	//Query road tree to find intersects with edge. Store in result.
 	roadTree.query(boost::geometry::index::intersects(toBoostSegment(&edge)), std::back_inserter(result));
 
 	for (std::vector<roadIndex>::iterator it = result.begin(); it != result.end(); it++) {
 		std::unique_ptr<QPointF> intersectPoint(new QPointF);
 		QLineF::IntersectType intersectType = it->second->intersect(edge, intersectPoint.get());
 
+		//Find all intersect points, check whether they are bounded and at least some distance away from the start.
 		if (intersectType == QLineF::IntersectType::BoundedIntersection)
 			if (!edge.getStart().isWithinBounds(*intersectPoint, 1.0f))
 				nearby.push_back(intersectionRec(Point(*intersectPoint), it->second));
@@ -173,6 +161,8 @@ void StreetManager::connectToExistingIntersection(RoadIntersection * start, Road
 	start->attachRoad(newRoad);
 	newRoad->addIntersection(start);
 
+	if (start->connected.size() == 1) insertIntersection(start);
+
 	//Add the intersection into the structure, connect road onto the crossing
 	crossing->attachRoad(newRoad);
 	newRoad->addIntersection(crossing);
@@ -184,6 +174,8 @@ void StreetManager::connectToNewIntersection(RoadIntersection * start, Road * ne
 	insertRoad(newRoad);
 	start->attachRoad(newRoad);
 	newRoad->addIntersection(start);
+
+	if (start->connected.size() == 1) insertIntersection(start);
 
 	//Create new Intersection, attach to road
 	RoadIntersection *crossing = new RoadIntersection(Point(newRoad->getEnd()), newRoad, target);
