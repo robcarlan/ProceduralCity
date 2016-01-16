@@ -33,6 +33,9 @@ private slots:
 	void on_buttonHMap_clicked();
 	void on_buttonPMap_clicked();
 	void on_buttonGMap_clicked();
+	void on_buttonSMap_clicked();
+	void cmdLoadDirectory();
+	void clearStreetmap();
 	void clearHeightmap();
 	void clearGeogmap();
 	void clearPopmap();
@@ -40,12 +43,14 @@ private slots:
 	void on_radPopClicked();
 	void on_radGeogClicked();
 	void on_radHeightClicked();
+	void on_radPatternClicked();
 	void on_radNoneClicked();
 
 private:
 	Ui::StreetGenerator ui;
 	StreetGen generator;
 	QFileDialog fd;
+	QFileDialog dir;
 
 	static const int DEFAULT_SIZE_X;
 	static const int DEFAULT_SIZE_Y;

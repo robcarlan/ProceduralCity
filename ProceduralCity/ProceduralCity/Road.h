@@ -10,21 +10,42 @@
 
 //typedef boost::geometry::model::d2::point_xy<float> Point;
 class RoadIntersection;
+
+enum class geogType {
+	LAND,
+	WATER,
+	PARK
+};
+
+enum class roadType {
+	STREET,
+	MAINROAD
+};
+
+enum class roadPattern {
+	NOPATTERN,
+	MANHATTAN,
+	RADIAL,
+	SANFRAN
+};
+
 ///Abstract class defining a simple road. 
 class Road : public QGraphicsItem, public QLineF {
 public:
-	Road(Point start, Point end);
+	Road(Point start, Point end, roadType rType = roadType::STREET);
 	Road(const Road &road);
 	~Road();
 
 	std::vector<RoadIntersection*> intersections;
 	Point getStart() const;
 	Point getEnd() const;
+	QPointF lerp(float amount);
 	void setStart(Point start);
 	void setEnd(Point end);
 
 	static const float PEN_WIDTH;
 	QRectF bounds;
+	roadType rType;
 
 	std::string printRoad();
 

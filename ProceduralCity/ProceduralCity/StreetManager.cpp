@@ -8,6 +8,11 @@ StreetManager::BOOST_SEGMENT StreetManager::toBoostSegment(Road *val) {
 	return boost::geometry::model::segment<BOOST_POINT>(toBoostPoint(val->getStart()), toBoostPoint(val->getEnd()));
 }
 
+QPen StreetManager::getRoadPen(Road * road) {
+	if (road->rType == roadType::STREET) return roadPen;
+	else return mainRoadPen;
+}
+
 void StreetManager::setPop(QImage *pop) {
 	this->pop = *pop;
 	//Create the pixmap now for the scene
@@ -27,6 +32,13 @@ void StreetManager::setGeog(QImage *geog) {
 	//Create the pixmap now for the scene
 	pixGeog = new QPixmap();
 	pixGeog->convertFromImage(*geog);
+}
+
+void StreetManager::setPattern(QImage * pattern) {
+	this->pattern = *pattern;
+	//Create the pixmap now for the scene
+	pixPattern = new QPixmap();
+	pixPattern->convertFromImage(*pattern);
 }
 
 void StreetManager::renderPop() {
@@ -50,6 +62,13 @@ void StreetManager::renderGeog() {
 	bg->setZValue(-1.0f);
 }
 
+void StreetManager::renderPattern() {
+	if (bg != nullptr)
+		scene->removeItem(bg);
+	bg = scene->addPixmap(*pixPattern);
+	bg->setZValue(-1.0f);
+}
+
 void StreetManager::renderNone() {
 	if (bg != nullptr)
 		scene->removeItem(bg);
@@ -58,6 +77,8 @@ void StreetManager::renderNone() {
 
 void StreetManager::renderVertices(bool renderVerts) {
 	this->renderVerts = renderVerts;
+
+	intersectionsRender->setVisible(renderVerts);
 }
 
 int StreetManager::roadCount() {
@@ -73,6 +94,10 @@ StreetManager::StreetManager() {
 	pixPop = new QPixmap();
 	pixHeight = pixGeog = pixPop;
 	scene->setBackgroundBrush(QBrush(QColor::fromRgb(100, 100, 100)));
+
+	//Create pens
+	roadPen = QPen(QBrush(QColor::fromRgb(50, 50, 50)), 2.0f);
+	mainRoadPen = QPen(QBrush(QColor::fromRgb(0, 0, 0)), 4.0f);
 }
 
 
@@ -98,6 +123,7 @@ void StreetManager::reset() {
 	scene->setSceneRect(QRectF(-100, -100, 2248, 2248));
 
 	intersectionsRender->setVisible(renderVerts);
+
 }
 
 //Simple search on intersections to find the closest intersection
@@ -191,7 +217,8 @@ void StreetManager::insertRoad(Road * toAdd) {
 	//Rtree
 	roadTree.insert(std::make_pair(toBoostSegment(toAdd), toAdd));
 
-	QGraphicsLineItem *road = scene->addLine(QLineF(toAdd->getStart(), toAdd->getEnd()));
+	QGraphicsLineItem *road = scene->addLine(QLineF(toAdd->getStart(), toAdd->getEnd()), getRoadPen(toAdd));
+	road->setZValue(toAdd->rType == roadType::MAINROAD ? 2.0f : 3.f);
 	roadsRender->addToGroup(road);
 }
 
@@ -202,5 +229,8 @@ void StreetManager::insertIntersection(RoadIntersection * toAdd) {
 	//Rtree
 	intersectionTree.insert(std::make_pair(toBoostPoint(toAdd->location), toAdd));
 
-	scene->addRect(toAdd->boundingRect());
+	QGraphicsRectItem *vert = scene->addRect(toAdd->boundingRect());
+	vert->setZValue(1.0f);
+	intersectionsRender->addToGroup(vert);
+	intersectionsRender->setZValue(1.0f);
 }

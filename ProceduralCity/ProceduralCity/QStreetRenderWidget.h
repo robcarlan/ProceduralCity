@@ -15,7 +15,6 @@ public:
 	QSlider *zoomSlider;
 	QGraphicsView *view;
 
-
 	QStreetRenderWidget(QWidget * parent);
 	QStreetRenderWidget();
 	~QStreetRenderWidget();

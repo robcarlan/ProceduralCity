@@ -2,11 +2,12 @@
 
 const float Road::PEN_WIDTH = 25.0f;
 
-Road::Road(Point start, Point end) : QGraphicsItem(), QLineF(start, end) {
+Road::Road(Point start, Point end, roadType rType) : QGraphicsItem(), QLineF(start, end) {
 	this->setP1(start);
 	this->setP2(end);
 	this->start = start;
 	this->end = end;
+	this->rType = rType;
 
 	//calculate bounds
 	bounds = boundsFromPointPair(start, end);
@@ -16,6 +17,7 @@ Road::Road(const Road &road) : QLineF(road) {
 	this->bounds = road.bounds;
 	start = road.getStart();
 	end = road.getEnd();
+	this->rType = road.rType;
 }
 
 QRectF Road::boundingRect() const {
@@ -23,9 +25,7 @@ QRectF Road::boundingRect() const {
 }
 
 void Road::paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget) {
-	//Switch pen based on type
 	painter->drawLine(start.x(), start.y(), end.x(), end.y());
-	//painter->drawLine(this->toLine());
 }
 
 QRectF Road::boundsFromPointPair(Point s, Point e) {
@@ -73,6 +73,12 @@ std::string StraightRoad::printRoad() {
 
 Point Road::getStart() const { return start; }
 Point Road::getEnd() const { return end; }
+
+QPointF Road::lerp(float amount) {
+	float finx = dx() * amount + x1();
+	float finy = dy() * amount + y1();
+	return QPointF(finx, finy);
+}
 
 void Road::setStart(Point start) {
 	this->start = start;

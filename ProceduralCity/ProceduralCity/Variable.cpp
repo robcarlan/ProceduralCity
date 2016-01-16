@@ -35,7 +35,7 @@ std::string Variable::toString() {
 			return std::string("e");
 		case (variableType::INSERTION) : {
 			std::string res = "?I(";
-			res.append(enumToString[state]);
+			res.append(enumToString[(int)state]);
 			res.append(")");
 			return res;
 		}
@@ -53,3 +53,11 @@ std::string Variable::toString() {
 		} default: return std::string();
 	}
 };
+
+void roadAttr::recalculateEndPoint() {
+	float xIncr = cosf(angle);
+	float yIncr = sinf(angle);
+	end.setX(start.x() + xIncr * length);
+	end.setY(start.y() + yIncr * length);
+};
+

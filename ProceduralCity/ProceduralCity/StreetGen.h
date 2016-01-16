@@ -25,6 +25,32 @@ protected:
 	static const float extendRadius;
 	static const float minDistanceSq;
 	static const float minLength;
+	static const float roadBranchProb;
+	//Global constraint constans
+	static const float d2rFactor;
+	static const float r2dFactor;
+	static const float maxAngleSearch;
+	static const float popDensityRadiusSearch;
+
+	static const float manhattanBlockWidth;
+	static const float manhattanBlockHeight;
+
+	//Fit into legal
+	static const float maxRoadRotate;
+	static const float roadRotateInterval;
+	static const float maxWaterTraverse;
+	static const float maxPruneFactor;
+
+	static const float roadSampleInterval;
+
+	static const int BRANCH1;
+	static const int BRANCH2;
+	static const int ROAD;
+
+	static const int NATURAL_PATTERN_INDEX;
+	static const int SF_PATTERN_INDEX;
+	static const int MANHATTAN_PATTERN_INDEX;
+	static const int RADIAL_PATTERN_INDEX;
 
 	std::vector<Road> *generatedRoads;
 	boost::random::mt19937 rng;
@@ -41,7 +67,10 @@ protected:
 
 	//Functions for local Constraints
 	//Tries to clip the line into a legal region. Returns true if the line is successfully placed.
-	bool tryMakeLegal(Variable *toCheck, Road *tempRoad, bool &connectedToIntersection);
+	bool tryMakeLegal(Variable *toCheck, Road *tempRoad);
+	void getIllegalSegment(Road segment, bool &legal);
+	//Tries to alter the road such that it connects to existing intersections.
+	bool tryConnectToExisting(Variable *toCheck, Road *tempRoad, bool &connectedToIntersection);
 
 	VarList* applyGlobalConstraints(ruleAttr rules, roadAttr roads);
 
@@ -65,10 +94,41 @@ protected:
 
 	bool ready, finished;
 	int iterationCount;
-	bool useHeight, useGeog, usePop;
+	bool useHeight, useGeog, usePop, usePattern;
 
 	//Store a local copy of each image, that we can sample. QImage provides suitable behaviour
-	QImage hMap, gMap, pMap;
+	QImage hMap, gMap, pMap, sMap;
+	QRgb parkCol;
+	QRgb landCol;
+	QRgb waterCol;
+
+	//Image functions
+	float sampleHeight(int x, int y);
+	//QColor sampleGeog(int x, int y);
+	geogType sampleGeog(int x, int y);
+	float samplePop(int x, int y);
+	QColor sampleStreet(int x, int y);
+	//Returns weighting for each pattern between 0 and 1
+	void getPatternWeightings(int x, int y, float weights[]);
+
+	float getGradient(QImage *map);
+	//Used to find direction with largest pop density (summed)
+	float maxPopDensity(float startAngle, Point &start, Point &end);
+	//Used to get direction with smallest gradient. Returns minimum angle.
+	float getLowestGradient(float startAngle, Point start, float length);
+	
+	//Returns destination if we branch based on local angle and block size
+	Point manhattanRule(const roadAttr* road);
+	//Determines which length to use for the block
+	bool useBlockHeight(float blockAngle, float curAngle);
+	//Returns destination if we follow by population density
+	Point naturalRule(const roadAttr* road);
+	//Returns destination if we follow by lowest height gradient
+	Point sanFransiscoRule(const roadAttr* road);
+	//Returns destination if we follow by rotating along a center
+	Point radialRule(const ruleAttr *rules, const roadAttr *road);
+
+	Point weighValues(float weights[], Point*vals, Point *start);
 
 public:
 
@@ -88,6 +148,7 @@ public:
 	void setHeightMap(QImage &hMap, bool use);
 	void setPopMap(QImage &pMap, bool use);
 	void setGeogMap(QImage &gMap, bool use);
+	void setPatternMap(QImage &sMap, bool use);
 	void setSize(Point newSize);
 
 	void setSeed(int seed);

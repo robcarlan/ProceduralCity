@@ -68,6 +68,7 @@ void QStreetRenderWidget::onViewChange() {
 
 void QStreetRenderWidget::setDrawVertices(bool drawVertices) {
 	drawStreetVertices = drawVertices;
+	generator->streets.renderVertices(drawStreetVertices);
 }
 
 //OpenGL Rendering

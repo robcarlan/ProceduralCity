@@ -22,9 +22,11 @@ private:
 	//Manage connected roads
 
 	QGraphicsScene *scene;
-	QImage pop, height, geog;
-	QPixmap *pixPop, *pixHeight, *pixGeog;
+	QImage pop, height, geog, pattern;
+	QPixmap *pixPop, *pixHeight, *pixGeog, *pixPattern;
 	QGraphicsItem *bg;
+	QPen roadPen;
+	QPen mainRoadPen;
 
 	QGraphicsItemGroup *intersectionsRender;
 	QGraphicsItemGroup *roadsRender;
@@ -43,16 +45,19 @@ private:
 	boost::geometry::index::rtree<roadIndex, index::linear<16>> roadTree;
 
 	bool renderVerts;
+	QPen getRoadPen(Road *road);
 
 public:
 	typedef std::pair<Point, Road*> intersectionRec;
 
 	void setPop(QImage *pop);
 	void setHeight(QImage *height);
-	void setGeog(QImage *geog);
+	void setGeog(QImage *geog);	
+	void setPattern(QImage *pattern);
 	void renderPop();
 	void renderHeight();
 	void renderGeog();
+	void renderPattern();
 	void renderNone();
 	void renderVertices(bool renderVerts);
 
