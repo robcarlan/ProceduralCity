@@ -78,11 +78,15 @@ public:
 	//Returns all edges which collide with edge. Returns the colliding edges with their intersection, in vector nearby.
 	void getIntersectingEdges(Road edge, std::vector<intersectionRec>& nearby);
 
+	//Returns the intersection which this road attaches to, if any. Else returns nullptr
+	RoadIntersection *getExistingIntersections(Road * query, Road * target);
+
 	//Creates a road from an existing intersection, and creates a new intersection at the end point
 	void branchRoad(RoadIntersection *start, Road *newRoad);
 	//Creates a road from an existing intersection, and extends the road to an intersection
 	void connectToExistingIntersection(RoadIntersection *start, Road *newRoad, RoadIntersection *crossing);
 	void connectToNewIntersection(RoadIntersection *start, Road *newRoad, Road *target);
+	void connectToRoad(RoadIntersection * start, Road *toAdd, Road *target);
 
 	void insertRoad(Road *toAdd);
 	void insertIntersection(RoadIntersection *toAdd);

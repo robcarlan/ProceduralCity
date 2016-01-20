@@ -5,7 +5,7 @@ using namespace boost::geometry;
 const float StreetGen::roadBranchProb = 0.9f;
 
 //Global constraints
-const float StreetGen::maxAngleSearch = 1.72f;
+const float StreetGen::maxAngleSearch = 0.8f;
 const float StreetGen::popDensityRadiusSearch = 200.0f;
 const float StreetGen::d2rFactor = 3.14159265f / 180.0f;
 const float StreetGen::r2dFactor = 180.0f / 3.14159265f;
@@ -61,10 +61,15 @@ StreetGen::VarList* StreetGen::applyGlobalConstraints(ruleAttr rules, roadAttr r
 	QPointF distance = roads.end - roads.start;
 
 	for (int i = 0; i < 3; i++) {
+		//The parent of all these branches is the generated road from roads variable
+		nroads[i].parentRoad = roads.generated;
+		nroads[i].branchSource = roads.generated->roadEndIntersection;
+		nroads[i].targetRoad = nullptr;
+		nroads[i].rootRoad = roads.rootRoad;
+		nroads[i].connected = false;
 		nrules[i] = rules;
 		//Increment depth
 		nrules[i].depth++;
-		nroads[i] = roads;
 
 		//Calculate new position (end, angle, length) for each road pattern. (Apart from if value = 0
 		float endx[4];
@@ -75,35 +80,36 @@ StreetGen::VarList* StreetGen::applyGlobalConstraints(ruleAttr rules, roadAttr r
 		//Apply road pattern
 		float scale = uniform(rng);
 		nroads[i].start = roads.end;
-		delay[i] = i;
+		nroads[i].end = roads.start;
+		delay[i] = 0;
 		nroads[i].angle = roads.angle;
+	}
 
-		//Road branches become streets with a certain probability
-		if (roads.rtype == roadType::MAINROAD) {
-			float branchProb1 = uniform(rng);
-			float branchProb2 = uniform(rng);
+	//Road branches become streets with a certain probability
+	if (roads.rtype == roadType::MAINROAD) {
+		float branchProb1 = uniform(rng);
+		float branchProb2 = uniform(rng);
 
-			if (branchProb1 > roadBranchProb)
-				nroads[BRANCH1].rtype = roadType::MAINROAD;
-			else nroads[BRANCH1].rtype = roadType::STREET;
-			if (branchProb2 > roadBranchProb)
-				nroads[BRANCH2].rtype = roadType::MAINROAD;
-			else nroads[BRANCH1].rtype = roadType::STREET;
-		}
+		if (branchProb1 > roadBranchProb)
+			nroads[BRANCH1].rtype = roadType::MAINROAD;
+		else nroads[BRANCH1].rtype = roadType::STREET;
+		if (branchProb2 > roadBranchProb)
+			nroads[BRANCH2].rtype = roadType::MAINROAD;
+		else nroads[BRANCH1].rtype = roadType::STREET;
 	}
 
 	//Set branches to point at right angle
 	nroads[BRANCH1].angle += math::half_pi<float>();
 	nroads[BRANCH2].angle -= math::half_pi<float>();
-	delay[BRANCH1] = 5;
-	delay[BRANCH2] = 5;
+	//delay[BRANCH1] = 0;
+	//delay[BRANCH2] = 0;
 
 	//Update roots
 
 	//Set all roads to have some new length
-	float newLength = 20.0f;
-	nroads[BRANCH1].length = newLength;
-	nroads[BRANCH2].length = newLength;
+	float newLength = 50.0f;
+	nroads[BRANCH1].length = newLength + uniform(rng) * 20.0f;
+	nroads[BRANCH2].length = newLength + uniform(rng) * 20.0f;
 	nroads[ROAD].length = newLength;
 
 	//Calculate new end positions
@@ -155,6 +161,14 @@ StreetGen::VarList* StreetGen::applyGlobalConstraints(ruleAttr rules, roadAttr r
 	newList->push_back(*road);
 	newList->push_back(*insertion);
 
+	for (int i = 0; i < 3; i++) {
+		assert(nroads[i].start == roads.end);
+
+		//if (roads.parentRoad != nullptr)
+		//	assert(roads.end.x() - nroads[i].parentRoad->getEnd().x() < 0.01f
+		//		&& roads.end.y() - nroads[i].parentRoad->getEnd().y() < 0.01f);
+	}
+
 	return newList;
 }
 
@@ -162,6 +176,14 @@ void StreetGen::applyLocalConstraints(Variable *toCheck) {
 	Road temp = Road(toCheck->road.start, toCheck->road.end);
 	bool connectedToIntersection = false;
 	bool legalPlacement = tryMakeLegal(toCheck, &temp);
+
+	if (toCheck->road.parentRoad != nullptr)
+		assert(toCheck->road.start.x() - toCheck->road.parentRoad->getEnd().x() < 0.01f
+			&& toCheck->road.start.y() - toCheck->road.parentRoad->getEnd().y() < 0.01f);
+
+	assert(toCheck->road.end.x() - temp.x2() < 0.01f && toCheck->road.end.y() - temp.y2() < 0.01f);
+	assert(toCheck->road.start.x() - temp.x1() < 0.01f && toCheck->road.start.y() - temp.y1() < 0.01f);
+
 	bool legalIntersection = tryConnectToExisting(toCheck, &temp, connectedToIntersection);
 
 	if (legalPlacement && legalIntersection) toCheck->state = solutionState::SUCCEED;
@@ -170,6 +192,9 @@ void StreetGen::applyLocalConstraints(Variable *toCheck) {
 	//Stop growing street
 	if (connectedToIntersection) 
 		toCheck->road.connected = true;
+
+	assert(toCheck->road.end.x() - temp.x2() < 0.01f && toCheck->road.end.y() - temp.y2() < 0.01f);
+	assert(toCheck->road.start.x() - temp.x1() < 0.01f && toCheck->road.start.y() - temp.y1() < 0.01f);
 }
 
 bool StreetGen::tryMakeLegal(Variable * toCheck, Road * tempRoad) {
@@ -327,29 +352,47 @@ bool StreetGen::tryConnectToExisting(Variable * toCheck, Road *tempRoad, bool &c
 		}
 	}
 
+	tempRoad->setEnd(toCheck->road.end);
 	return legalPlacement;
 }
 
-void StreetGen::addRoadToSystem(roadAttr roads) {
+void StreetGen::addRoadToSystem(roadAttr &roads) {
+	assert(roads.end.getDistanceSq(roads.start) < 125 * 125);
+
 	//Create first intersection if necessary
 	std::vector<RoadIntersection*> nearby;
 
-	//If nearby just attach to existing one
-	//TODO ie when starting at an existing intersection
-	RoadIntersection *start = new RoadIntersection(roads.start, roads.parentRoad);
-	//streets.getNearbyVertices(*start, 5.0f, nearby); 
-	Road *road = new Road(roads.start, roads.end, roads.rtype);
+	//Case for initial road. We have to manually attach the start intersection before creating the road.
+	if (roads.parentRoad == nullptr) {
+		//First road was generated, so branch this road
+		Road *road = new Road(roads.start, roads.end, roads.parentRoad, roads.rtype);
+		RoadIntersection *start = new RoadIntersection(road->getStart(), road);
+		roads.generated = road;
+		road->addStartIntersection(start);
+		start->attachRoad(road);
+		streets.insertIntersection(start);
+		streets.branchRoad(start, road);
+		roads.parentRoad = road;
+		return;
+	}
+
+	//Otherwise, we can get the intersection from the parent road
+	RoadIntersection *start = roads.parentRoad->roadEndIntersection;
+
+	Road *road = new Road(roads.start, roads.end, start, roads.parentRoad, roads.rtype);
+	roads.generated = road;
 
 	//Create second intersection if necessary
 	if (roads.targetRoad != nullptr) {
 		//Check to see if we need to connect to an intersection / use old
-
-		streets.connectToNewIntersection(start, road, roads.targetRoad);
+		streets.connectToRoad(start, road, roads.targetRoad);
 	}
 	else {
 		//Create the new empty crossing
 		streets.branchRoad(start, road);
 	}
+
+	assert(road->intersections.size() >= 2);
 }
 
 //Splice new variables into position, then remove all empty variables
@@ -422,8 +465,8 @@ roadAttr StreetGen::getInitialRoadAttr() {
 	//eventually pass these as paramters
 	roadAttr road;
 	road.angle = 0.0f;
-	road.end = Point(800, 800);
-	road.start = Point(800, 700);
+	road.start = Point(800, 800);
+	road.end = Point(900, 800);
 	road.length = math::sqrt(road.start.getDistanceSq(road.end));
 	road.rtype = roadType::MAINROAD;
 	road.connected = false;
@@ -450,6 +493,9 @@ bool StreetGen::applyRule(VarIterator currentVar, VarList *productions) {
 		}
 		else {
 			//Production 5. Create new Road and Insertion module
+			if (currentVar->road.parentRoad != nullptr)
+				assert(currentVar->road.start.getDistanceSq(currentVar->road.parentRoad->getEnd()) < 5.0f);
+
 			productions->push_front(Variable(variableType::INSERTION, 0, currentVar->rules, currentVar->road));
 			productions->push_front(Variable(variableType::ROAD, 0, currentVar->rules, currentVar->road));
 			return true;
@@ -491,12 +537,11 @@ bool StreetGen::applyRule(VarIterator currentVar, VarList *productions) {
 			//Production 2 - right iterator is a succeeded insertion. Create new branches / road / insertion module with parameters set by
 			//global goals. Add this road and vertices to the system.
 			if (right->varType == variableType::INSERTION && right->state == solutionState::SUCCEED) {
-				BOOST_FOREACH(Variable lol, *applyGlobalConstraints(currentVar->rules, right->road) ) {
+				std::list<Variable> it = *applyGlobalConstraints(currentVar->rules, right->road);
+
+				BOOST_FOREACH(Variable lol, it) {
 					productions->push_back(lol);
 				}
-
-				//TODO :: Properly insert into new system, with roac crossings
-				//addRoadToSystem(currentVar->rules, right->road);
 
 				return true;
 			}
@@ -708,7 +753,7 @@ void StreetGen::Run() {
 void StreetGen::nextIteration() {
 	assert(toInsert.empty());
 
-	//printProductions();
+	printProductions();
 
 	bool changed = false;
 	//Apply rules to each element in turn, track for finish

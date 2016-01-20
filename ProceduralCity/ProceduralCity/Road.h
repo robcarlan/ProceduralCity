@@ -32,11 +32,16 @@ enum class roadPattern {
 ///Abstract class defining a simple road. 
 class Road : public QGraphicsItem, public QLineF {
 public:
-	Road(Point start, Point end, roadType rType = roadType::STREET);
+	//Constructs road, attaches to intersection.
+	Road(Point start, Point end, RoadIntersection* intersection, Road *parent = nullptr, roadType rType = roadType::STREET);
+	Road(Point start, Point end, Road *parent = nullptr, roadType rType = roadType::STREET);
 	Road(const Road &road);
 	~Road();
 
 	std::vector<RoadIntersection*> intersections;
+	RoadIntersection* roadStartIntersection;
+	RoadIntersection* roadEndIntersection;
+
 	Point getStart() const;
 	Point getEnd() const;
 	QPointF lerp(float amount);
@@ -46,6 +51,7 @@ public:
 	static const float PEN_WIDTH;
 	QRectF bounds;
 	roadType rType;
+	Road *parent;
 
 	std::string printRoad();
 
@@ -55,6 +61,8 @@ public:
 	void deleteIntersection(RoadIntersection* toDelete);
 	//Add an intersection incident on to this road
 	void addIntersection(RoadIntersection* toCreate);
+	void addStartIntersection(RoadIntersection* start);
+	void addEndIntersection(RoadIntersection* end);
 
 	bool operator== (const Road compare);
 	QRectF boundingRect() const;

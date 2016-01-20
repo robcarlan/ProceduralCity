@@ -2,12 +2,31 @@
 
 const float Road::PEN_WIDTH = 25.0f;
 
-Road::Road(Point start, Point end, roadType rType) : QGraphicsItem(), QLineF(start, end) {
+Road::Road(Point start, Point end, RoadIntersection * intersection, Road * parent, roadType rType) {
+	intersections.clear();
+
+	this->addIntersection(intersection);
+	intersection->attachRoad(this);
+
 	this->setP1(start);
 	this->setP2(end);
 	this->start = start;
 	this->end = end;
 	this->rType = rType;
+	this->parent = parent;
+	
+
+	//calculate bounds
+	bounds = boundsFromPointPair(start, end);
+}
+
+Road::Road(Point start, Point end, Road *parent, roadType rType) : QGraphicsItem(), QLineF(start, end) {
+	this->setP1(start);
+	this->setP2(end);
+	this->start = start;
+	this->end = end;
+	this->rType = rType;
+	this->parent = parent;
 
 	//calculate bounds
 	bounds = boundsFromPointPair(start, end);
@@ -18,6 +37,7 @@ Road::Road(const Road &road) : QLineF(road) {
 	start = road.getStart();
 	end = road.getEnd();
 	this->rType = road.rType;
+	this->parent = parent;
 }
 
 QRectF Road::boundingRect() const {
@@ -49,6 +69,16 @@ void Road::deleteIntersection(RoadIntersection * toDelete) {
 
 void Road::addIntersection(RoadIntersection * toCreate) {
 	intersections.push_back(toCreate);
+}
+
+void Road::addStartIntersection(RoadIntersection * start) {
+	roadStartIntersection = start;
+	intersections.push_back(start);
+}
+
+void Road::addEndIntersection(RoadIntersection * end) {
+	roadEndIntersection = end;
+	intersections.push_back(end);
 }
 
 bool Road::operator==(const Road compare) {

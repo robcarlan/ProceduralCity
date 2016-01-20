@@ -46,6 +46,7 @@ RoadIntersection::RoadIntersection(Point Position, Road *creator, Road *incident
 	parent = creator;
 	connected.push_front(creator);
 	connected.push_front(incidentOnto);
+	creator->addIntersection(this);
 
 	isCrossing = true;
 	calculateBoundingBox();
@@ -55,6 +56,8 @@ RoadIntersection::RoadIntersection(Point Position, Road *creator) : QGraphicsIte
 	this->location = Position;
 	this->setPos(location);
 	parent = creator;
+	connected.push_front(creator);
+	creator->addIntersection(this);
 
 	isCrossing = false;
 	calculateBoundingBox();

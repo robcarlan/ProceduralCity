@@ -172,44 +172,68 @@ void StreetManager::getIntersectingEdges(Road edge, std::vector<intersectionRec>
 	}
 }
 
+RoadIntersection * StreetManager::getExistingIntersections(Road * query, Road * target) {
+	Point roadEnd = query->getEnd();
+
+	for (std::vector<RoadIntersection*>::iterator it = target->intersections.begin(); it != target->intersections.end(); it++) {
+		//Look for intersection within a threshold.
+		Point intersectionVal = (*it)->location;
+
+		if (abs(roadEnd.x() - intersectionVal.x()) < 2.0f && abs(roadEnd.y() - intersectionVal.y()) < 2.0f) {
+			return (*it);
+		}
+
+	}
+
+	return nullptr;
+}
+
 void StreetManager::branchRoad(RoadIntersection *start, Road *newRoad) {
+	assert(newRoad->getStart().getDistance(start->location) < 2.0f);
+
 	//Add new road into the structure
 	insertRoad(newRoad);
 	
 	//Create the new intersection, add to structure
 	RoadIntersection *newIntersection = new RoadIntersection(newRoad->getEnd(), newRoad);
 	insertIntersection(newIntersection);
+
+	newRoad->addEndIntersection(newIntersection);
+	newIntersection->attachRoad(newRoad);
 }
 
 void StreetManager::connectToExistingIntersection(RoadIntersection * start, Road * newRoad, RoadIntersection * crossing) {
-	//Add new road into the structure
-	insertRoad(newRoad);
-	start->attachRoad(newRoad);
-	newRoad->addIntersection(start);
+	assert(newRoad->getStart().getDistance(start->location) < 2.0f);
+	assert(newRoad->getEnd().getDistance(crossing->location) < 2.0f);
 
-	if (start->connected.size() == 1) insertIntersection(start);
-
-	//Add the intersection into the structure, connect road onto the crossing
+	newRoad->setEnd(crossing->location);
+	newRoad->addEndIntersection(crossing);
 	crossing->attachRoad(newRoad);
-	newRoad->addIntersection(crossing);
-	insertIntersection(crossing);
+
+	//Add new road into the structure, connect to existing crossing
+	insertRoad(newRoad);
 }
 
 void StreetManager::connectToNewIntersection(RoadIntersection * start, Road * newRoad, Road * target) {
+	assert(newRoad->getStart().getDistance(start->location) < 2.0f);
+
 	//Add new road into structure
-	insertRoad(newRoad);
-	start->attachRoad(newRoad);
-	newRoad->addIntersection(start);
+	newRoad->addStartIntersection(start);
 
-	if (start->connected.size() == 1) insertIntersection(start);
-
-	//Create new Intersection, attach to road
+	//Create new Intersection, attaches to road in constructor
 	RoadIntersection *crossing = new RoadIntersection(Point(newRoad->getEnd()), newRoad, target);
-	crossing->attachRoad(newRoad);
-	newRoad->addIntersection(crossing);
 	insertIntersection(crossing);
 
 }
+void StreetManager::connectToRoad(RoadIntersection * start, Road * toAdd, Road * target) {
+	RoadIntersection *intersection = getExistingIntersections(toAdd, target);
+
+	if (intersection != nullptr)
+		connectToExistingIntersection(start, toAdd, intersection);
+	else	//No nearby crossings exist, so lets add a new one
+		connectToNewIntersection(start, toAdd, target);
+}
+
 void StreetManager::insertRoad(Road * toAdd) {
 	//Vector style
 	//roads.push_back(toAdd);

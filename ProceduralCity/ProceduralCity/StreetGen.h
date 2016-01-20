@@ -76,7 +76,7 @@ protected:
 
 
 	//After a variable succeeds, we need to add it correctly to the system
-	void addRoadToSystem(roadAttr roads);
+	void addRoadToSystem(roadAttr &roads);
 
 	void afterIteration();
 
