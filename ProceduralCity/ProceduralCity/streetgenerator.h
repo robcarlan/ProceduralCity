@@ -59,7 +59,7 @@ private:
 
 	void initialiseSystem();
 	QString getFileChoice();
-
+	void setParameters();
 
 };
 

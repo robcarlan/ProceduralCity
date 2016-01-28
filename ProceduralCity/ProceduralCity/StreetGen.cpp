@@ -2,28 +2,9 @@
 
 using namespace boost::geometry;
 
-const float StreetGen::roadBranchProb = 0.9f;
-
-//Global constraints
-const float StreetGen::maxAngleSearch = 0.8f;
 const float StreetGen::popDensityRadiusSearch = 200.0f;
 const float StreetGen::d2rFactor = 3.14159265f / 180.0f;
 const float StreetGen::r2dFactor = 180.0f / 3.14159265f;
-
-const float StreetGen::manhattanBlockWidth = 30.0f;
-const float StreetGen::manhattanBlockHeight = 20.0f;
-
-//Geography Fitting
-const float StreetGen::maxRoadRotate = 0.7f;
-const float StreetGen::roadRotateInterval = 0.1f;
-const float StreetGen::roadSampleInterval = 2;
-const float StreetGen::maxWaterTraverse = 35.0f;
-const float StreetGen::maxPruneFactor = 0.75f;
-
-//Intersection fitting
-const float StreetGen::extendRadius = 50.0f;
-const float StreetGen::minDistanceSq = 225.0f;
-const float StreetGen::minLength = 10.0f;
 
 const int StreetGen::BRANCH1 = 0;
 const int StreetGen::BRANCH2 = 1;
@@ -42,13 +23,46 @@ void StreetGen::setSeed() {
 	rng.seed(static_cast<unsigned int>(std::time(0)));
 }
 
+StreetGen::StreetGen() {
+	ready = finished = false;
+	setSize(Point(2048.0f, 2048.0f));
+
+	parkCol = qRgb(100, 170, 100);
+	landCol = qRgb(200, 200, 200);
+	waterCol = qRgb(140, 140, 220);
+
+	setDefaultValues();
+}
+
+void StreetGen::setDefaultValues() {
+	roadBranchProb = 0.7f;
+
+	//Global constraints
+	maxAngleSearch = 0.2f;
+	manhattanBlockWidth = 30.0f;
+	manhattanBlockHeight = 20.0f;
+
+	//Geography Fitting
+	maxRoadRotate = 0.7f;
+	roadRotateInterval = 0.1f;
+	roadSampleInterval = 2;
+	maxWaterTraverse = 35.0f;
+	maxPruneFactor = 0.75f;
+
+	//Intersection fitting
+	extendRadius = 20.0f;
+	minDistanceSq = 225.0f;
+	minLength = 10.0f;
+	useWeightedVals = true;
+}
 
 StreetGen::VarList* StreetGen::applyGlobalConstraints(ruleAttr rules, roadAttr roads) {
 	//Create 3 sets of new variables
 
 	if (roads.connected) {
+		//We shouldnt return an empty variable
 		VarList *result = new VarList();
-		result->push_back(Variable(variableType::EMPTY));
+		result->push_back(Variable(variableType::ROAD, -1));
 		return result;
 	}
 
@@ -87,22 +101,32 @@ StreetGen::VarList* StreetGen::applyGlobalConstraints(ruleAttr rules, roadAttr r
 
 	//Road branches become streets with a certain probability
 	if (roads.rtype == roadType::MAINROAD) {
+		nroads[ROAD].rtype = roadType::MAINROAD;
+
 		float branchProb1 = uniform(rng);
 		float branchProb2 = uniform(rng);
 
-		if (branchProb1 > roadBranchProb)
+		if (branchProb1 < roadBranchProb)
 			nroads[BRANCH1].rtype = roadType::MAINROAD;
 		else nroads[BRANCH1].rtype = roadType::STREET;
-		if (branchProb2 > roadBranchProb)
+		if (branchProb2 < roadBranchProb)
 			nroads[BRANCH2].rtype = roadType::MAINROAD;
-		else nroads[BRANCH1].rtype = roadType::STREET;
+		else nroads[BRANCH2].rtype = roadType::STREET;
 	}
+	else {
+		nroads[BRANCH2].rtype = roadType::STREET;
+		nroads[BRANCH1].rtype = roadType::STREET;
+		nroads[ROAD].rtype = roadType::STREET;
+	}
+
+	//Branch 1 is fucked
 
 	//Set branches to point at right angle
 	nroads[BRANCH1].angle += math::half_pi<float>();
 	nroads[BRANCH2].angle -= math::half_pi<float>();
-	//delay[BRANCH1] = 0;
-	//delay[BRANCH2] = 0;
+	delay[BRANCH1] = 0;
+	delay[BRANCH2] = 1;
+	delay[ROAD] = 1;
 
 	//Update roots
 
@@ -123,32 +147,58 @@ StreetGen::VarList* StreetGen::applyGlobalConstraints(ruleAttr rules, roadAttr r
 		//Apply street patterns
 
 		//Get each weighting by sampling
-		float values[4];
-		getPatternWeightings(roads.end.x(), roads.end.y(), values);
-		Point ends[4];
-		int patternCount = 0;
+		if (useWeightedVals) {
 
-		if (values[NATURAL_PATTERN_INDEX] - 0.01f > 0) {
-			ends[NATURAL_PATTERN_INDEX] = naturalRule(&nroads[i]);
+			float values[4];
+			getPatternWeightings(roads.end.x(), roads.end.y(), values);
+			Point ends[4];
+			int patternCount = 0;
+
+			if (values[NATURAL_PATTERN_INDEX] - 0.01f > 0) {
+				ends[NATURAL_PATTERN_INDEX] = naturalRule(&nroads[i]);
+			}
+
+			if (values[MANHATTAN_PATTERN_INDEX] - 0.01f > 0) {
+				ends[MANHATTAN_PATTERN_INDEX] = manhattanRule(&nroads[i]);
+			}
+
+			if (values[SF_PATTERN_INDEX] - 0.01f > 0) {
+				ends[SF_PATTERN_INDEX] = sanFransiscoRule(&nroads[i]);
+			}
+
+			if (values[RADIAL_PATTERN_INDEX] - 0.01f > 0) {
+				ends[RADIAL_PATTERN_INDEX] = radialRule(&rules, &roads);
+			}
+
+			nroads[i].end = weighValues(values, ends, &roads.end);
 		}
+		else {
+			//Find majority, apply it.
+			float values[4];
+			getPatternWeightings(roads.end.x(), roads.end.y(), values);
+			float maxVal = 0.0f;
+			int maxIndex = NATURAL_PATTERN_INDEX;
 
-		if (values[MANHATTAN_PATTERN_INDEX] - 0.01f > 0) {
-			ends[MANHATTAN_PATTERN_INDEX] = manhattanRule(&nroads[i]);
+			for (int x = 0; x < 4; x++) {
+				if (values[x] > maxVal) {
+					maxVal = values[x];
+					maxIndex = x;
+				}
+			}
+
+			if (maxIndex == MANHATTAN_PATTERN_INDEX) {
+				nroads[i].end = manhattanRule(&nroads[i]);
+			} else if (maxIndex == RADIAL_PATTERN_INDEX) {
+				nroads[i].end = radialRule(&nrules[i], &nroads[i]);
+			} else if (maxIndex == SF_PATTERN_INDEX) {
+				nroads[i].end = sanFransiscoRule(&nroads[i]);
+			} else {
+				nroads[i].end = naturalRule(&nroads[i]);
+			}
 		}
-
-		if (values[SF_PATTERN_INDEX] - 0.01f > 0) {
-			ends[SF_PATTERN_INDEX] = sanFransiscoRule(&nroads[i]);
-		}
-
-		if (values[RADIAL_PATTERN_INDEX] - 0.01f > 0) {
-			ends[RADIAL_PATTERN_INDEX] = radialRule(&rules, &roads);
-		}
-
-		nroads[i].end = weighValues(values, ends, &roads.end);
 	}
 
-	//Create the new variables, and return them.
-
+	//Create the new variables, for the production
 	Variable *branch1 = new Variable(variableType::BRANCH, delay[BRANCH1], nrules[BRANCH1], nroads[BRANCH1]);
 	Variable *branch2 = new Variable(variableType::BRANCH, delay[BRANCH2], nrules[BRANCH2], nroads[BRANCH2]);
 	Variable *road = new Variable(variableType::ROAD, delay[ROAD], nrules[ROAD], nroads[ROAD]);
@@ -160,14 +210,6 @@ StreetGen::VarList* StreetGen::applyGlobalConstraints(ruleAttr rules, roadAttr r
 	newList->push_back(*branch2);
 	newList->push_back(*road);
 	newList->push_back(*insertion);
-
-	for (int i = 0; i < 3; i++) {
-		assert(nroads[i].start == roads.end);
-
-		//if (roads.parentRoad != nullptr)
-		//	assert(roads.end.x() - nroads[i].parentRoad->getEnd().x() < 0.01f
-		//		&& roads.end.y() - nroads[i].parentRoad->getEnd().y() < 0.01f);
-	}
 
 	return newList;
 }
@@ -183,12 +225,12 @@ void StreetGen::applyLocalConstraints(Variable *toCheck) {
 
 	assert(toCheck->road.end.x() - temp.x2() < 0.01f && toCheck->road.end.y() - temp.y2() < 0.01f);
 	assert(toCheck->road.start.x() - temp.x1() < 0.01f && toCheck->road.start.y() - temp.y1() < 0.01f);
-
-	bool legalIntersection = tryConnectToExisting(toCheck, &temp, connectedToIntersection);
-
-	if (legalPlacement && legalIntersection) toCheck->state = solutionState::SUCCEED;
+	bool legalIntersection =  tryConnectToExisting(toCheck, &temp, connectedToIntersection);
+	//Check close to intersection here?
+	bool legalAngle = !overlapsConnected(toCheck, &temp);
+	bool legalLength = toCheck->road.length * toCheck->road.length > minDistanceSq;
+	if (legalPlacement && legalIntersection && legalAngle && legalLength) toCheck->state = solutionState::SUCCEED;
 	else toCheck->state = solutionState::FAILED;
-
 	//Stop growing street
 	if (connectedToIntersection) 
 		toCheck->road.connected = true;
@@ -197,22 +239,24 @@ void StreetGen::applyLocalConstraints(Variable *toCheck) {
 	assert(toCheck->road.start.x() - temp.x1() < 0.01f && toCheck->road.start.y() - temp.y1() < 0.01f);
 }
 
+//Todo :: check angles
 bool StreetGen::tryMakeLegal(Variable * toCheck, Road * tempRoad) {
-
+	//BUG angle change
 	bool isLegal = false;
 	bool withinBounds;
 	bool legalSegment;
 	bool endsLegal;
 	//Others to check are pop density, gradient etc.
-	float startAngle = (tempRoad->angle()) * math::two_pi<float>() / 180.0f;
+	float startAngle = (tempRoad->getAngle()) * d2rFactor;
 	float angleChange = 0.0f;
 	float angleToCheck = startAngle;
 	QPointF newEnd = toCheck->road.end;
 	float pruneFactor = 1.0f;
 
-	endsLegal = sampleGeog(newEnd.x(), newEnd.y()) == geogType::LAND;
-	withinBounds = (tempRoad->getEnd().x() > 0) && (tempRoad->getEnd().y() > 0) &&
-		(tempRoad->getEnd().x() < size.x()) && (tempRoad->getEnd().y() < size.y());
+	withinBounds = tempRoad->isInBounds(size.x(), size.y());
+	if (!withinBounds) endsLegal = false;
+	else endsLegal = (sampleGeog(newEnd.x(), newEnd.y()) == geogType::LAND);
+
 	getIllegalSegment(*tempRoad, legalSegment);
 	
 	isLegal = endsLegal && withinBounds && legalSegment;
@@ -233,7 +277,7 @@ bool StreetGen::tryMakeLegal(Variable * toCheck, Road * tempRoad) {
 			//Calculate new end position by rotating line
 			angleToCheck = startAngle + angleChange;				
 			QLineF newLine = QLineF(tempRoad->getStart(), tempRoad->getEnd());
-			newLine.setAngle(angleToCheck);
+			newLine.setAngle(angleToCheck * r2dFactor);
 			newEnd = newLine.p2();
 		}
 		else {
@@ -243,9 +287,9 @@ bool StreetGen::tryMakeLegal(Variable * toCheck, Road * tempRoad) {
 
 		Road segment = Road(tempRoad->getStart(), newEnd);
 		//recalculate booleans
-		endsLegal = (sampleGeog(newEnd.x(), newEnd.y()) == geogType::LAND);
-		withinBounds = (tempRoad->getEnd().x() > 0) && (tempRoad->getEnd().y() > 0) &&
-			(tempRoad->getEnd().x() < size.x()) && (tempRoad->getEnd().y() < size.y());
+		withinBounds = tempRoad->isInBounds(size.x(), size.y());
+		if (!withinBounds) endsLegal = false;
+		else endsLegal = (sampleGeog(newEnd.x(), newEnd.y()) == geogType::LAND);
 
 		getIllegalSegment(segment, legalSegment);
 
@@ -254,7 +298,7 @@ bool StreetGen::tryMakeLegal(Variable * toCheck, Road * tempRoad) {
 
 	tempRoad->setEnd(newEnd);
 	toCheck->road.end = newEnd;
-	toCheck->road.angle = angleToCheck;
+	toCheck->road.angle = angleToCheck * r2dFactor;
 	toCheck->road.length *= pruneFactor;
 	return true;
 }
@@ -263,11 +307,17 @@ void StreetGen::getIllegalSegment(Road segment, bool &legal) {
 		float rLength = segment.length();
 
 		float numSamples = rLength / roadSampleInterval;
-		float xInc = cosf(segment.angle()) * roadSampleInterval;
-		float yInc = sinf(segment.angle()) * roadSampleInterval;
+		float xInc = cosf(segment.getAngle()) * roadSampleInterval;
+		float yInc = sinf(segment.getAngle()) * roadSampleInterval;
 		int begin = -1;
 		int end = 0;
 		int maxSamples = maxWaterTraverse / roadSampleInterval;
+
+		//in bounds
+		if (!segment.isInBounds(size.x(), size.y())) {
+			legal = false;
+			return;
+		}
 
 		Point curPos = segment.getStart();
 
@@ -297,6 +347,19 @@ void StreetGen::getIllegalSegment(Road segment, bool &legal) {
 
 		legal = true;
 		return;
+}
+
+bool StreetGen::overlapsConnected(Variable * toCheck, Road * tempRoad) {
+	//Test connected roads for roads of similar angle (prevent this)
+	//For roads at each intersection, test for angle / weird
+
+	return false;
+	if (toCheck->road.parentRoad == nullptr) return false;
+	BOOST_FOREACH(Road *cRoad, toCheck->road.parentRoad->roadEndIntersection->connected) {
+		float angleVal = cRoad->angleTo(*tempRoad);
+		if (abs(angleVal - 180.0f) < 5.0f) return true;
+	}
+	return false;
 }
 
 bool StreetGen::tryConnectToExisting(Variable * toCheck, Road *tempRoad, bool &connectedToIntersection) {
@@ -330,6 +393,8 @@ bool StreetGen::tryConnectToExisting(Variable * toCheck, Road *tempRoad, bool &c
 				streets.getIntersectingEdges(Road(toCheck->road.start, it->location), intersections);
 				if (intersections.size() == 0 && toCheck->road.start.getDistanceSq(it->location) > minDistanceSq) {
 					toCheck->road.end = it->location;
+					toCheck->road.targetRoad = it->connected.front();
+					toCheck->road.target = it;
 					connectToIntersection = true; legalPlacement = true;
 					break;
 				}
@@ -339,13 +404,17 @@ bool StreetGen::tryConnectToExisting(Variable * toCheck, Road *tempRoad, bool &c
 		//Extend the road by a maximum radius, then see if it intersects.
 		if (!connectToIntersection) {
 			legalPlacement = true;
-			QLineF norm = tempRoad->normalVector();
-			norm.setLength(extendRadius);
-			Point extended = Point(toCheck->road.start.x() + norm.dx(), toCheck->road.start.y() + norm.dy());
+			float scale = (tempRoad->length() + extendRadius) / tempRoad->length();
+			Point extended = Point(toCheck->road.start.x() + scale * (toCheck->road.end.x() - toCheck->road.start.x()), 
+				toCheck->road.start.y() + scale * (toCheck->road.end.y() - toCheck->road.start.y()) );
+			
 			streets.getIntersectingEdges(Road(toCheck->road.start, extended), intersections);
 
+			//TODO :: SEARCH FOR MINIMUM
 			if (intersections.size() > 0 && toCheck->road.start.getDistanceSq(extended) > minDistanceSq) {
-				toCheck->road.end = extended;
+				//Allign road to first intersection
+				toCheck->road.end = intersections.front().first;
+				toCheck->road.targetRoad = intersections.front().second;
 				connectToIntersection = true;
 
 			}
@@ -366,9 +435,10 @@ void StreetGen::addRoadToSystem(roadAttr &roads) {
 	if (roads.parentRoad == nullptr) {
 		//First road was generated, so branch this road
 		Road *road = new Road(roads.start, roads.end, roads.parentRoad, roads.rtype);
-		RoadIntersection *start = new RoadIntersection(road->getStart(), road);
+		RoadIntersection *start = new RoadIntersection(road->getStart());
 		roads.generated = road;
 		road->addStartIntersection(start);
+		start->parent = road;
 		start->attachRoad(road);
 		streets.insertIntersection(start);
 		streets.branchRoad(start, road);
@@ -379,6 +449,8 @@ void StreetGen::addRoadToSystem(roadAttr &roads) {
 	//Otherwise, we can get the intersection from the parent road
 	RoadIntersection *start = roads.parentRoad->roadEndIntersection;
 
+	assert(roads.start.getDistance(start->location) < 1.0f);
+
 	Road *road = new Road(roads.start, roads.end, start, roads.parentRoad, roads.rtype);
 	roads.generated = road;
 
@@ -386,6 +458,7 @@ void StreetGen::addRoadToSystem(roadAttr &roads) {
 	if (roads.targetRoad != nullptr) {
 		//Check to see if we need to connect to an intersection / use old
 		streets.connectToRoad(start, road, roads.targetRoad);
+		roads.connected = true;
 	}
 	else {
 		//Create the new empty crossing
@@ -398,7 +471,7 @@ void StreetGen::addRoadToSystem(roadAttr &roads) {
 //Splice new variables into position, then remove all empty variables
 void StreetGen::afterIteration() {
 	//Only replace if toInsert isn't empty
-	if (toInsert.empty()) return;
+	//if (toInsert.size() == 0) return;
 
 	VarIterator it = current.begin();
 	std::list<std::pair<VarIterator, VarList>>::iterator replaceItr = toInsert.begin();
@@ -406,8 +479,11 @@ void StreetGen::afterIteration() {
 	while (it != current.end()) {
 		//Delete all e variables
 		//TODO :: hopefully redundant
-		if (it->varType == variableType::EMPTY)
+		if (it->varType == variableType::EMPTY) {
 			it = current.erase(it);
+			//TODO :: This?
+			continue;
+		}
 
 		//Check if there are any productions to replace
 		if (replaceItr == toInsert.end()) break;
@@ -470,6 +546,7 @@ roadAttr StreetGen::getInitialRoadAttr() {
 	road.length = math::sqrt(road.start.getDistanceSq(road.end));
 	road.rtype = roadType::MAINROAD;
 	road.connected = false;
+	road.parentRoad = nullptr;
 
 	return road;
 }
@@ -481,7 +558,6 @@ bool StreetGen::applyRule(VarIterator currentVar, VarList *productions) {
 	assert(productions->empty());
 	VarIterator left;
 	VarIterator right;
-
 	switch (currentVar->varType) {
 	case variableType::BRANCH : 
 		//Production 6
@@ -505,13 +581,13 @@ bool StreetGen::applyRule(VarIterator currentVar, VarList *productions) {
 		//Production 7 - If a road with delay < 0 preceeds this, delete the variable.
 		left = currentVar;
 		left--;
+
 		if (left->varType == variableType::ROAD && left->delay < 0) {
 			return true;
 		}
 		else if (currentVar->state == solutionState::UNASSIGNED) {
 			//Production 8. Unassigned insertion. Call local constraints to attempt to adjust the parameters.
 			applyLocalConstraints(&(*currentVar));
-
 			//Succeed => Safe to add to system
 			if (currentVar->state == solutionState::SUCCEED)
 				addRoadToSystem(currentVar->road);
@@ -550,7 +626,6 @@ bool StreetGen::applyRule(VarIterator currentVar, VarList *productions) {
 		break;
 	default: break;
 	}
-
 	return false;
 }
 
@@ -751,6 +826,9 @@ void StreetGen::Run() {
 }
 
 void StreetGen::nextIteration() {
+	if (!finishedIteration) return;
+	finishedIteration = false;
+
 	assert(toInsert.empty());
 
 	printProductions();
@@ -758,20 +836,33 @@ void StreetGen::nextIteration() {
 	bool changed = false;
 	//Apply rules to each element in turn, track for finish
 	VarIterator it = current.begin();
-	VarList *productions = new VarList();
+	VarList productions = VarList();
+
+	//TODO :: applyRule sometimes returns true and doesn't push back a production
+	//Also deletes a road but not insertion
+	//Doesnt insert all the vars either
 
 	while (it != current.end()) {
-		if (applyRule(it, productions)) {
+		if (applyRule(it, &productions)) {
 			//Production has occured, add this to the list
-			toInsert.emplace_back(it, VarList(*productions));
-			productions->clear();
+			//Empty production => delete current variable.
+			if (productions.size() == 0) {
+				//it++;
+				//continue;
+				productions.push_back(Variable(variableType::EMPTY));
+				toInsert.emplace_back(it, VarList(productions));
+			}
+			else {
+				toInsert.emplace_back(it, VarList(productions));
+			}
+			productions.clear();
 			changed = true;
 		}
 
 		it++;
 	}
 
-	delete productions;
+	//delete productions;
 
 	afterIteration();
 
@@ -779,9 +870,12 @@ void StreetGen::nextIteration() {
 	iterationCount++;
 
 	streets.getScene()->update();
+	assert(toInsert.empty());
+
+	finishedIteration = true;
 }
 
-//
+//Initialise the system, add initial variable productions
 void StreetGen::initialise() {
 	streets.reset();
 
@@ -791,6 +885,7 @@ void StreetGen::initialise() {
 
 	ready = true;
 	finished = false;
+	finishedIteration = true;
 	iterationCount = 0;
 }
 
@@ -826,19 +921,61 @@ std::vector<Road>* StreetGen::getGenerated() {
 	return nullptr;
 }
 
-StreetGen::StreetGen() {
-	ready = finished = false;
-	setSize(Point(2048.0f, 2048.0f));
-
-	parkCol = qRgb(100, 170, 100);
-	landCol = qRgb(200, 200, 200);
-	waterCol = qRgb(140, 140, 220);
-}
-
-
 StreetGen::~StreetGen()
 {
 
+}
+
+void StreetGen::setExtendRadius(float val) {
+	extendRadius = val;
+}
+
+void StreetGen::setMinDistanceSq(float val) {
+	minDistanceSq = val;
+}
+
+void StreetGen::setMinLength(float val) {
+	minLength = val;
+}
+
+void StreetGen::setRoadBranchProb(float val) {
+	roadBranchProb = val;
+}
+
+void StreetGen::setMaxAngleSearch(float val) {
+	maxAngleSearch = val;
+}
+
+void StreetGen::setManhattanBlockWidth(float val) {
+	manhattanBlockWidth = val;
+}
+
+void StreetGen::setManhattanBlockHeight(float val) {
+	manhattanBlockHeight = val;
+}
+
+void StreetGen::setMaxRoadRotate(float val) {
+	maxRoadRotate = val;
+}
+
+void StreetGen::setRoadRotateInterval(float val) {
+	roadRotateInterval = val;
+}
+
+void StreetGen::setMaxWaterTraverse(float val) {
+	maxWaterTraverse = val;
+}
+
+void StreetGen::setMaxPruneFactor(float val) {
+	maxPruneFactor = val;
+}
+
+void StreetGen::setRoadSampleInterval(float val) {
+	roadSampleInterval = val;
+}
+
+void StreetGen::setUsePatternWeighting(bool useWeighting) {
+	useWeightedVals = useWeighting;
 }
 
 void StreetGen::setHeightMap(QImage & hMap, bool use) {

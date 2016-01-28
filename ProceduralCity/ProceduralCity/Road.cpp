@@ -2,10 +2,12 @@
 
 const float Road::PEN_WIDTH = 25.0f;
 
-Road::Road(Point start, Point end, RoadIntersection * intersection, Road * parent, roadType rType) {
+Road::Road(Point start, Point end, RoadIntersection * intersection, Road * parent, roadType rType) : QGraphicsItem(), QLineF(start, end) {
 	intersections.clear();
 
-	this->addIntersection(intersection);
+	assert(start.getDistanceSq(intersection->location) < 2.0f);
+
+	this->addStartIntersection(intersection);
 	intersection->attachRoad(this);
 
 	this->setP1(start);
@@ -18,6 +20,7 @@ Road::Road(Point start, Point end, RoadIntersection * intersection, Road * paren
 
 	//calculate bounds
 	bounds = boundsFromPointPair(start, end);
+	calcAngle();
 }
 
 Road::Road(Point start, Point end, Road *parent, roadType rType) : QGraphicsItem(), QLineF(start, end) {
@@ -30,6 +33,7 @@ Road::Road(Point start, Point end, Road *parent, roadType rType) : QGraphicsItem
 
 	//calculate bounds
 	bounds = boundsFromPointPair(start, end);
+	calcAngle();
 }
 
 Road::Road(const Road &road) : QLineF(road) {
@@ -38,6 +42,7 @@ Road::Road(const Road &road) : QLineF(road) {
 	end = road.getEnd();
 	this->rType = road.rType;
 	this->parent = parent;
+	angle = road.getAngle();
 }
 
 QRectF Road::boundingRect() const {
@@ -55,6 +60,10 @@ QRectF Road::boundsFromPointPair(Point s, Point e) {
 	float maxY= std::max(s.x(), e.y());
 
 	return QRectF(minX, minY, maxX - minX, maxY - minY);
+}
+
+void Road::calcAngle() {
+	angle = atan2f(end.y() - start.y(), end.x() - start.x());
 }
 
 std::vector<RoadIntersection*>* Road::getIntersections() {
@@ -104,6 +113,14 @@ std::string StraightRoad::printRoad() {
 Point Road::getStart() const { return start; }
 Point Road::getEnd() const { return end; }
 
+float Road::getAngle() const {
+	return angle;
+}
+
+bool Road::isInBounds(int sizeX, int sizeY) const {
+	return (start.isWithinBounds(sizeX, sizeY) && end.isWithinBounds(sizeX, sizeY));
+}
+
 QPointF Road::lerp(float amount) {
 	float finx = dx() * amount + x1();
 	float finy = dy() * amount + y1();
@@ -115,6 +132,7 @@ void Road::setStart(Point start) {
 	this->setP1(start);
 
 	bounds = boundsFromPointPair(start, end);
+	calcAngle();
 }
 
 void Road::setEnd(Point end) {
@@ -122,6 +140,7 @@ void Road::setEnd(Point end) {
 	this->setP2(end);
 
 	bounds = boundsFromPointPair(start, end);
+	calcAngle();
 }
 
 

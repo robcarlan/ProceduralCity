@@ -22,26 +22,24 @@
 class StreetGen
 {
 protected:
-	static const float extendRadius;
-	static const float minDistanceSq;
-	static const float minLength;
-	static const float roadBranchProb;
+	float extendRadius;
+	float minDistanceSq;
+	float minLength;
+	float roadBranchProb;
 	//Global constraint constans
-	static const float d2rFactor;
-	static const float r2dFactor;
-	static const float maxAngleSearch;
+	float maxAngleSearch;
 	static const float popDensityRadiusSearch;
 
-	static const float manhattanBlockWidth;
-	static const float manhattanBlockHeight;
+	float manhattanBlockWidth;
+	float manhattanBlockHeight;
+	bool useWeightedVals;
 
 	//Fit into legal
-	static const float maxRoadRotate;
-	static const float roadRotateInterval;
-	static const float maxWaterTraverse;
-	static const float maxPruneFactor;
-
-	static const float roadSampleInterval;
+	float maxRoadRotate;
+	float roadRotateInterval;
+	float maxWaterTraverse;
+	float maxPruneFactor;
+	float roadSampleInterval;
 
 	static const int BRANCH1;
 	static const int BRANCH2;
@@ -64,11 +62,14 @@ protected:
 	std::list<std::pair<VarIterator,VarList>> toInsert;
 
 	void applyLocalConstraints(Variable *toCheck);
+	bool finishedIteration;
 
 	//Functions for local Constraints
 	//Tries to clip the line into a legal region. Returns true if the line is successfully placed.
 	bool tryMakeLegal(Variable *toCheck, Road *tempRoad);
 	void getIllegalSegment(Road segment, bool &legal);
+	//Returns true if this road is along the same angle as existing roads. 
+	bool overlapsConnected(Variable *toCheck, Road *tempRoad);
 	//Tries to alter the road such that it connects to existing intersections.
 	bool tryConnectToExisting(Variable *toCheck, Road *tempRoad, bool &connectedToIntersection);
 
@@ -124,6 +125,7 @@ protected:
 	//Returns destination if we follow by population density
 	Point naturalRule(const roadAttr* road);
 	//Returns destination if we follow by lowest height gradient
+	// # roads must fall
 	Point sanFransiscoRule(const roadAttr* road);
 	//Returns destination if we follow by rotating along a center
 	Point radialRule(const ruleAttr *rules, const roadAttr *road);
@@ -131,6 +133,9 @@ protected:
 	Point weighValues(float weights[], Point*vals, Point *start);
 
 public:
+
+	static const float d2rFactor;
+	static const float r2dFactor;
 
 	//Functions to control the system
 	void Run();
@@ -154,6 +159,7 @@ public:
 	void setSeed(int seed);
 	///Seeds with current system time
 	void setSeed();
+	void setDefaultValues();
 
 	//Add functions to get items which satisfy a query
 
@@ -163,5 +169,19 @@ public:
 
 	StreetGen();
 	~StreetGen();
+
+	void setExtendRadius(float val);
+	void setMinDistanceSq(float val);
+	void setMinLength(float val);
+	void setRoadBranchProb(float val);
+	void setMaxAngleSearch(float val);
+	void setManhattanBlockWidth(float val);
+	void setManhattanBlockHeight(float val);
+	void setMaxRoadRotate(float val);
+	void setRoadRotateInterval(float val);
+	void setMaxWaterTraverse(float val);
+	void setMaxPruneFactor(float val);
+	void setRoadSampleInterval(float val);
+	void setUsePatternWeighting(bool useWeighting);
 };
 

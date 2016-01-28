@@ -18,8 +18,12 @@ float Point::getDistance(const QPointF p2) const {
 	return sqrtf(x*x + y*y);
 }
 
-bool Point::isWithinBounds(const QPointF p2, float epsilon) {
+bool Point::isWithinBounds(const QPointF p2, float epsilon) const {
 	return (getDistanceSq(p2) < epsilon * epsilon);
+}
+
+bool Point::isWithinBounds(int xSize, int ySize) const {
+	return (0 <= x() && x() < xSize) && (0 <= y() && y() < ySize);
 }
 
 Point::Point(QPointF val) : QPointF(val) {

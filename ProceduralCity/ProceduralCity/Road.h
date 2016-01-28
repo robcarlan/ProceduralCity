@@ -44,6 +44,9 @@ public:
 
 	Point getStart() const;
 	Point getEnd() const;
+	float getAngle() const;
+	bool isInBounds(int sizeX, int sizeY) const;
+
 	QPointF lerp(float amount);
 	void setStart(Point start);
 	void setEnd(Point end);
@@ -72,6 +75,8 @@ protected:
 	void paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget);
 	QRectF boundsFromPointPair(Point s, Point e);
 	Point start, end;
+	float angle;
+	void calcAngle();
 
 	//TODO :: Main / Minor Roads
 	//TODO :: Roads to be of various types, i.e. Normal roads, Overground Roads (which ignore clipping over roads), Underground, Bridges ...

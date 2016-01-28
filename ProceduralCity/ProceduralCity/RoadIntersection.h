@@ -33,6 +33,7 @@ public:
 	RoadIntersection(Point Position, Road *creator, Road *incidentOnto);
 	///Create an intersection which isn't a crossing
 	RoadIntersection(Point Position, Road *creator);
+	RoadIntersection(Point Position);
 	RoadIntersection(const RoadIntersection &road);
 	RoadIntersection();
 	~RoadIntersection();

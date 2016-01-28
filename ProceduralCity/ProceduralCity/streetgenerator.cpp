@@ -196,7 +196,7 @@ void StreetGenerator::initialiseSystem() {
 		new QImage(ui.popMapRender->getImage()->scaled(size.x(), size.y())) : &white;
 	QImage *pattern = patternSet ?
 		new QImage(ui.patternMapRender->getImage()->scaled(size.x(), size.y())) : &white;
-
+	setParameters();
 	generator.initialise();
 	generator.setGeogMap(*geog, geogSet);
 	qDebug() << "Geog: " << ui.geogMapRender->isSet() << "\n";
@@ -218,6 +218,23 @@ void StreetGenerator::initialiseSystem() {
 QString StreetGenerator::getFileChoice() {
 	QString fName = fd.getOpenFileName(this, tr("Open Image"), "/", tr("Image Files (*.png *.jpg *.bmp)"));
 	return fName;
+}
+
+void StreetGenerator::setParameters() {
+	generator.setExtendRadius(ui.spinRoadExtendLength->value());
+	generator.setMinDistanceSq(math::sqr(ui.spinRoadSnapRadius->value()));
+	generator.setMinLength(ui.spinMinRoadLength->value());
+	generator.setRoadBranchProb(ui.spinRoadBranchProb->value());
+	generator.setMaxAngleSearch(ui.slideRoadSearchAngle->value() * generator.d2rFactor);
+	generator.setManhattanBlockWidth(ui.slideManhattanBlocKWidth->value());
+	generator.setManhattanBlockHeight(ui.slideManhattanBlockHeight->value());
+	generator.setMaxRoadRotate(ui.spinMaxRoadAngleChange->value() * generator.d2rFactor);
+	generator.setRoadRotateInterval(ui.sliderSearchAngleIncrease->value() * generator.d2rFactor);
+	generator.setMaxWaterTraverse(ui.spinMaxBridgeLength->value());
+	generator.setMaxPruneFactor(ui.spinRoadPruneFactor->value());
+	generator.setRoadSampleInterval(ui.sliderRoadSampleInterval->value());
+
+	generator.setUsePatternWeighting(ui.radUseWeightedStreet->isChecked());
 }
 
 
