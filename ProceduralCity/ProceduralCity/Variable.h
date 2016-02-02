@@ -11,6 +11,7 @@ struct ruleAttr {
 
 	//Indicates where a block points. 
 	float manhattanBlockDirection;
+	QPointF peakTarget;
 };
 
 struct roadAttr {
@@ -32,6 +33,12 @@ struct roadAttr {
 	Road *generated;
 	
 	bool connected;
+	bool failed;
+
+	roadAttr() {
+		connected = false;
+		failed = false;
+	}
 
 	void createFromIntersection(RoadIntersection *source) {
 		branchSource = source;
@@ -44,6 +51,14 @@ struct roadAttr {
 
 	//Recalculate end point from length and angle
 	void recalculateEndPoint();
+
+	void flagFail() {
+		failed = true;
+	}
+
+	bool hasFailed() {
+		return failed;
+	}
 	
 };
 

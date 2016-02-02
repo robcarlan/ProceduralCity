@@ -19,16 +19,23 @@
 ///Stores input parameters / output parameters as well as generating functions.
 
 //To allow for different behaviour, we can subclass / parameterise by RuleAttr / RoadAttr types
+//TODO :: Move rule generation outside of this class, so we can re use for the building generation.
 class StreetGen
 {
 protected:
+	//Simulation parameters
 	float extendRadius;
 	float minDistanceSq;
 	float minLength;
 	float roadBranchProb;
+	float streetLength;
+	float highwaylength;
 	//Global constraint constans
 	float maxAngleSearch;
-	static const float popDensityRadiusSearch;
+	float popDensityRadiusSearch;
+
+	float minStreetGrowthScore;
+	float minHighwayGrowthScore;
 
 	float manhattanBlockWidth;
 	float manhattanBlockHeight;
@@ -114,7 +121,7 @@ protected:
 
 	float getGradient(QImage *map);
 	//Used to find direction with largest pop density (summed)
-	float maxPopDensity(float startAngle, Point &start, Point &end);
+	float maxPopDensity(float startAngle, Point &start, Point &end, QPointF *peak);
 	//Used to get direction with smallest gradient. Returns minimum angle.
 	float getLowestGradient(float startAngle, Point start, float length);
 	
@@ -123,7 +130,7 @@ protected:
 	//Determines which length to use for the block
 	bool useBlockHeight(float blockAngle, float curAngle);
 	//Returns destination if we follow by population density
-	Point naturalRule(const roadAttr* road);
+	Point naturalRule(roadAttr* road, ruleAttr *rules);
 	//Returns destination if we follow by lowest height gradient
 	// # roads must fall
 	Point sanFransiscoRule(const roadAttr* road);
@@ -131,6 +138,9 @@ protected:
 	Point radialRule(const ruleAttr *rules, const roadAttr *road);
 
 	Point weighValues(float weights[], Point*vals, Point *start);
+
+	//Points a road towards it's target, within angle bounds.
+	void pointToTarget(roadAttr *road, ruleAttr *rules);
 
 public:
 
@@ -183,5 +193,8 @@ public:
 	void setMaxPruneFactor(float val);
 	void setRoadSampleInterval(float val);
 	void setUsePatternWeighting(bool useWeighting);
+	void setRoadLength(float val);
+	void setHighwayLength(float val);
+	void setPopRadiusSearch(float val);
 };
 

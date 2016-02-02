@@ -15,12 +15,15 @@ GLImagePreview::~GLImagePreview() {
 }
 
 void GLImagePreview::setImage(QString filePath) {
+	if (imgSet) clear();
+
 	img = new QImage(filePath);
 	imgSet = true;
 	repaint();
 }
 
 void GLImagePreview::clear() {
+	if (imgSet) delete img;
 	imgSet = false;
 	update();
 }

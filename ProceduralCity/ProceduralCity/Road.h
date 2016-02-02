@@ -45,6 +45,7 @@ public:
 	Point getStart() const;
 	Point getEnd() const;
 	float getAngle() const;
+	float getDot(Road &other) const;
 	bool isInBounds(int sizeX, int sizeY) const;
 
 	QPointF lerp(float amount);
@@ -55,6 +56,7 @@ public:
 	QRectF bounds;
 	roadType rType;
 	Road *parent;
+	bool isBranch;
 
 	std::string printRoad();
 
@@ -69,6 +71,7 @@ public:
 
 	bool operator== (const Road compare);
 	QRectF boundingRect() const;
+	void setIsBranch(bool isBranch);
 
 protected:
 
