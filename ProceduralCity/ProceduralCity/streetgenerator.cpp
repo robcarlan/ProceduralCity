@@ -188,23 +188,23 @@ void StreetGenerator::initialiseSystem() {
 	bool patternSet = ui.patternMapRender->isSet();
 
 	//Scale images to fit 
-	QImage *geog =  geogSet ?
-		new QImage(ui.geogMapRender->getImage()->scaled(size.x(), size.y())) : &white;
-	QImage *height = heightSet ? 
-		new QImage(ui.hMapRender->getImage()->scaled(size.x(), size.y())) : &white;
-	QImage *pop = popSet ? 
-		new QImage(ui.popMapRender->getImage()->scaled(size.x(), size.y())) : &white;
-	QImage *pattern = patternSet ?
-		new QImage(ui.patternMapRender->getImage()->scaled(size.x(), size.y())) : &white;
+	QImage geog =  geogSet ?
+		QImage(ui.geogMapRender->getImage()->scaled(size.x(), size.y())) : white;
+	QImage height = heightSet ? 
+		QImage(ui.hMapRender->getImage()->scaled(size.x(), size.y())) : white;
+	QImage pop = popSet ? 
+		QImage(ui.popMapRender->getImage()->scaled(size.x(), size.y())) : white;
+	QImage pattern = patternSet ?
+		QImage(ui.patternMapRender->getImage()->scaled(size.x(), size.y())) : white;
 	setParameters();
 	generator.initialise();
-	generator.setGeogMap(*geog, geogSet);
+	generator.setGeogMap(geog, geogSet);
 	qDebug() << "Geog: " << ui.geogMapRender->isSet() << "\n";
-	generator.setHeightMap(*height, heightSet);
+	generator.setHeightMap(height, heightSet);
 	qDebug() << "Height: " << ui.hMapRender->isSet() << "\n";
-	generator.setPopMap(*pop, popSet);
+	generator.setPopMap(pop, popSet);
 	qDebug() << "Pop: " << ui.popMapRender->isSet() << "\n";
-	generator.setPatternMap(*pattern, patternSet);
+	generator.setPatternMap(pattern, patternSet);
 	qDebug() << "Pattern: " << ui.patternMapRender->isSet() << "\n";
 
 	//Set seed
@@ -233,8 +233,12 @@ void StreetGenerator::setParameters() {
 	generator.setMaxWaterTraverse(ui.spinMaxBridgeLength->value());
 	generator.setMaxPruneFactor(ui.spinRoadPruneFactor->value());
 	generator.setRoadSampleInterval(ui.sliderRoadSampleInterval->value());
-
+	
 	generator.setUsePatternWeighting(ui.radUseWeightedStreet->isChecked());
+
+	generator.setRoadLength(ui.spinStreetLength->value());
+	generator.setHighwayLength(ui.spinHighwayLength->value());
+	generator.setPopRadiusSearch(ui.sliderPopSearchRadius->value());
 }
 
 

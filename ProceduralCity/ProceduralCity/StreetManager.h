@@ -2,9 +2,11 @@
 #include <QGraphicsScene>
 #include <QImage>
 #include <QLine>
+#include <list>
 
 #include "Road.h"
 #include "RoadIntersection.h"
+//#include "StreetGen.h"
 
 #ifndef Q_MOC_RUN 
 #include <boost\geometry\index\rtree.hpp>
@@ -19,11 +21,15 @@ using namespace boost::geometry;
 ///Used by StreetGenerator to handle storing roads and crossings. Allows methods to add / remove / connect these items, as well as spatial queries.
 class StreetManager {
 private:
+
+	static const float nearbyIntersectionRange;
+	static const int numSubdivide;
+	static const float angleCurveThreshold;
 	//Manage connected roads
 
 	QGraphicsScene *scene;
 	QImage pop, height, geog, pattern;
-	QPixmap *pixPop, *pixHeight, *pixGeog, *pixPattern;
+	QPixmap pixPop, pixHeight, pixGeog, pixPattern;
 	QGraphicsItem *bg;
 	QPen roadPen;
 	QPen mainRoadPen;
@@ -43,6 +49,8 @@ private:
 	boost::geometry::index::rtree<intersectionIndex, index::linear<16>> intersectionTree;
 	//Rtree<Segment>
 	boost::geometry::index::rtree<roadIndex, index::linear<16>> roadTree;
+	std::list<Road*> roadList;
+	std::list<RoadIntersection*> intersectionsList;
 
 	bool renderVerts;
 	QPen getRoadPen(Road *road);
@@ -80,6 +88,10 @@ public:
 
 	//Returns the intersection which this road attaches to, if any. Else returns nullptr
 	RoadIntersection *getExistingIntersections(Road * query, Road * target);
+	//Returns true if this road should be split into multiple new ones.
+	bool shouldSubdivide(Road* road);
+	//To be called instead of the usual insertRoad procedure
+	void subdivideRoad(Road* road);
 
 	//Creates a road from an existing intersection, and creates a new intersection at the end point
 	void branchRoad(RoadIntersection *start, Road *newRoad);

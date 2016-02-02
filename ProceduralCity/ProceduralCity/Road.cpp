@@ -1,6 +1,7 @@
 #include "Road.h"
 
 const float Road::PEN_WIDTH = 25.0f;
+//Mainly constructors and helper functions
 
 Road::Road(Point start, Point end, RoadIntersection * intersection, Road * parent, roadType rType) : QGraphicsItem(), QLineF(start, end) {
 	intersections.clear();
@@ -21,6 +22,7 @@ Road::Road(Point start, Point end, RoadIntersection * intersection, Road * paren
 	//calculate bounds
 	bounds = boundsFromPointPair(start, end);
 	calcAngle();
+	isBranch = false;
 }
 
 Road::Road(Point start, Point end, Road *parent, roadType rType) : QGraphicsItem(), QLineF(start, end) {
@@ -34,6 +36,7 @@ Road::Road(Point start, Point end, Road *parent, roadType rType) : QGraphicsItem
 	//calculate bounds
 	bounds = boundsFromPointPair(start, end);
 	calcAngle();
+	isBranch = false;
 }
 
 Road::Road(const Road &road) : QLineF(road) {
@@ -43,10 +46,15 @@ Road::Road(const Road &road) : QLineF(road) {
 	this->rType = road.rType;
 	this->parent = parent;
 	angle = road.getAngle();
+	isBranch = false;
 }
 
 QRectF Road::boundingRect() const {
 	return bounds;
+}
+
+void Road::setIsBranch(bool isBranch) {
+	this->isBranch = isBranch;
 }
 
 void Road::paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget) {
@@ -115,6 +123,10 @@ Point Road::getEnd() const { return end; }
 
 float Road::getAngle() const {
 	return angle;
+}
+
+float Road::getDot(Road &other) const {
+	return dx() * other.dx() + dy() * other.dy();
 }
 
 bool Road::isInBounds(int sizeX, int sizeY) const {

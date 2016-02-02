@@ -2,7 +2,6 @@
 
 using namespace boost::geometry;
 
-const float StreetGen::popDensityRadiusSearch = 200.0f;
 const float StreetGen::d2rFactor = 3.14159265f / 180.0f;
 const float StreetGen::r2dFactor = 180.0f / 3.14159265f;
 
@@ -36,11 +35,17 @@ StreetGen::StreetGen() {
 
 void StreetGen::setDefaultValues() {
 	roadBranchProb = 0.7f;
+	popDensityRadiusSearch = 500.0f;
+	streetLength = 25;
+	highwaylength = 50.0f;
 
 	//Global constraints
 	maxAngleSearch = 0.2f;
 	manhattanBlockWidth = 30.0f;
 	manhattanBlockHeight = 20.0f;
+
+	minHighwayGrowthScore = 10.0f;
+	minStreetGrowthScore = 10.0f;
 
 	//Geography Fitting
 	maxRoadRotate = 0.7f;
@@ -95,7 +100,7 @@ StreetGen::VarList* StreetGen::applyGlobalConstraints(ruleAttr rules, roadAttr r
 		float scale = uniform(rng);
 		nroads[i].start = roads.end;
 		nroads[i].end = roads.start;
-		delay[i] = 0;
+		delay[i] = i;
 		nroads[i].angle = roads.angle;
 	}
 
@@ -119,25 +124,26 @@ StreetGen::VarList* StreetGen::applyGlobalConstraints(ruleAttr rules, roadAttr r
 		nroads[ROAD].rtype = roadType::STREET;
 	}
 
-	//Branch 1 is fucked
-
 	//Set branches to point at right angle
 	nroads[BRANCH1].angle += math::half_pi<float>();
 	nroads[BRANCH2].angle -= math::half_pi<float>();
-	delay[BRANCH1] = 0;
-	delay[BRANCH2] = 1;
+	//Arbritrary delay at the moment - shouldn't have too much of an effect if it is much bigger
+	delay[BRANCH1] = 10;
+	delay[BRANCH2] = 10;
 	delay[ROAD] = 1;
 
-	//Update roots
 
 	//Set all roads to have some new length
 	float newLength = 50.0f;
-	nroads[BRANCH1].length = newLength + uniform(rng) * 20.0f;
-	nroads[BRANCH2].length = newLength + uniform(rng) * 20.0f;
+	nroads[BRANCH1].length = streetLength;// +uniform(rng) * 20.0f;
+	nroads[BRANCH2].length = streetLength;//  +uniform(rng) * 20.0f;
+
 	nroads[ROAD].length = newLength;
 
 	//Calculate new end positions
 	for (int i = 0; i < 3; i++) {
+		if (nroads[i].rtype == roadType::MAINROAD) nroads[i].length = highwaylength;
+
 		//Create unit vector in direction
 		nroads[i].angle = math::mod<float>(nroads[i].angle, math::two_pi<float>());
 		Point unit = Point(cosf(nroads[i].angle), sinf(nroads[i].angle));
@@ -147,7 +153,10 @@ StreetGen::VarList* StreetGen::applyGlobalConstraints(ruleAttr rules, roadAttr r
 		//Apply street patterns
 
 		//Get each weighting by sampling
-		if (useWeightedVals) {
+		if (nroads[i].rtype == roadType::MAINROAD) {
+			//Mainroads follow population peaks, do not follow street patterns
+			nroads[i].end = naturalRule(&nroads[i], &nrules[i]);
+		} else if (useWeightedVals) {
 
 			float values[4];
 			getPatternWeightings(roads.end.x(), roads.end.y(), values);
@@ -155,7 +164,7 @@ StreetGen::VarList* StreetGen::applyGlobalConstraints(ruleAttr rules, roadAttr r
 			int patternCount = 0;
 
 			if (values[NATURAL_PATTERN_INDEX] - 0.01f > 0) {
-				ends[NATURAL_PATTERN_INDEX] = naturalRule(&nroads[i]);
+				ends[NATURAL_PATTERN_INDEX] = naturalRule(&nroads[i], &nrules[i]);
 			}
 
 			if (values[MANHATTAN_PATTERN_INDEX] - 0.01f > 0) {
@@ -193,23 +202,28 @@ StreetGen::VarList* StreetGen::applyGlobalConstraints(ruleAttr rules, roadAttr r
 			} else if (maxIndex == SF_PATTERN_INDEX) {
 				nroads[i].end = sanFransiscoRule(&nroads[i]);
 			} else {
-				nroads[i].end = naturalRule(&nroads[i]);
+				nroads[i].end = naturalRule(&nroads[i], &nrules[i]);
 			}
 		}
 	}
 
+
+	for (int i = 0; i < 3; i++) {
+		if (nroads[i].hasFailed()) delay[i] = -1;
+	}
+
 	//Create the new variables, for the production
-	Variable *branch1 = new Variable(variableType::BRANCH, delay[BRANCH1], nrules[BRANCH1], nroads[BRANCH1]);
-	Variable *branch2 = new Variable(variableType::BRANCH, delay[BRANCH2], nrules[BRANCH2], nroads[BRANCH2]);
-	Variable *road = new Variable(variableType::ROAD, delay[ROAD], nrules[ROAD], nroads[ROAD]);
-	Variable *insertion = new Variable(variableType::INSERTION, delay[ROAD], nrules[ROAD], nroads[ROAD]);
-	insertion->state = solutionState::UNASSIGNED;
+	Variable branch1 = Variable(variableType::BRANCH, delay[BRANCH1], nrules[BRANCH1], nroads[BRANCH1]);
+	Variable branch2 = Variable(variableType::BRANCH, delay[BRANCH2], nrules[BRANCH2], nroads[BRANCH2]);
+	Variable road = Variable(variableType::ROAD, delay[ROAD], nrules[ROAD], nroads[ROAD]);
+	Variable insertion = Variable(variableType::INSERTION, delay[ROAD], nrules[ROAD], nroads[ROAD]);
+	insertion.state = solutionState::UNASSIGNED;
 
 	VarList* newList = new VarList();
-	newList->push_back(*branch1);
-	newList->push_back(*branch2);
-	newList->push_back(*road);
-	newList->push_back(*insertion);
+	newList->push_back(branch1);
+	newList->push_back(branch2);
+	newList->push_back(road);
+	newList->push_back(insertion);
 
 	return newList;
 }
@@ -223,20 +237,16 @@ void StreetGen::applyLocalConstraints(Variable *toCheck) {
 		assert(toCheck->road.start.x() - toCheck->road.parentRoad->getEnd().x() < 0.01f
 			&& toCheck->road.start.y() - toCheck->road.parentRoad->getEnd().y() < 0.01f);
 
-	assert(toCheck->road.end.x() - temp.x2() < 0.01f && toCheck->road.end.y() - temp.y2() < 0.01f);
-	assert(toCheck->road.start.x() - temp.x1() < 0.01f && toCheck->road.start.y() - temp.y1() < 0.01f);
-	bool legalIntersection =  tryConnectToExisting(toCheck, &temp, connectedToIntersection);
+	bool legalIntersection = tryConnectToExisting(toCheck, &temp, connectedToIntersection);
 	//Check close to intersection here?
 	bool legalAngle = !overlapsConnected(toCheck, &temp);
-	bool legalLength = toCheck->road.length * toCheck->road.length > minDistanceSq;
+	bool legalLength =  toCheck->road.length * toCheck->road.length > minDistanceSq;
+	legalLength = temp.length() * temp.length() > minDistanceSq;
 	if (legalPlacement && legalIntersection && legalAngle && legalLength) toCheck->state = solutionState::SUCCEED;
 	else toCheck->state = solutionState::FAILED;
 	//Stop growing street
 	if (connectedToIntersection) 
 		toCheck->road.connected = true;
-
-	assert(toCheck->road.end.x() - temp.x2() < 0.01f && toCheck->road.end.y() - temp.y2() < 0.01f);
-	assert(toCheck->road.start.x() - temp.x1() < 0.01f && toCheck->road.start.y() - temp.y1() < 0.01f);
 }
 
 //Todo :: check angles
@@ -274,7 +284,7 @@ bool StreetGen::tryMakeLegal(Variable * toCheck, Road * tempRoad) {
 
 		//Rotate line, set line length
 		if (pruneFactor == 1.0f) {
-			//Calculate new end position by rotating line
+			//Calculate new end position by rotating lines
 			angleToCheck = startAngle + angleChange;				
 			QLineF newLine = QLineF(tempRoad->getStart(), tempRoad->getEnd());
 			newLine.setAngle(angleToCheck * r2dFactor);
@@ -304,6 +314,7 @@ bool StreetGen::tryMakeLegal(Variable * toCheck, Road * tempRoad) {
 }
 
 void StreetGen::getIllegalSegment(Road segment, bool &legal) {
+		//Linearly interpolate between start and end, sample for invalid positions
 		float rLength = segment.length();
 
 		float numSamples = rLength / roadSampleInterval;
@@ -355,9 +366,22 @@ bool StreetGen::overlapsConnected(Variable * toCheck, Road * tempRoad) {
 
 	return false;
 	if (toCheck->road.parentRoad == nullptr) return false;
+	//test dot produce of connected roads
+	const float dotThreshold = 0.2f;
 	BOOST_FOREACH(Road *cRoad, toCheck->road.parentRoad->roadEndIntersection->connected) {
-		float angleVal = cRoad->angleTo(*tempRoad);
-		if (abs(angleVal - 180.0f) < 5.0f) return true;
+		//float angleVal = cRoad->angleTo(*tempRoad);
+		//if (abs(angleVal - 180.0f) < 5.0f) return true;
+		float dot = tempRoad->getDot(*cRoad);
+		dot /= tempRoad->length();
+		dot /= cRoad->length();
+		if (dot >= dotThreshold) return true;
+	}
+
+	BOOST_FOREACH(Road *cRoad, tempRoad->roadEndIntersection->connected) {
+		float dot = tempRoad->getDot(*cRoad);
+		dot /= tempRoad->length();
+		dot /= cRoad->length();
+		if (dot >= dotThreshold) return true;
 	}
 	return false;
 }
@@ -380,7 +404,6 @@ bool StreetGen::tryConnectToExisting(Variable * toCheck, Road *tempRoad, bool &c
 		connectedToIntersection = true;
 	}
 	else { //Road does not intersect, so lets see if it is near to an existing crossing.
-
 		std::vector<RoadIntersection *> existingIntersections;
 		streets.getNearbyVertices(toCheck->road.end, extendRadius, existingIntersections);
 		bool connectToIntersection = false;
@@ -426,7 +449,6 @@ bool StreetGen::tryConnectToExisting(Variable * toCheck, Road *tempRoad, bool &c
 }
 
 void StreetGen::addRoadToSystem(roadAttr &roads) {
-	assert(roads.end.getDistanceSq(roads.start) < 125 * 125);
 
 	//Create first intersection if necessary
 	std::vector<RoadIntersection*> nearby;
@@ -666,8 +688,8 @@ void StreetGen::getPatternWeightings(int x, int y, float weights[]) {
 	return;
 }
 
-float StreetGen::maxPopDensity(float startAngle, Point &start, Point &end) {
-	//Sum weight of rays along center, return max angle
+float StreetGen::maxPopDensity(float startAngle, Point &start, Point &end, QPointF *peak) {
+	//Sum weight of rays along center, return max sum
 	int maxXVal = end.x();
 	int maxYVal = end.y();
 	float maxSum = 0.0f;
@@ -680,6 +702,8 @@ float StreetGen::maxPopDensity(float startAngle, Point &start, Point &end) {
 	float roadLength = start.getDistance(end);
 	float length = popDensityRadiusSearch;
 
+	peak = &Point(maxXVal, maxYVal);
+
 	Point curPoint = start;
 
 	//Keep track of sector searched so we don't deal with wrap around issues.
@@ -691,19 +715,22 @@ float StreetGen::maxPopDensity(float startAngle, Point &start, Point &end) {
 		float sampleInterval = sampleQuant;
 		float xIncr = cosf(temp.dx()) * roadSampleInterval;
 		float yIncr = sinf(temp.dy()) * roadSampleInterval;
+		float sampleLength = roadSampleInterval;
 
 		int xPos = temp.p1().x() + xIncr;
 		int yPos = temp.p2().y() + yIncr;
-		int cumulativeVal = 0;
+		float cumulativeVal = 0;
 
 		//Sum along the ray , sampling every roadSampleInterval untis
 		while (sampleInterval < 1.0f) {
 			if (xPos < 0 || xPos > size.x() || yPos < 0 || yPos > size.y()) 
 				break;
 
-			cumulativeVal += samplePop(xPos, yPos);
+			//Score += inverse distance * pop sample
+			cumulativeVal += samplePop(xPos, yPos) / (float)(roadSampleInterval);
 			xPos += xIncr;
 			yPos += yIncr;
+			sampleLength += sampleInterval;
 
 			sampleInterval += sampleQuant;
 		}
@@ -713,7 +740,9 @@ float StreetGen::maxPopDensity(float startAngle, Point &start, Point &end) {
 		//cumulativeVal /= abs(fmodf(startAngle - curAngle, math::two_pi<float>()));
 
 		//Update current max
+		//TODO :: Peak might be lower than length of road
 		if (cumulativeVal > maxSum) {
+			peak = &temp.p2();
 			temp.setLength(roadLength);
 			maxXVal = temp.x2();
 			maxYVal = temp.y2();
@@ -776,12 +805,22 @@ bool StreetGen::useBlockHeight(float blockAngle, float curAngle) {
 	return (dif < math::pi<float>() / 2.0f);
 }
 
-Point StreetGen::naturalRule(const roadAttr* road ) {
+Point StreetGen::naturalRule(roadAttr* road, ruleAttr* rules ) {
 	//Set path to point to maximum density 
 	Point start = road->start;
 	Point end = road->end;
 	float angle = road->angle;
-	maxPopDensity(angle, start, end);
+	QPointF peak;
+	float score = maxPopDensity(angle, start, end, &peak);
+	rules->peakTarget = peak;
+
+	if (road->rtype == roadType::STREET) {
+		if (score < minStreetGrowthScore) road->flagFail();
+	}
+	else {
+		if (score < minHighwayGrowthScore) road->flagFail();
+	}
+
 	return end;
 }
 
@@ -816,6 +855,22 @@ Point StreetGen::weighValues(float weights[], Point * vals, Point *start) {
 	//Divide by total weighting
 	cumulativeDistance /= weightSum;
 	return cumulativeDistance;
+}
+
+bool StreetGen::pointToTarget(roadAttr * road, ruleAttr * rules) {
+	//Get point difference, see if it is valid.
+	//If not, cull angle, then cull length.
+
+	//Bounded by angle change
+	Point dif = rules->peakTarget - road->start;
+	if ((dif.x() * dif.x() + dif.y() * dif.y()) > highwaylength * highwaylength) {
+		//Point is withing bounds
+		road->end = rules->peakTarget;
+		return true;
+	}
+	else {
+		//Point is further away, so lets point to as far as we can
+	}
 }
 
 void StreetGen::Run() {
@@ -978,7 +1033,20 @@ void StreetGen::setUsePatternWeighting(bool useWeighting) {
 	useWeightedVals = useWeighting;
 }
 
+void StreetGen::setRoadLength(float val) {
+	streetLength = val;
+}
+
+void StreetGen::setHighwayLength(float val) {
+	highwaylength = val;
+}
+
+void StreetGen::setPopRadiusSearch(float val) {
+	popDensityRadiusSearch = val;
+}
+
 void StreetGen::setHeightMap(QImage & hMap, bool use) {
+
 	this->hMap = QImage(hMap);
 	streets.setHeight(&hMap);
 	useHeight = use;
