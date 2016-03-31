@@ -7,13 +7,15 @@ StreetGenerator::StreetGenerator(QWidget *parent)
 	: QMainWindow(parent)
 {
 	ui.setupUi(this);
-	
-	generator = StreetGen::StreetGen();
+
+	cityView = City();
+	view = CityView2D();
 	size.setX(DEFAULT_SIZE_X);
 	size.setY(DEFAULT_SIZE_Y);
+	generator = StreetGen(&view, Point(DEFAULT_SIZE_X, DEFAULT_SIZE_Y));
 
 	//Initially bind Street Renderer to the street gen object
-	ui.streetRender->initialiseRenderer(&generator);
+	ui.streetRender->initialiseRenderer(&view);
 	dir.setFileMode(QFileDialog::DirectoryOnly);
 }
 
@@ -29,6 +31,10 @@ void StreetGenerator::onClickReset() {
 void StreetGenerator::onClickStep() {
 	if (generator.isReady())
 		generator.nextIteration();
+
+	if (generator.isFinished())
+		ui.cmdGenerateRegions->setEnabled(true);
+
 }
 
 void StreetGenerator::onClickSave() {
@@ -39,11 +45,58 @@ void StreetGenerator::onClickSaveImage() {
 	//MsgBox to save whole view or just what can be seen
 }
 
+void StreetGenerator::onClickCreateLots() {
+	assert(regionsGenerated);
+	//Subdivide, add lots by colour (handle these in some new functions please)
+	cityView.createLots();
+	view.addLots(cityView.getLots());
+	view.setDrawLots(true);
+	view.setDrawRegions(false);
+	
+	ui.chkShowLots->setEnabled(true);
+	lotsGenerated = true;
+	//TODO :: Enable 3D
+}
+
+void StreetGenerator::onClickCreateRegions() {
+	assert(streetsGenerated);
+
+	generator.filterStreets();
+
+	SimpleStreetGeometryCreator toSimple = SimpleStreetGeometryCreator();
+	std::list<RoadIntersection*> intersections = generator.getGeneratedIntersections();
+	std::list<Road*> roads = generator.getGeneratedRoads();
+	cityView.getGeometry(toSimple.toGeometry(intersections, roads));
+	cityView.createRegions();
+
+	//Now indicate this to 2D view
+	view.addRegions(cityView.getRegions());
+	view.setDrawRegions(true);
+
+	ui.chkShowRegions->setEnabled(true);
+	ui.cmdCreateBuildingLots->setEnabled(true);
+	regionsGenerated = true;
+}
+
+void StreetGenerator::onClickRenderRegions(bool render) {
+	view.setDrawRegions(render);
+}
+
+void StreetGenerator::onClickRenderLots(bool render) {
+	view.setDrawLots(render);
+}
+
+void StreetGenerator::onClickRenderVerts(bool render) {
+	view.renderVertices(render);
+}
+
 void StreetGenerator::onClickGenerate() {
 	if (!generator.isReady())
 		initialiseSystem();
 	//generate the stuff
 	generator.Run();
+
+	ui.cmdGenerateRegions->setEnabled(true);
 }
 
 void StreetGenerator::on_comboBox_activated(const QString &arg1) {
@@ -156,23 +209,23 @@ void StreetGenerator::clearPopmap() {
 }
 
 void StreetGenerator::on_radPopClicked() {
-	generator.streets.renderPop();
+	view.renderPop();
 }
 
 void StreetGenerator::on_radGeogClicked() {
-	generator.streets.renderGeog();
+	view.renderGeog();
 }
 
 void StreetGenerator::on_radHeightClicked() {
-	generator.streets.renderHeight();
+	view.renderHeight();
 }
 
 void StreetGenerator::on_radPatternClicked() {
-	generator.streets.renderPattern();
+	view.renderPattern();
 }
 
 void StreetGenerator::on_radNoneClicked() {
-	generator.streets.renderNone();
+	view.renderNone();
 }
 
 void StreetGenerator::initialiseSystem() {
@@ -186,6 +239,12 @@ void StreetGenerator::initialiseSystem() {
 	bool heightSet = ui.hMapRender->isSet();
 	bool popSet = ui.popMapRender->isSet();
 	bool patternSet = ui.patternMapRender->isSet();
+
+	//Reset ui elements
+	ui.chkShowLots->setEnabled(false);
+	ui.chkShowRegions->setEnabled(false);
+	ui.cmdGenerateRegions->setEnabled(false);
+	ui.cmdCreateBuildingLots->setEnabled(false);
 
 	//Scale images to fit 
 	QImage geog =  geogSet ?
@@ -207,12 +266,17 @@ void StreetGenerator::initialiseSystem() {
 	generator.setPatternMap(pattern, patternSet);
 	qDebug() << "Pattern: " << ui.patternMapRender->isSet() << "\n";
 
+	view.setGeog(&geog);
+	view.setHeight(&height);
+	view.setPattern(&pattern);
+	view.setPop(&pop);
+
 	//Set seed
 	if (ui.chkTimeSeed->isChecked())
 		generator.setSeed();
 	else generator.setSeed(ui.intSeedValue->value());
 
-	generator.streets.renderVertices(true);
+	view.renderVertices(ui.chkShowVerts->isChecked());
 }
 
 QString StreetGenerator::getFileChoice() {
@@ -222,7 +286,7 @@ QString StreetGenerator::getFileChoice() {
 
 void StreetGenerator::setParameters() {
 	generator.setExtendRadius(ui.spinRoadExtendLength->value());
-	generator.setMinDistanceSq(math::sqr(ui.spinRoadSnapRadius->value()));
+	generator.setRoadSnap(math::sqr(ui.spinRoadSnapRadius->value()));
 	generator.setMinLength(ui.spinMinRoadLength->value());
 	generator.setRoadBranchProb(ui.spinRoadBranchProb->value());
 	generator.setMaxAngleSearch(ui.slideRoadSearchAngle->value() * generator.d2rFactor);
@@ -239,6 +303,8 @@ void StreetGenerator::setParameters() {
 	generator.setRoadLength(ui.spinStreetLength->value());
 	generator.setHighwayLength(ui.spinHighwayLength->value());
 	generator.setPopRadiusSearch(ui.sliderPopSearchRadius->value());
+	generator.setHighwayGrowthFactor(ui.highwayGrowthFactor->value());
+	generator.setStreetGrowthFactor(ui.streetGrowthFactor->value());
 }
 
 

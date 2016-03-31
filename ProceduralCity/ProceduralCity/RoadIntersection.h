@@ -18,8 +18,6 @@ public:
 	Road *parent; 
 	Point location;
 	std::list<Road*> connected;
-
-
 	void setParent(Road *road);
 	void setIncident(Road *road);
 	//Ensure road connects, add to list

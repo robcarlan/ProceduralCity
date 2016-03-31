@@ -9,7 +9,11 @@
 #include <QMessageBox>
 #include <QFileDialog>
 #include <QFile>
+
 #include "StreetGen.h"
+#include "City.h"
+#include "SimpleStreetGeometryCreator.h"
+#include "CityView2D.h"
 
 class StreetGenerator : public QMainWindow
 {
@@ -26,6 +30,11 @@ private slots:
 	void onClickStep();
 	void onClickSave();
 	void onClickSaveImage();
+	void onClickCreateLots();
+	void onClickCreateRegions();
+	void onClickRenderRegions(bool render);
+	void onClickRenderLots(bool render);
+	void onClickRenderVerts(bool render);
 
 	void on_comboBox_activated(const QString &arg1);
 
@@ -48,7 +57,9 @@ private slots:
 
 private:
 	Ui::StreetGenerator ui;
+	CityView2D view;
 	StreetGen generator;
+	City cityView;
 	QFileDialog fd;
 	QFileDialog dir;
 
@@ -60,6 +71,8 @@ private:
 	void initialiseSystem();
 	QString getFileChoice();
 	void setParameters();
+
+	bool streetsGenerated, regionsGenerated, lotsGenerated;
 
 };
 

@@ -36,10 +36,10 @@ QStreetRenderWidget::QStreetRenderWidget() {
 QStreetRenderWidget::~QStreetRenderWidget() {
 }
 
-void QStreetRenderWidget::initialiseRenderer(StreetGen * generator) {
-	this->generator = generator;
+void QStreetRenderWidget::initialiseRenderer(CityView2D *cityView) {
+	this->cityView = cityView;
 	
-	view->setScene(generator->getScene());
+	view->setScene(cityView->getScene());
 }
 
 
@@ -67,8 +67,8 @@ void QStreetRenderWidget::onViewChange() {
 }
 
 void QStreetRenderWidget::setDrawVertices(bool drawVertices) {
-	drawStreetVertices = drawVertices;
-	generator->streets.renderVertices(drawStreetVertices);
+	//drawStreetVertices = drawVertices;
+	//generator->streets.renderVertices(drawStreetVertices);
 }
 
 //OpenGL Rendering

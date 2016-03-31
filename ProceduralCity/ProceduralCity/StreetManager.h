@@ -1,12 +1,10 @@
 #pragma once
-#include <QGraphicsScene>
-#include <QImage>
-#include <QLine>
 #include <list>
 
 #include "Road.h"
 #include "RoadIntersection.h"
-//#include "StreetGen.h"
+#include "BuildingRegion.h"
+#include "CityView2D.h"
 
 #ifndef Q_MOC_RUN 
 #include <boost\geometry\index\rtree.hpp>
@@ -27,16 +25,6 @@ private:
 	static const float angleCurveThreshold;
 	//Manage connected roads
 
-	QGraphicsScene *scene;
-	QImage pop, height, geog, pattern;
-	QPixmap pixPop, pixHeight, pixGeog, pixPattern;
-	QGraphicsItem *bg;
-	QPen roadPen;
-	QPen mainRoadPen;
-
-	QGraphicsItemGroup *intersectionsRender;
-	QGraphicsItemGroup *roadsRender;
-
 	typedef boost::geometry::model::d2::point_xy<float> BOOST_POINT;
 	typedef boost::geometry::model::segment<BOOST_POINT> BOOST_SEGMENT;
 	typedef std::pair<BOOST_POINT, RoadIntersection*> intersectionIndex;
@@ -52,32 +40,22 @@ private:
 	std::list<Road*> roadList;
 	std::list<RoadIntersection*> intersectionsList;
 
-	bool renderVerts;
-	QPen getRoadPen(Road *road);
+	CityView2D *view;
+	Point bounds;
 
 public:
 	typedef std::pair<Point, Road*> intersectionRec;
 
-	void setPop(QImage *pop);
-	void setHeight(QImage *height);
-	void setGeog(QImage *geog);	
-	void setPattern(QImage *pattern);
-	void renderPop();
-	void renderHeight();
-	void renderGeog();
-	void renderPattern();
-	void renderNone();
-	void renderVertices(bool renderVerts);
-
 	int roadCount();
 	int vertCount();
 
+	StreetManager(Point bounds, CityView2D *view);
 	StreetManager();
 	~StreetManager();
-	QGraphicsScene *getScene();
 
 	///Reset state
 	void reset();
+	void setView(CityView2D *view);
 
 	//Returns all vertices within radius of queryPoint, returns in vector nearby
 	void getNearbyVertices(Point queryPoint, double radius, std::vector<RoadIntersection*>& nearby);
@@ -102,5 +80,8 @@ public:
 
 	void insertRoad(Road *toAdd);
 	void insertIntersection(RoadIntersection *toAdd);
+
+	std::list<Road*> getRoads();
+	std::list<RoadIntersection*> getIntersections();
 };
 

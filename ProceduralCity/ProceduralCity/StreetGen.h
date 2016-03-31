@@ -13,20 +13,24 @@
 #endif
 
 #include <list>
-#include "Variable.h"
+#include "LSystem.h"
+#include "RoadVariable.h"
+#include "BuildingRegion.h"
+#include "BuildingLot.h"
 
 ///Main Class handling street generation
 ///Stores input parameters / output parameters as well as generating functions.
 
 //To allow for different behaviour, we can subclass / parameterise by RuleAttr / RoadAttr types
 //TODO :: Move rule generation outside of this class, so we can re use for the building generation.
-class StreetGen
+class StreetGen : public LSystem
 {
 protected:
 	//Simulation parameters
 	float extendRadius;
-	float minDistanceSq;
+	float roadSnap;
 	float minLength;
+	float minDistanceSq;
 	float roadBranchProb;
 	float streetLength;
 	float highwaylength;
@@ -34,6 +38,8 @@ protected:
 	float maxAngleSearch;
 	float popDensityRadiusSearch;
 
+	float minStreetGrowthFactor;
+	float minHighwayGrowthFactor;
 	float minStreetGrowthScore;
 	float minHighwayGrowthScore;
 
@@ -57,28 +63,21 @@ protected:
 	static const int MANHATTAN_PATTERN_INDEX;
 	static const int RADIAL_PATTERN_INDEX;
 
-	std::vector<Road> *generatedRoads;
 	boost::random::mt19937 rng;
 	boost::random::uniform_int_distribution<> genX, genY;
 
-	typedef std::list<Variable> VarList;
-	typedef std::list<Variable>::iterator VarIterator;
-
-	//Manage l sys
-	VarList current;
-	std::list<std::pair<VarIterator,VarList>> toInsert;
-
-	void applyLocalConstraints(Variable *toCheck);
-	bool finishedIteration;
+	void applyLocalConstraints(RoadVariable *toCheck);
 
 	//Functions for local Constraints
 	//Tries to clip the line into a legal region. Returns true if the line is successfully placed.
-	bool tryMakeLegal(Variable *toCheck, Road *tempRoad);
+	bool tryMakeLegal(RoadVariable *toCheck, Road *tempRoad);
+	//To ensure we haven't made a road on top of another
+	bool isUnique(RoadVariable *toCheck, Road *tempRoad);
 	void getIllegalSegment(Road segment, bool &legal);
 	//Returns true if this road is along the same angle as existing roads. 
-	bool overlapsConnected(Variable *toCheck, Road *tempRoad);
+	bool overlapsConnected(RoadVariable *toCheck, Road *tempRoad);
 	//Tries to alter the road such that it connects to existing intersections.
-	bool tryConnectToExisting(Variable *toCheck, Road *tempRoad, bool &connectedToIntersection);
+	bool tryConnectToExisting(RoadVariable *toCheck, Road *tempRoad, bool &connectedToIntersection, bool &connectedToNewIntersection);
 
 	VarList* applyGlobalConstraints(ruleAttr rules, roadAttr roads);
 
@@ -86,8 +85,8 @@ protected:
 	//After a variable succeeds, we need to add it correctly to the system
 	void addRoadToSystem(roadAttr &roads);
 
-	void afterIteration();
-
+	//Implementing L System
+	bool isLSystemFinished(bool changed);
 	///Returns true if a production has been applied
 	bool applyRule(VarIterator currentVar, VarList *productions);
 	///Ensure these are added in order!
@@ -100,9 +99,10 @@ protected:
 	//World space of the drawing area
 	Point size;
 
-	bool ready, finished;
-	int iterationCount;
+	bool ready, genStreets, delayChanged, finished;
 	bool useHeight, useGeog, usePop, usePattern;
+
+	bool haveStreetsBeenFiltered;
 
 	//Store a local copy of each image, that we can sample. QImage provides suitable behaviour
 	QImage hMap, gMap, pMap, sMap;
@@ -148,14 +148,18 @@ public:
 	static const float r2dFactor;
 
 	//Functions to control the system
-	void Run();
+	//void Run();
 	//Performs one iteration of the L-System
-	void nextIteration();
+	//void nextIteration();
 	//Restarts the system to an initial state
 	void initialise();
 	//Returns true if the system is ready to generate the streets.
 	bool isReady();
+	void LSystemBeforeIterationBegin();
+	void LSystemAfterIteration(bool changed);
 	bool isFinished();
+	//Post street gen functions.
+	void filterStreets();
 	void printProductions();
 
 	//Set parameters
@@ -172,16 +176,12 @@ public:
 	void setDefaultValues();
 
 	//Add functions to get items which satisfy a query
-
-	QGraphicsScene *getScene();
 	StreetManager streets;
-	std::vector<Road>* getGenerated();
-
-	StreetGen();
-	~StreetGen();
+	std::list<Road*> getGeneratedRoads();
+	std::list<RoadIntersection*> getGeneratedIntersections();
 
 	void setExtendRadius(float val);
-	void setMinDistanceSq(float val);
+	void setRoadSnap(float val);
 	void setMinLength(float val);
 	void setRoadBranchProb(float val);
 	void setMaxAngleSearch(float val);
@@ -196,5 +196,11 @@ public:
 	void setRoadLength(float val);
 	void setHighwayLength(float val);
 	void setPopRadiusSearch(float val);
+	void setHighwayGrowthFactor(float factor);
+	void setStreetGrowthFactor(float factor);
+
+	StreetGen(CityView2D *view, Point size);
+	StreetGen();
+	~StreetGen();
 };
 

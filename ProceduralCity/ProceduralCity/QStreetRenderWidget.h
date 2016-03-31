@@ -1,5 +1,5 @@
 #pragma once
-#include "StreetGen.h"
+#include "CityView2D.h"
 #include "Road.h"
 
 #include <qgraphicsview.h>
@@ -19,7 +19,7 @@ public:
 	QStreetRenderWidget();
 	~QStreetRenderWidget();
 
-	void initialiseRenderer(StreetGen *generator);
+	void initialiseRenderer(CityView2D *cityView);
 
 private slots:
 	//Controls handling scroll
@@ -30,7 +30,7 @@ private slots:
 	void setDrawVertices(bool drawVertices);
 
 protected:
-	StreetGen *generator;
+	CityView2D *cityView;
 
 	bool drawStreetVertices;
 

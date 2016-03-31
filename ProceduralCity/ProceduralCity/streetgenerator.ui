@@ -290,158 +290,13 @@
       </property>
      </widget>
     </widget>
-    <widget class="QGroupBox" name="groupBox_6">
-     <property name="geometry">
-      <rect>
-       <x>10</x>
-       <y>20</y>
-       <width>301</width>
-       <height>211</height>
-      </rect>
-     </property>
-     <property name="title">
-      <string>Search Parameters</string>
-     </property>
-     <widget class="QWidget" name="gridLayoutWidget">
-      <property name="geometry">
-       <rect>
-        <x>10</x>
-        <y>20</y>
-        <width>281</width>
-        <height>177</height>
-       </rect>
-      </property>
-      <layout class="QGridLayout" name="gridLayout">
-       <item row="0" column="1">
-        <widget class="QSlider" name="slideRoadSearchAngle">
-         <property name="maximum">
-          <number>360</number>
-         </property>
-         <property name="value">
-          <number>70</number>
-         </property>
-         <property name="orientation">
-          <enum>Qt::Horizontal</enum>
-         </property>
-        </widget>
-       </item>
-       <item row="4" column="0">
-        <widget class="QLabel" name="label_7">
-         <property name="text">
-          <string>Road Sample Interval</string>
-         </property>
-        </widget>
-       </item>
-       <item row="4" column="1">
-        <widget class="QSlider" name="sliderRoadSampleInterval">
-         <property name="minimum">
-          <number>1</number>
-         </property>
-         <property name="maximum">
-          <number>10</number>
-         </property>
-         <property name="value">
-          <number>2</number>
-         </property>
-         <property name="orientation">
-          <enum>Qt::Horizontal</enum>
-         </property>
-        </widget>
-       </item>
-       <item row="2" column="1">
-        <widget class="QSlider" name="sliderSearchAngleIncrease">
-         <property name="minimum">
-          <number>1</number>
-         </property>
-         <property name="maximum">
-          <number>10</number>
-         </property>
-         <property name="orientation">
-          <enum>Qt::Horizontal</enum>
-         </property>
-         <property name="tickPosition">
-          <enum>QSlider::TicksBelow</enum>
-         </property>
-        </widget>
-       </item>
-       <item row="3" column="1">
-        <widget class="QLabel" name="label_5">
-         <property name="text">
-          <string>1</string>
-         </property>
-        </widget>
-       </item>
-       <item row="2" column="0">
-        <widget class="QLabel" name="label_4">
-         <property name="text">
-          <string>Angle Search Increment</string>
-         </property>
-        </widget>
-       </item>
-       <item row="1" column="1">
-        <widget class="QLabel" name="label_3">
-         <property name="text">
-          <string>70</string>
-         </property>
-        </widget>
-       </item>
-       <item row="0" column="0">
-        <widget class="QLabel" name="label_2">
-         <property name="text">
-          <string>Road Search Angle</string>
-         </property>
-        </widget>
-       </item>
-       <item row="5" column="1">
-        <widget class="QLabel" name="label_8">
-         <property name="text">
-          <string>2</string>
-         </property>
-        </widget>
-       </item>
-       <item row="6" column="1">
-        <widget class="QSlider" name="sliderPopSearchRadius">
-         <property name="minimum">
-          <number>25</number>
-         </property>
-         <property name="maximum">
-          <number>1000</number>
-         </property>
-         <property name="singleStep">
-          <number>25</number>
-         </property>
-         <property name="value">
-          <number>200</number>
-         </property>
-         <property name="orientation">
-          <enum>Qt::Horizontal</enum>
-         </property>
-        </widget>
-       </item>
-       <item row="7" column="1">
-        <widget class="QLabel" name="label_21">
-         <property name="text">
-          <string>200</string>
-         </property>
-        </widget>
-       </item>
-       <item row="6" column="0" rowspan="2">
-        <widget class="QLabel" name="label_20">
-         <property name="text">
-          <string>Pop Search Radius</string>
-         </property>
-        </widget>
-       </item>
-      </layout>
-     </widget>
-    </widget>
     <widget class="QGroupBox" name="groupBox_7">
      <property name="geometry">
       <rect>
        <x>10</x>
-       <y>240</y>
+       <y>230</y>
        <width>301</width>
-       <height>211</height>
+       <height>221</height>
       </rect>
      </property>
      <property name="title">
@@ -453,7 +308,7 @@
         <x>9</x>
         <y>19</y>
         <width>281</width>
-        <height>181</height>
+        <height>195</height>
        </rect>
       </property>
       <layout class="QGridLayout" name="gridLayout_2">
@@ -466,8 +321,11 @@
        </item>
        <item row="0" column="1" colspan="2">
         <widget class="QSpinBox" name="spinMaxBridgeLength">
+         <property name="maximum">
+          <number>1000</number>
+         </property>
          <property name="value">
-          <number>35</number>
+          <number>200</number>
          </property>
         </widget>
        </item>
@@ -475,19 +333,6 @@
         <widget class="QLabel" name="label_17">
          <property name="text">
           <string>Road Branch Probability</string>
-         </property>
-        </widget>
-       </item>
-       <item row="3" column="1">
-        <widget class="QDoubleSpinBox" name="spinRoadBranchProb">
-         <property name="maximum">
-          <double>1.000000000000000</double>
-         </property>
-         <property name="singleStep">
-          <double>0.050000000000000</double>
-         </property>
-         <property name="value">
-          <double>0.750000000000000</double>
          </property>
         </widget>
        </item>
@@ -610,7 +455,20 @@
           <number>5</number>
          </property>
          <property name="value">
-          <number>50</number>
+          <number>150</number>
+         </property>
+        </widget>
+       </item>
+       <item row="3" column="1">
+        <widget class="QDoubleSpinBox" name="spinRoadBranchProb">
+         <property name="maximum">
+          <double>1.000000000000000</double>
+         </property>
+         <property name="singleStep">
+          <double>0.050000000000000</double>
+         </property>
+         <property name="value">
+          <double>0.750000000000000</double>
          </property>
         </widget>
        </item>
@@ -641,6 +499,9 @@
       <layout class="QGridLayout" name="gridLayout_3">
        <item row="0" column="1">
         <widget class="QSpinBox" name="spinRoadExtendLength">
+         <property name="maximum">
+          <number>500</number>
+         </property>
          <property name="value">
           <number>20</number>
          </property>
@@ -662,6 +523,9 @@
        </item>
        <item row="1" column="1">
         <widget class="QSpinBox" name="spinMinRoadLength">
+         <property name="maximum">
+          <number>200</number>
+         </property>
          <property name="value">
           <number>10</number>
          </property>
@@ -679,6 +543,9 @@
        </item>
        <item row="2" column="1">
         <widget class="QSpinBox" name="spinRoadSnapRadius">
+         <property name="maximum">
+          <number>500</number>
+         </property>
          <property name="value">
           <number>25</number>
          </property>
@@ -696,8 +563,196 @@
          <property name="maximum">
           <double>1.000000000000000</double>
          </property>
+         <property name="singleStep">
+          <double>0.010000000000000</double>
+         </property>
+         <property name="value">
+          <double>0.100000000000000</double>
+         </property>
+        </widget>
+       </item>
+      </layout>
+     </widget>
+    </widget>
+    <widget class="QGroupBox" name="groupBox_6">
+     <property name="geometry">
+      <rect>
+       <x>10</x>
+       <y>20</y>
+       <width>301</width>
+       <height>201</height>
+      </rect>
+     </property>
+     <property name="title">
+      <string>Search Parameters</string>
+     </property>
+     <widget class="QWidget" name="gridLayoutWidget">
+      <property name="geometry">
+       <rect>
+        <x>10</x>
+        <y>20</y>
+        <width>281</width>
+        <height>171</height>
+       </rect>
+      </property>
+      <layout class="QGridLayout" name="gridLayout">
+       <item row="4" column="0">
+        <widget class="QLabel" name="label_24">
+         <property name="text">
+          <string>HIghway Growth Score</string>
+         </property>
+        </widget>
+       </item>
+       <item row="0" column="1">
+        <widget class="QSlider" name="slideRoadSearchAngle">
+         <property name="maximum">
+          <number>360</number>
+         </property>
+         <property name="value">
+          <number>70</number>
+         </property>
+         <property name="orientation">
+          <enum>Qt::Horizontal</enum>
+         </property>
+        </widget>
+       </item>
+       <item row="2" column="0">
+        <widget class="QLabel" name="label_7">
+         <property name="text">
+          <string>Road Sample Interval</string>
+         </property>
+        </widget>
+       </item>
+       <item row="2" column="1">
+        <widget class="QSlider" name="sliderRoadSampleInterval">
+         <property name="minimum">
+          <number>1</number>
+         </property>
+         <property name="maximum">
+          <number>10</number>
+         </property>
+         <property name="value">
+          <number>2</number>
+         </property>
+         <property name="orientation">
+          <enum>Qt::Horizontal</enum>
+         </property>
+        </widget>
+       </item>
+       <item row="1" column="1">
+        <widget class="QSlider" name="sliderSearchAngleIncrease">
+         <property name="minimum">
+          <number>1</number>
+         </property>
+         <property name="maximum">
+          <number>10</number>
+         </property>
+         <property name="orientation">
+          <enum>Qt::Horizontal</enum>
+         </property>
+         <property name="tickPosition">
+          <enum>QSlider::TicksBelow</enum>
+         </property>
+        </widget>
+       </item>
+       <item row="1" column="2">
+        <widget class="QLabel" name="label_5">
+         <property name="text">
+          <string>1</string>
+         </property>
+        </widget>
+       </item>
+       <item row="1" column="0">
+        <widget class="QLabel" name="label_4">
+         <property name="text">
+          <string>Angle Search Increment</string>
+         </property>
+        </widget>
+       </item>
+       <item row="0" column="2">
+        <widget class="QLabel" name="label_3">
+         <property name="text">
+          <string>70</string>
+         </property>
+        </widget>
+       </item>
+       <item row="0" column="0">
+        <widget class="QLabel" name="label_2">
+         <property name="text">
+          <string>Road Search Angle</string>
+         </property>
+        </widget>
+       </item>
+       <item row="2" column="2">
+        <widget class="QLabel" name="label_8">
+         <property name="text">
+          <string>2</string>
+         </property>
+        </widget>
+       </item>
+       <item row="3" column="0">
+        <widget class="QLabel" name="label_20">
+         <property name="text">
+          <string>Pop Search Radius</string>
+         </property>
+        </widget>
+       </item>
+       <item row="3" column="1">
+        <widget class="QSlider" name="sliderPopSearchRadius">
+         <property name="minimum">
+          <number>25</number>
+         </property>
+         <property name="maximum">
+          <number>1000</number>
+         </property>
+         <property name="singleStep">
+          <number>25</number>
+         </property>
+         <property name="value">
+          <number>200</number>
+         </property>
+         <property name="orientation">
+          <enum>Qt::Horizontal</enum>
+         </property>
+        </widget>
+       </item>
+       <item row="3" column="2">
+        <widget class="QLabel" name="label_21">
+         <property name="text">
+          <string>200</string>
+         </property>
+        </widget>
+       </item>
+       <item row="5" column="0">
+        <widget class="QLabel" name="label_25">
+         <property name="text">
+          <string>Street Growth Score</string>
+         </property>
+        </widget>
+       </item>
+       <item row="4" column="1">
+        <widget class="QDoubleSpinBox" name="highwayGrowthFactor">
+         <property name="maximum">
+          <double>1.000000000000000</double>
+         </property>
+         <property name="singleStep">
+          <double>0.050000000000000</double>
+         </property>
          <property name="value">
           <double>0.750000000000000</double>
+         </property>
+        </widget>
+       </item>
+       <item row="5" column="1">
+        <widget class="QDoubleSpinBox" name="streetGrowthFactor">
+         <property name="maximum">
+          <double>1.000000000000000</double>
+         </property>
+         <property name="singleStep">
+          <double>0.050000000000000</double>
+         </property>
+         <property name="value">
+          <double>0.500000000000000</double>
          </property>
         </widget>
        </item>
@@ -727,21 +782,21 @@
      <property name="geometry">
       <rect>
        <x>260</x>
-       <y>190</y>
+       <y>150</y>
        <width>141</width>
        <height>31</height>
       </rect>
      </property>
      <property name="text">
-      <string>Generate</string>
+      <string>Generate Street Network</string>
      </property>
     </widget>
     <widget class="QPushButton" name="cmdSaveOutput">
      <property name="geometry">
       <rect>
-       <x>260</x>
+       <x>130</x>
        <y>230</y>
-       <width>141</width>
+       <width>121</width>
        <height>31</height>
       </rect>
      </property>
@@ -749,23 +804,10 @@
       <string>Save...</string>
      </property>
     </widget>
-    <widget class="QLabel" name="label_6">
-     <property name="geometry">
-      <rect>
-       <x>10</x>
-       <y>20</y>
-       <width>151</width>
-       <height>41</height>
-      </rect>
-     </property>
-     <property name="text">
-      <string>Various Output Parameters</string>
-     </property>
-    </widget>
     <widget class="QPushButton" name="cmdSaveOutputImage">
      <property name="geometry">
       <rect>
-       <x>140</x>
+       <x>11</x>
        <y>230</y>
        <width>111</width>
        <height>31</height>
@@ -779,9 +821,9 @@
      <property name="geometry">
       <rect>
        <x>10</x>
-       <y>60</y>
+       <y>20</y>
        <width>161</width>
-       <height>161</height>
+       <height>201</height>
       </rect>
      </property>
      <layout class="QVBoxLayout" name="verticalLayout">
@@ -796,7 +838,7 @@
            <x>10</x>
            <y>14</y>
            <width>141</width>
-           <height>141</height>
+           <height>180</height>
           </rect>
          </property>
          <layout class="QVBoxLayout" name="verticalLayout_2">
@@ -860,6 +902,38 @@
             </property>
            </widget>
           </item>
+          <item>
+           <widget class="QCheckBox" name="chkShowRegions">
+            <property name="enabled">
+             <bool>false</bool>
+            </property>
+            <property name="text">
+             <string>Render Building Regions</string>
+            </property>
+            <property name="checkable">
+             <bool>true</bool>
+            </property>
+            <property name="checked">
+             <bool>false</bool>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QCheckBox" name="chkShowLots">
+            <property name="enabled">
+             <bool>false</bool>
+            </property>
+            <property name="text">
+             <string>Render Building Lots</string>
+            </property>
+            <property name="checkable">
+             <bool>true</bool>
+            </property>
+            <property name="checked">
+             <bool>false</bool>
+            </property>
+           </widget>
+          </item>
          </layout>
         </widget>
        </widget>
@@ -870,7 +944,7 @@
      <property name="geometry">
       <rect>
        <x>260</x>
-       <y>110</y>
+       <y>70</y>
        <width>141</width>
        <height>31</height>
       </rect>
@@ -883,7 +957,7 @@
      <property name="geometry">
       <rect>
        <x>260</x>
-       <y>150</y>
+       <y>110</y>
        <width>141</width>
        <height>31</height>
       </rect>
@@ -896,20 +970,20 @@
      <property name="geometry">
       <rect>
        <x>236</x>
-       <y>40</y>
+       <y>20</y>
        <width>171</width>
-       <height>70</height>
+       <height>51</height>
       </rect>
      </property>
      <layout class="QFormLayout" name="formLayout">
-      <item row="2" column="0">
+      <item row="0" column="0">
        <widget class="QLabel" name="label">
         <property name="text">
          <string>Seed:</string>
         </property>
        </widget>
       </item>
-      <item row="2" column="1">
+      <item row="0" column="1">
        <widget class="QSpinBox" name="intSeedValue">
         <property name="minimum">
          <number>-1000000000</number>
@@ -919,7 +993,7 @@
         </property>
        </widget>
       </item>
-      <item row="3" column="1">
+      <item row="1" column="1">
        <widget class="QCheckBox" name="chkTimeSeed">
         <property name="text">
          <string>Use system time</string>
@@ -927,6 +1001,44 @@
        </widget>
       </item>
      </layout>
+    </widget>
+    <widget class="QPushButton" name="cmdGenerateRegions">
+     <property name="enabled">
+      <bool>false</bool>
+     </property>
+     <property name="geometry">
+      <rect>
+       <x>260</x>
+       <y>190</y>
+       <width>141</width>
+       <height>31</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>Create Regions</string>
+     </property>
+     <property name="default">
+      <bool>false</bool>
+     </property>
+     <property name="flat">
+      <bool>false</bool>
+     </property>
+    </widget>
+    <widget class="QPushButton" name="cmdCreateBuildingLots">
+     <property name="enabled">
+      <bool>false</bool>
+     </property>
+     <property name="geometry">
+      <rect>
+       <x>260</x>
+       <y>230</y>
+       <width>141</width>
+       <height>31</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>Create Building Lots</string>
+     </property>
     </widget>
    </widget>
    <widget class="QStreetRenderWidget" name="streetRender">
@@ -1049,7 +1161,7 @@
    <hints>
     <hint type="sourcelabel">
      <x>1650</x>
-     <y>933</y>
+     <y>923</y>
     </hint>
     <hint type="destinationlabel">
      <x>1134</x>
@@ -1065,7 +1177,7 @@
    <hints>
     <hint type="sourcelabel">
      <x>1416</x>
-     <y>836</y>
+     <y>795</y>
     </hint>
     <hint type="destinationlabel">
      <x>955</x>
@@ -1081,7 +1193,7 @@
    <hints>
     <hint type="sourcelabel">
      <x>1416</x>
-     <y>860</y>
+     <y>818</y>
     </hint>
     <hint type="destinationlabel">
      <x>956</x>
@@ -1097,27 +1209,11 @@
    <hints>
     <hint type="sourcelabel">
      <x>1412</x>
-     <y>884</y>
+     <y>841</y>
     </hint>
     <hint type="destinationlabel">
      <x>954</x>
      <y>772</y>
-    </hint>
-   </hints>
-  </connection>
-  <connection>
-   <sender>chkShowVerts</sender>
-   <signal>toggled(bool)</signal>
-   <receiver>streetRender</receiver>
-   <slot>setDrawVertices(bool)</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>1414</x>
-     <y>952</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>966</x>
-     <y>636</y>
     </hint>
    </hints>
   </connection>
@@ -1129,7 +1225,7 @@
    <hints>
     <hint type="sourcelabel">
      <x>1650</x>
-     <y>853</y>
+     <y>843</y>
     </hint>
     <hint type="destinationlabel">
      <x>1378</x>
@@ -1145,7 +1241,7 @@
    <hints>
     <hint type="sourcelabel">
      <x>1650</x>
-     <y>893</y>
+     <y>883</y>
     </hint>
     <hint type="destinationlabel">
      <x>1374</x>
@@ -1160,8 +1256,8 @@
    <slot>onClickSave()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>1650</x>
-     <y>973</y>
+     <x>1640</x>
+     <y>1003</y>
     </hint>
     <hint type="destinationlabel">
      <x>1377</x>
@@ -1176,8 +1272,8 @@
    <slot>onClickSaveImage()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>1530</x>
-     <y>973</y>
+     <x>1511</x>
+     <y>1003</y>
     </hint>
     <hint type="destinationlabel">
      <x>1164</x>
@@ -1193,7 +1289,7 @@
    <hints>
     <hint type="sourcelabel">
      <x>1414</x>
-     <y>924</y>
+     <y>879</y>
     </hint>
     <hint type="destinationlabel">
      <x>955</x>
@@ -1273,7 +1369,7 @@
    <hints>
     <hint type="sourcelabel">
      <x>1492</x>
-     <y>898</y>
+     <y>854</y>
     </hint>
     <hint type="destinationlabel">
      <x>1383</x>
@@ -1288,12 +1384,12 @@
    <slot>setNum(int)</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>267</x>
-     <y>151</y>
+     <x>285</x>
+     <y>136</y>
     </hint>
     <hint type="destinationlabel">
-     <x>285</x>
-     <y>170</y>
+     <x>309</x>
+     <y>136</y>
     </hint>
    </hints>
   </connection>
@@ -1308,8 +1404,8 @@
      <y>94</y>
     </hint>
     <hint type="destinationlabel">
-     <x>305</x>
-     <y>121</y>
+     <x>309</x>
+     <y>104</y>
     </hint>
    </hints>
   </connection>
@@ -1320,12 +1416,12 @@
    <slot>setNum(int)</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>304</x>
-     <y>195</y>
+     <x>285</x>
+     <y>163</y>
     </hint>
     <hint type="destinationlabel">
-     <x>304</x>
-     <y>214</y>
+     <x>309</x>
+     <y>163</y>
     </hint>
    </hints>
   </connection>
@@ -1336,12 +1432,12 @@
    <slot>setNum(int)</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>198</x>
-     <y>399</y>
+     <x>290</x>
+     <y>341</y>
     </hint>
     <hint type="destinationlabel">
      <x>308</x>
-     <y>399</y>
+     <y>341</y>
     </hint>
    </hints>
   </connection>
@@ -1352,12 +1448,12 @@
    <slot>setNum(int)</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>192</x>
-     <y>423</y>
+     <x>290</x>
+     <y>368</y>
     </hint>
     <hint type="destinationlabel">
      <x>308</x>
-     <y>425</y>
+     <y>368</y>
     </hint>
    </hints>
   </connection>
@@ -1368,12 +1464,124 @@
    <slot>setNum(int)</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>191</x>
-     <y>233</y>
+     <x>285</x>
+     <y>190</y>
     </hint>
     <hint type="destinationlabel">
-     <x>192</x>
-     <y>248</y>
+     <x>309</x>
+     <y>190</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>cmdCreateBuildingLots</sender>
+   <signal>clicked()</signal>
+   <receiver>StreetGenerator</receiver>
+   <slot>onClickCreateLots()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>1704</x>
+     <y>988</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>1808</x>
+     <y>982</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>cmdGenerateRegions</sender>
+   <signal>clicked()</signal>
+   <receiver>StreetGenerator</receiver>
+   <slot>onClickCreateRegions()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>1707</x>
+     <y>952</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>1813</x>
+     <y>948</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>chkShowRegions</sender>
+   <signal>toggled(bool)</signal>
+   <receiver>StreetGenerator</receiver>
+   <slot>onClickRenderRegions(bool)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>1453</x>
+     <y>929</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>1387</x>
+     <y>970</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>chkShowLots</sender>
+   <signal>toggled(bool)</signal>
+   <receiver>StreetGenerator</receiver>
+   <slot>onClickRenderLots(bool)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>1442</x>
+     <y>948</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>1385</x>
+     <y>948</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>cmdClearStreetMap</sender>
+   <signal>clicked()</signal>
+   <receiver>StreetGenerator</receiver>
+   <slot>clearStreetmap()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>1210</x>
+     <y>984</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>1136</x>
+     <y>1037</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>buttonSMap</sender>
+   <signal>clicked()</signal>
+   <receiver>StreetGenerator</receiver>
+   <slot>on_button_SMap_Clicked()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>1243</x>
+     <y>988</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>1243</x>
+     <y>1040</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>chkShowVerts</sender>
+   <signal>toggled(bool)</signal>
+   <receiver>StreetGenerator</receiver>
+   <slot>onClickRenderVerts(bool)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>1482</x>
+     <y>902</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>1508</x>
+     <y>737</y>
     </hint>
    </hints>
   </connection>
@@ -1395,6 +1603,13 @@
   <slot>clearPopmap()</slot>
   <slot>cmdLoadDirectory()</slot>
   <slot>on_radPatternClicked()</slot>
+  <slot>onClickCreateLots()</slot>
+  <slot>onClickCreateRegions()</slot>
+  <slot>onClickRenderRegions(bool)</slot>
+  <slot>onClickRenderLots(bool)</slot>
+  <slot>clearStreetmap()</slot>
+  <slot>on_button_SMap_Clicked()</slot>
+  <slot>onClickRenderVerts(bool)</slot>
  </slots>
  <buttongroups>
   <buttongroup name="buttonGroup"/>

@@ -64,28 +64,12 @@ public:
     QGroupBox *groupBox_5;
     QRadioButton *radUseMajorityStreet;
     QRadioButton *radUseWeightedStreet;
-    QGroupBox *groupBox_6;
-    QWidget *gridLayoutWidget;
-    QGridLayout *gridLayout;
-    QSlider *slideRoadSearchAngle;
-    QLabel *label_7;
-    QSlider *sliderRoadSampleInterval;
-    QSlider *sliderSearchAngleIncrease;
-    QLabel *label_5;
-    QLabel *label_4;
-    QLabel *label_3;
-    QLabel *label_2;
-    QLabel *label_8;
-    QSlider *sliderPopSearchRadius;
-    QLabel *label_21;
-    QLabel *label_20;
     QGroupBox *groupBox_7;
     QWidget *gridLayoutWidget_2;
     QGridLayout *gridLayout_2;
     QLabel *label_9;
     QSpinBox *spinMaxBridgeLength;
     QLabel *label_17;
-    QDoubleSpinBox *spinRoadBranchProb;
     QLabel *label_16;
     QLabel *label_15;
     QSlider *slideManhattanBlockHeight;
@@ -98,6 +82,7 @@ public:
     QLabel *label_23;
     QSpinBox *spinStreetLength;
     QSpinBox *spinHighwayLength;
+    QDoubleSpinBox *spinRoadBranchProb;
     QGroupBox *groupBox_8;
     QWidget *gridLayoutWidget_3;
     QGridLayout *gridLayout_3;
@@ -109,10 +94,28 @@ public:
     QSpinBox *spinRoadSnapRadius;
     QLabel *label_18;
     QDoubleSpinBox *spinRoadPruneFactor;
+    QGroupBox *groupBox_6;
+    QWidget *gridLayoutWidget;
+    QGridLayout *gridLayout;
+    QLabel *label_24;
+    QSlider *slideRoadSearchAngle;
+    QLabel *label_7;
+    QSlider *sliderRoadSampleInterval;
+    QSlider *sliderSearchAngleIncrease;
+    QLabel *label_5;
+    QLabel *label_4;
+    QLabel *label_3;
+    QLabel *label_2;
+    QLabel *label_8;
+    QLabel *label_20;
+    QSlider *sliderPopSearchRadius;
+    QLabel *label_21;
+    QLabel *label_25;
+    QDoubleSpinBox *highwayGrowthFactor;
+    QDoubleSpinBox *streetGrowthFactor;
     QGroupBox *groupBox_3;
     QPushButton *cmdGenerateStreets;
     QPushButton *cmdSaveOutput;
-    QLabel *label_6;
     QPushButton *cmdSaveOutputImage;
     QWidget *layoutWidget;
     QVBoxLayout *verticalLayout;
@@ -125,6 +128,8 @@ public:
     QRadioButton *radShowPatternmap;
     QRadioButton *radShowNone;
     QCheckBox *chkShowVerts;
+    QCheckBox *chkShowRegions;
+    QCheckBox *chkShowLots;
     QPushButton *cmdReset;
     QPushButton *cmdStep;
     QWidget *layoutWidget2;
@@ -132,6 +137,8 @@ public:
     QLabel *label;
     QSpinBox *intSeedValue;
     QCheckBox *chkTimeSeed;
+    QPushButton *cmdGenerateRegions;
+    QPushButton *cmdCreateBuildingLots;
     QStreetRenderWidget *streetRender;
     QMenuBar *menuBar;
     QMenu *menuWindows;
@@ -217,99 +224,12 @@ public:
         radUseWeightedStreet->setObjectName(QStringLiteral("radUseWeightedStreet"));
         radUseWeightedStreet->setGeometry(QRect(10, 50, 209, 17));
         radUseWeightedStreet->setChecked(true);
-        groupBox_6 = new QGroupBox(groupBox_2);
-        groupBox_6->setObjectName(QStringLiteral("groupBox_6"));
-        groupBox_6->setGeometry(QRect(10, 20, 301, 211));
-        gridLayoutWidget = new QWidget(groupBox_6);
-        gridLayoutWidget->setObjectName(QStringLiteral("gridLayoutWidget"));
-        gridLayoutWidget->setGeometry(QRect(10, 20, 281, 177));
-        gridLayout = new QGridLayout(gridLayoutWidget);
-        gridLayout->setSpacing(6);
-        gridLayout->setContentsMargins(11, 11, 11, 11);
-        gridLayout->setObjectName(QStringLiteral("gridLayout"));
-        gridLayout->setContentsMargins(0, 0, 0, 0);
-        slideRoadSearchAngle = new QSlider(gridLayoutWidget);
-        slideRoadSearchAngle->setObjectName(QStringLiteral("slideRoadSearchAngle"));
-        slideRoadSearchAngle->setMaximum(360);
-        slideRoadSearchAngle->setValue(70);
-        slideRoadSearchAngle->setOrientation(Qt::Horizontal);
-
-        gridLayout->addWidget(slideRoadSearchAngle, 0, 1, 1, 1);
-
-        label_7 = new QLabel(gridLayoutWidget);
-        label_7->setObjectName(QStringLiteral("label_7"));
-
-        gridLayout->addWidget(label_7, 4, 0, 1, 1);
-
-        sliderRoadSampleInterval = new QSlider(gridLayoutWidget);
-        sliderRoadSampleInterval->setObjectName(QStringLiteral("sliderRoadSampleInterval"));
-        sliderRoadSampleInterval->setMinimum(1);
-        sliderRoadSampleInterval->setMaximum(10);
-        sliderRoadSampleInterval->setValue(2);
-        sliderRoadSampleInterval->setOrientation(Qt::Horizontal);
-
-        gridLayout->addWidget(sliderRoadSampleInterval, 4, 1, 1, 1);
-
-        sliderSearchAngleIncrease = new QSlider(gridLayoutWidget);
-        sliderSearchAngleIncrease->setObjectName(QStringLiteral("sliderSearchAngleIncrease"));
-        sliderSearchAngleIncrease->setMinimum(1);
-        sliderSearchAngleIncrease->setMaximum(10);
-        sliderSearchAngleIncrease->setOrientation(Qt::Horizontal);
-        sliderSearchAngleIncrease->setTickPosition(QSlider::TicksBelow);
-
-        gridLayout->addWidget(sliderSearchAngleIncrease, 2, 1, 1, 1);
-
-        label_5 = new QLabel(gridLayoutWidget);
-        label_5->setObjectName(QStringLiteral("label_5"));
-
-        gridLayout->addWidget(label_5, 3, 1, 1, 1);
-
-        label_4 = new QLabel(gridLayoutWidget);
-        label_4->setObjectName(QStringLiteral("label_4"));
-
-        gridLayout->addWidget(label_4, 2, 0, 1, 1);
-
-        label_3 = new QLabel(gridLayoutWidget);
-        label_3->setObjectName(QStringLiteral("label_3"));
-
-        gridLayout->addWidget(label_3, 1, 1, 1, 1);
-
-        label_2 = new QLabel(gridLayoutWidget);
-        label_2->setObjectName(QStringLiteral("label_2"));
-
-        gridLayout->addWidget(label_2, 0, 0, 1, 1);
-
-        label_8 = new QLabel(gridLayoutWidget);
-        label_8->setObjectName(QStringLiteral("label_8"));
-
-        gridLayout->addWidget(label_8, 5, 1, 1, 1);
-
-        sliderPopSearchRadius = new QSlider(gridLayoutWidget);
-        sliderPopSearchRadius->setObjectName(QStringLiteral("sliderPopSearchRadius"));
-        sliderPopSearchRadius->setMinimum(25);
-        sliderPopSearchRadius->setMaximum(1000);
-        sliderPopSearchRadius->setSingleStep(25);
-        sliderPopSearchRadius->setValue(200);
-        sliderPopSearchRadius->setOrientation(Qt::Horizontal);
-
-        gridLayout->addWidget(sliderPopSearchRadius, 6, 1, 1, 1);
-
-        label_21 = new QLabel(gridLayoutWidget);
-        label_21->setObjectName(QStringLiteral("label_21"));
-
-        gridLayout->addWidget(label_21, 7, 1, 1, 1);
-
-        label_20 = new QLabel(gridLayoutWidget);
-        label_20->setObjectName(QStringLiteral("label_20"));
-
-        gridLayout->addWidget(label_20, 6, 0, 2, 1);
-
         groupBox_7 = new QGroupBox(groupBox_2);
         groupBox_7->setObjectName(QStringLiteral("groupBox_7"));
-        groupBox_7->setGeometry(QRect(10, 240, 301, 211));
+        groupBox_7->setGeometry(QRect(10, 230, 301, 221));
         gridLayoutWidget_2 = new QWidget(groupBox_7);
         gridLayoutWidget_2->setObjectName(QStringLiteral("gridLayoutWidget_2"));
-        gridLayoutWidget_2->setGeometry(QRect(9, 19, 281, 181));
+        gridLayoutWidget_2->setGeometry(QRect(9, 19, 281, 195));
         gridLayout_2 = new QGridLayout(gridLayoutWidget_2);
         gridLayout_2->setSpacing(6);
         gridLayout_2->setContentsMargins(11, 11, 11, 11);
@@ -322,7 +242,8 @@ public:
 
         spinMaxBridgeLength = new QSpinBox(gridLayoutWidget_2);
         spinMaxBridgeLength->setObjectName(QStringLiteral("spinMaxBridgeLength"));
-        spinMaxBridgeLength->setValue(35);
+        spinMaxBridgeLength->setMaximum(1000);
+        spinMaxBridgeLength->setValue(200);
 
         gridLayout_2->addWidget(spinMaxBridgeLength, 0, 1, 1, 2);
 
@@ -330,14 +251,6 @@ public:
         label_17->setObjectName(QStringLiteral("label_17"));
 
         gridLayout_2->addWidget(label_17, 3, 0, 1, 1);
-
-        spinRoadBranchProb = new QDoubleSpinBox(gridLayoutWidget_2);
-        spinRoadBranchProb->setObjectName(QStringLiteral("spinRoadBranchProb"));
-        spinRoadBranchProb->setMaximum(1);
-        spinRoadBranchProb->setSingleStep(0.05);
-        spinRoadBranchProb->setValue(0.75);
-
-        gridLayout_2->addWidget(spinRoadBranchProb, 3, 1, 1, 1);
 
         label_16 = new QLabel(gridLayoutWidget_2);
         label_16->setObjectName(QStringLiteral("label_16"));
@@ -413,9 +326,17 @@ public:
         spinHighwayLength->setMinimum(5);
         spinHighwayLength->setMaximum(500);
         spinHighwayLength->setSingleStep(5);
-        spinHighwayLength->setValue(50);
+        spinHighwayLength->setValue(150);
 
         gridLayout_2->addWidget(spinHighwayLength, 6, 1, 1, 1);
+
+        spinRoadBranchProb = new QDoubleSpinBox(gridLayoutWidget_2);
+        spinRoadBranchProb->setObjectName(QStringLiteral("spinRoadBranchProb"));
+        spinRoadBranchProb->setMaximum(1);
+        spinRoadBranchProb->setSingleStep(0.05);
+        spinRoadBranchProb->setValue(0.75);
+
+        gridLayout_2->addWidget(spinRoadBranchProb, 3, 1, 1, 1);
 
         groupBox_8 = new QGroupBox(groupBox_2);
         groupBox_8->setObjectName(QStringLiteral("groupBox_8"));
@@ -430,6 +351,7 @@ public:
         gridLayout_3->setContentsMargins(0, 0, 0, 0);
         spinRoadExtendLength = new QSpinBox(gridLayoutWidget_3);
         spinRoadExtendLength->setObjectName(QStringLiteral("spinRoadExtendLength"));
+        spinRoadExtendLength->setMaximum(500);
         spinRoadExtendLength->setValue(20);
 
         gridLayout_3->addWidget(spinRoadExtendLength, 0, 1, 1, 1);
@@ -446,6 +368,7 @@ public:
 
         spinMinRoadLength = new QSpinBox(gridLayoutWidget_3);
         spinMinRoadLength->setObjectName(QStringLiteral("spinMinRoadLength"));
+        spinMinRoadLength->setMaximum(200);
         spinMinRoadLength->setValue(10);
         spinMinRoadLength->setDisplayIntegerBase(10);
 
@@ -458,6 +381,7 @@ public:
 
         spinRoadSnapRadius = new QSpinBox(gridLayoutWidget_3);
         spinRoadSnapRadius->setObjectName(QStringLiteral("spinRoadSnapRadius"));
+        spinRoadSnapRadius->setMaximum(500);
         spinRoadSnapRadius->setValue(25);
 
         gridLayout_3->addWidget(spinRoadSnapRadius, 2, 1, 1, 1);
@@ -470,9 +394,123 @@ public:
         spinRoadPruneFactor = new QDoubleSpinBox(gridLayoutWidget_3);
         spinRoadPruneFactor->setObjectName(QStringLiteral("spinRoadPruneFactor"));
         spinRoadPruneFactor->setMaximum(1);
-        spinRoadPruneFactor->setValue(0.75);
+        spinRoadPruneFactor->setSingleStep(0.01);
+        spinRoadPruneFactor->setValue(0.1);
 
         gridLayout_3->addWidget(spinRoadPruneFactor, 3, 1, 1, 1);
+
+        groupBox_6 = new QGroupBox(groupBox_2);
+        groupBox_6->setObjectName(QStringLiteral("groupBox_6"));
+        groupBox_6->setGeometry(QRect(10, 20, 301, 201));
+        gridLayoutWidget = new QWidget(groupBox_6);
+        gridLayoutWidget->setObjectName(QStringLiteral("gridLayoutWidget"));
+        gridLayoutWidget->setGeometry(QRect(10, 20, 281, 171));
+        gridLayout = new QGridLayout(gridLayoutWidget);
+        gridLayout->setSpacing(6);
+        gridLayout->setContentsMargins(11, 11, 11, 11);
+        gridLayout->setObjectName(QStringLiteral("gridLayout"));
+        gridLayout->setContentsMargins(0, 0, 0, 0);
+        label_24 = new QLabel(gridLayoutWidget);
+        label_24->setObjectName(QStringLiteral("label_24"));
+
+        gridLayout->addWidget(label_24, 4, 0, 1, 1);
+
+        slideRoadSearchAngle = new QSlider(gridLayoutWidget);
+        slideRoadSearchAngle->setObjectName(QStringLiteral("slideRoadSearchAngle"));
+        slideRoadSearchAngle->setMaximum(360);
+        slideRoadSearchAngle->setValue(70);
+        slideRoadSearchAngle->setOrientation(Qt::Horizontal);
+
+        gridLayout->addWidget(slideRoadSearchAngle, 0, 1, 1, 1);
+
+        label_7 = new QLabel(gridLayoutWidget);
+        label_7->setObjectName(QStringLiteral("label_7"));
+
+        gridLayout->addWidget(label_7, 2, 0, 1, 1);
+
+        sliderRoadSampleInterval = new QSlider(gridLayoutWidget);
+        sliderRoadSampleInterval->setObjectName(QStringLiteral("sliderRoadSampleInterval"));
+        sliderRoadSampleInterval->setMinimum(1);
+        sliderRoadSampleInterval->setMaximum(10);
+        sliderRoadSampleInterval->setValue(2);
+        sliderRoadSampleInterval->setOrientation(Qt::Horizontal);
+
+        gridLayout->addWidget(sliderRoadSampleInterval, 2, 1, 1, 1);
+
+        sliderSearchAngleIncrease = new QSlider(gridLayoutWidget);
+        sliderSearchAngleIncrease->setObjectName(QStringLiteral("sliderSearchAngleIncrease"));
+        sliderSearchAngleIncrease->setMinimum(1);
+        sliderSearchAngleIncrease->setMaximum(10);
+        sliderSearchAngleIncrease->setOrientation(Qt::Horizontal);
+        sliderSearchAngleIncrease->setTickPosition(QSlider::TicksBelow);
+
+        gridLayout->addWidget(sliderSearchAngleIncrease, 1, 1, 1, 1);
+
+        label_5 = new QLabel(gridLayoutWidget);
+        label_5->setObjectName(QStringLiteral("label_5"));
+
+        gridLayout->addWidget(label_5, 1, 2, 1, 1);
+
+        label_4 = new QLabel(gridLayoutWidget);
+        label_4->setObjectName(QStringLiteral("label_4"));
+
+        gridLayout->addWidget(label_4, 1, 0, 1, 1);
+
+        label_3 = new QLabel(gridLayoutWidget);
+        label_3->setObjectName(QStringLiteral("label_3"));
+
+        gridLayout->addWidget(label_3, 0, 2, 1, 1);
+
+        label_2 = new QLabel(gridLayoutWidget);
+        label_2->setObjectName(QStringLiteral("label_2"));
+
+        gridLayout->addWidget(label_2, 0, 0, 1, 1);
+
+        label_8 = new QLabel(gridLayoutWidget);
+        label_8->setObjectName(QStringLiteral("label_8"));
+
+        gridLayout->addWidget(label_8, 2, 2, 1, 1);
+
+        label_20 = new QLabel(gridLayoutWidget);
+        label_20->setObjectName(QStringLiteral("label_20"));
+
+        gridLayout->addWidget(label_20, 3, 0, 1, 1);
+
+        sliderPopSearchRadius = new QSlider(gridLayoutWidget);
+        sliderPopSearchRadius->setObjectName(QStringLiteral("sliderPopSearchRadius"));
+        sliderPopSearchRadius->setMinimum(25);
+        sliderPopSearchRadius->setMaximum(1000);
+        sliderPopSearchRadius->setSingleStep(25);
+        sliderPopSearchRadius->setValue(200);
+        sliderPopSearchRadius->setOrientation(Qt::Horizontal);
+
+        gridLayout->addWidget(sliderPopSearchRadius, 3, 1, 1, 1);
+
+        label_21 = new QLabel(gridLayoutWidget);
+        label_21->setObjectName(QStringLiteral("label_21"));
+
+        gridLayout->addWidget(label_21, 3, 2, 1, 1);
+
+        label_25 = new QLabel(gridLayoutWidget);
+        label_25->setObjectName(QStringLiteral("label_25"));
+
+        gridLayout->addWidget(label_25, 5, 0, 1, 1);
+
+        highwayGrowthFactor = new QDoubleSpinBox(gridLayoutWidget);
+        highwayGrowthFactor->setObjectName(QStringLiteral("highwayGrowthFactor"));
+        highwayGrowthFactor->setMaximum(1);
+        highwayGrowthFactor->setSingleStep(0.05);
+        highwayGrowthFactor->setValue(0.75);
+
+        gridLayout->addWidget(highwayGrowthFactor, 4, 1, 1, 1);
+
+        streetGrowthFactor = new QDoubleSpinBox(gridLayoutWidget);
+        streetGrowthFactor->setObjectName(QStringLiteral("streetGrowthFactor"));
+        streetGrowthFactor->setMaximum(1);
+        streetGrowthFactor->setSingleStep(0.05);
+        streetGrowthFactor->setValue(0.5);
+
+        gridLayout->addWidget(streetGrowthFactor, 5, 1, 1, 1);
 
         groupBox_3 = new QGroupBox(centralWidget);
         groupBox_3->setObjectName(QStringLiteral("groupBox_3"));
@@ -484,19 +522,16 @@ public:
         groupBox_3->setSizePolicy(sizePolicy);
         cmdGenerateStreets = new QPushButton(groupBox_3);
         cmdGenerateStreets->setObjectName(QStringLiteral("cmdGenerateStreets"));
-        cmdGenerateStreets->setGeometry(QRect(260, 190, 141, 31));
+        cmdGenerateStreets->setGeometry(QRect(260, 150, 141, 31));
         cmdSaveOutput = new QPushButton(groupBox_3);
         cmdSaveOutput->setObjectName(QStringLiteral("cmdSaveOutput"));
-        cmdSaveOutput->setGeometry(QRect(260, 230, 141, 31));
-        label_6 = new QLabel(groupBox_3);
-        label_6->setObjectName(QStringLiteral("label_6"));
-        label_6->setGeometry(QRect(10, 20, 151, 41));
+        cmdSaveOutput->setGeometry(QRect(130, 230, 121, 31));
         cmdSaveOutputImage = new QPushButton(groupBox_3);
         cmdSaveOutputImage->setObjectName(QStringLiteral("cmdSaveOutputImage"));
-        cmdSaveOutputImage->setGeometry(QRect(140, 230, 111, 31));
+        cmdSaveOutputImage->setGeometry(QRect(11, 230, 111, 31));
         layoutWidget = new QWidget(groupBox_3);
         layoutWidget->setObjectName(QStringLiteral("layoutWidget"));
-        layoutWidget->setGeometry(QRect(10, 60, 161, 161));
+        layoutWidget->setGeometry(QRect(10, 20, 161, 201));
         verticalLayout = new QVBoxLayout(layoutWidget);
         verticalLayout->setSpacing(6);
         verticalLayout->setContentsMargins(11, 11, 11, 11);
@@ -506,7 +541,7 @@ public:
         groupBox_4->setObjectName(QStringLiteral("groupBox_4"));
         layoutWidget1 = new QWidget(groupBox_4);
         layoutWidget1->setObjectName(QStringLiteral("layoutWidget1"));
-        layoutWidget1->setGeometry(QRect(10, 14, 141, 141));
+        layoutWidget1->setGeometry(QRect(10, 14, 141, 180));
         verticalLayout_2 = new QVBoxLayout(layoutWidget1);
         verticalLayout_2->setSpacing(6);
         verticalLayout_2->setContentsMargins(11, 11, 11, 11);
@@ -550,18 +585,34 @@ public:
 
         verticalLayout_2->addWidget(chkShowVerts);
 
+        chkShowRegions = new QCheckBox(layoutWidget1);
+        chkShowRegions->setObjectName(QStringLiteral("chkShowRegions"));
+        chkShowRegions->setEnabled(false);
+        chkShowRegions->setCheckable(true);
+        chkShowRegions->setChecked(false);
+
+        verticalLayout_2->addWidget(chkShowRegions);
+
+        chkShowLots = new QCheckBox(layoutWidget1);
+        chkShowLots->setObjectName(QStringLiteral("chkShowLots"));
+        chkShowLots->setEnabled(false);
+        chkShowLots->setCheckable(true);
+        chkShowLots->setChecked(false);
+
+        verticalLayout_2->addWidget(chkShowLots);
+
 
         verticalLayout->addWidget(groupBox_4);
 
         cmdReset = new QPushButton(groupBox_3);
         cmdReset->setObjectName(QStringLiteral("cmdReset"));
-        cmdReset->setGeometry(QRect(260, 110, 141, 31));
+        cmdReset->setGeometry(QRect(260, 70, 141, 31));
         cmdStep = new QPushButton(groupBox_3);
         cmdStep->setObjectName(QStringLiteral("cmdStep"));
-        cmdStep->setGeometry(QRect(260, 150, 141, 31));
+        cmdStep->setGeometry(QRect(260, 110, 141, 31));
         layoutWidget2 = new QWidget(groupBox_3);
         layoutWidget2->setObjectName(QStringLiteral("layoutWidget2"));
-        layoutWidget2->setGeometry(QRect(236, 40, 171, 70));
+        layoutWidget2->setGeometry(QRect(236, 20, 171, 51));
         formLayout = new QFormLayout(layoutWidget2);
         formLayout->setSpacing(6);
         formLayout->setContentsMargins(11, 11, 11, 11);
@@ -570,20 +621,30 @@ public:
         label = new QLabel(layoutWidget2);
         label->setObjectName(QStringLiteral("label"));
 
-        formLayout->setWidget(2, QFormLayout::LabelRole, label);
+        formLayout->setWidget(0, QFormLayout::LabelRole, label);
 
         intSeedValue = new QSpinBox(layoutWidget2);
         intSeedValue->setObjectName(QStringLiteral("intSeedValue"));
         intSeedValue->setMinimum(-1000000000);
         intSeedValue->setMaximum(1000000000);
 
-        formLayout->setWidget(2, QFormLayout::FieldRole, intSeedValue);
+        formLayout->setWidget(0, QFormLayout::FieldRole, intSeedValue);
 
         chkTimeSeed = new QCheckBox(layoutWidget2);
         chkTimeSeed->setObjectName(QStringLiteral("chkTimeSeed"));
 
-        formLayout->setWidget(3, QFormLayout::FieldRole, chkTimeSeed);
+        formLayout->setWidget(1, QFormLayout::FieldRole, chkTimeSeed);
 
+        cmdGenerateRegions = new QPushButton(groupBox_3);
+        cmdGenerateRegions->setObjectName(QStringLiteral("cmdGenerateRegions"));
+        cmdGenerateRegions->setEnabled(false);
+        cmdGenerateRegions->setGeometry(QRect(260, 190, 141, 31));
+        cmdGenerateRegions->setDefault(false);
+        cmdGenerateRegions->setFlat(false);
+        cmdCreateBuildingLots = new QPushButton(groupBox_3);
+        cmdCreateBuildingLots->setObjectName(QStringLiteral("cmdCreateBuildingLots"));
+        cmdCreateBuildingLots->setEnabled(false);
+        cmdCreateBuildingLots->setGeometry(QRect(260, 230, 141, 31));
         streetRender = new QStreetRenderWidget(centralWidget);
         streetRender->setObjectName(QStringLiteral("streetRender"));
         streetRender->setGeometry(QRect(350, 20, 1451, 681));
@@ -619,7 +680,6 @@ public:
         QObject::connect(radShowPopulation, SIGNAL(toggled(bool)), StreetGenerator, SLOT(on_radPopClicked()));
         QObject::connect(radShowGeography, SIGNAL(toggled(bool)), StreetGenerator, SLOT(on_radGeogClicked()));
         QObject::connect(radShowHeightmap, SIGNAL(toggled(bool)), StreetGenerator, SLOT(on_radHeightClicked()));
-        QObject::connect(chkShowVerts, SIGNAL(toggled(bool)), streetRender, SLOT(setDrawVertices(bool)));
         QObject::connect(cmdReset, SIGNAL(clicked()), StreetGenerator, SLOT(onClickReset()));
         QObject::connect(cmdStep, SIGNAL(clicked()), StreetGenerator, SLOT(onClickStep()));
         QObject::connect(cmdSaveOutput, SIGNAL(clicked()), StreetGenerator, SLOT(onClickSave()));
@@ -636,6 +696,13 @@ public:
         QObject::connect(slideManhattanBlocKWidth, SIGNAL(valueChanged(int)), label_16, SLOT(setNum(int)));
         QObject::connect(slideManhattanBlockHeight, SIGNAL(valueChanged(int)), label_15, SLOT(setNum(int)));
         QObject::connect(sliderPopSearchRadius, SIGNAL(valueChanged(int)), label_21, SLOT(setNum(int)));
+        QObject::connect(cmdCreateBuildingLots, SIGNAL(clicked()), StreetGenerator, SLOT(onClickCreateLots()));
+        QObject::connect(cmdGenerateRegions, SIGNAL(clicked()), StreetGenerator, SLOT(onClickCreateRegions()));
+        QObject::connect(chkShowRegions, SIGNAL(toggled(bool)), StreetGenerator, SLOT(onClickRenderRegions(bool)));
+        QObject::connect(chkShowLots, SIGNAL(toggled(bool)), StreetGenerator, SLOT(onClickRenderLots(bool)));
+        QObject::connect(cmdClearStreetMap, SIGNAL(clicked()), StreetGenerator, SLOT(clearStreetmap()));
+        QObject::connect(buttonSMap, SIGNAL(clicked()), StreetGenerator, SLOT(on_button_SMap_Clicked()));
+        QObject::connect(chkShowVerts, SIGNAL(toggled(bool)), StreetGenerator, SLOT(onClickRenderVerts(bool)));
 
         QMetaObject::connectSlotsByName(StreetGenerator);
     } // setupUi
@@ -663,15 +730,6 @@ public:
         groupBox_5->setTitle(QApplication::translate("StreetGenerator", "Street Pattern Evaluation", 0));
         radUseMajorityStreet->setText(QApplication::translate("StreetGenerator", "Majority ", 0));
         radUseWeightedStreet->setText(QApplication::translate("StreetGenerator", "Weighted Values", 0));
-        groupBox_6->setTitle(QApplication::translate("StreetGenerator", "Search Parameters", 0));
-        label_7->setText(QApplication::translate("StreetGenerator", "Road Sample Interval", 0));
-        label_5->setText(QApplication::translate("StreetGenerator", "1", 0));
-        label_4->setText(QApplication::translate("StreetGenerator", "Angle Search Increment", 0));
-        label_3->setText(QApplication::translate("StreetGenerator", "70", 0));
-        label_2->setText(QApplication::translate("StreetGenerator", "Road Search Angle", 0));
-        label_8->setText(QApplication::translate("StreetGenerator", "2", 0));
-        label_21->setText(QApplication::translate("StreetGenerator", "200", 0));
-        label_20->setText(QApplication::translate("StreetGenerator", "Pop Search Radius", 0));
         groupBox_7->setTitle(QApplication::translate("StreetGenerator", "Road Properties", 0));
         label_9->setText(QApplication::translate("StreetGenerator", "Max Bridge Length", 0));
         label_17->setText(QApplication::translate("StreetGenerator", "Road Branch Probability", 0));
@@ -687,10 +745,20 @@ public:
         label_11->setText(QApplication::translate("StreetGenerator", "Min Road Length", 0));
         label_12->setText(QApplication::translate("StreetGenerator", "Road Snap Radius", 0));
         label_18->setText(QApplication::translate("StreetGenerator", "Road Prune Factor", 0));
+        groupBox_6->setTitle(QApplication::translate("StreetGenerator", "Search Parameters", 0));
+        label_24->setText(QApplication::translate("StreetGenerator", "HIghway Growth Score", 0));
+        label_7->setText(QApplication::translate("StreetGenerator", "Road Sample Interval", 0));
+        label_5->setText(QApplication::translate("StreetGenerator", "1", 0));
+        label_4->setText(QApplication::translate("StreetGenerator", "Angle Search Increment", 0));
+        label_3->setText(QApplication::translate("StreetGenerator", "70", 0));
+        label_2->setText(QApplication::translate("StreetGenerator", "Road Search Angle", 0));
+        label_8->setText(QApplication::translate("StreetGenerator", "2", 0));
+        label_20->setText(QApplication::translate("StreetGenerator", "Pop Search Radius", 0));
+        label_21->setText(QApplication::translate("StreetGenerator", "200", 0));
+        label_25->setText(QApplication::translate("StreetGenerator", "Street Growth Score", 0));
         groupBox_3->setTitle(QApplication::translate("StreetGenerator", "Controls", 0));
-        cmdGenerateStreets->setText(QApplication::translate("StreetGenerator", "Generate", 0));
+        cmdGenerateStreets->setText(QApplication::translate("StreetGenerator", "Generate Street Network", 0));
         cmdSaveOutput->setText(QApplication::translate("StreetGenerator", "Save...", 0));
-        label_6->setText(QApplication::translate("StreetGenerator", "Various Output Parameters", 0));
         cmdSaveOutputImage->setText(QApplication::translate("StreetGenerator", "Save Image", 0));
         groupBox_4->setTitle(QApplication::translate("StreetGenerator", "Render Options", 0));
         radShowPopulation->setText(QApplication::translate("StreetGenerator", "Show Population", 0));
@@ -699,10 +767,14 @@ public:
         radShowPatternmap->setText(QApplication::translate("StreetGenerator", "Show Street Patterns", 0));
         radShowNone->setText(QApplication::translate("StreetGenerator", "Show None", 0));
         chkShowVerts->setText(QApplication::translate("StreetGenerator", "Show Vertices", 0));
+        chkShowRegions->setText(QApplication::translate("StreetGenerator", "Render Building Regions", 0));
+        chkShowLots->setText(QApplication::translate("StreetGenerator", "Render Building Lots", 0));
         cmdReset->setText(QApplication::translate("StreetGenerator", "Initialise / Reset", 0));
         cmdStep->setText(QApplication::translate("StreetGenerator", "Step...", 0));
         label->setText(QApplication::translate("StreetGenerator", "Seed:", 0));
         chkTimeSeed->setText(QApplication::translate("StreetGenerator", "Use system time", 0));
+        cmdGenerateRegions->setText(QApplication::translate("StreetGenerator", "Create Regions", 0));
+        cmdCreateBuildingLots->setText(QApplication::translate("StreetGenerator", "Create Building Lots", 0));
         menuWindows->setTitle(QApplication::translate("StreetGenerator", "Windows", 0));
     } // retranslateUi
 

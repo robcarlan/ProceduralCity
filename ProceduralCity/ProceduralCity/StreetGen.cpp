@@ -22,15 +22,20 @@ void StreetGen::setSeed() {
 	rng.seed(static_cast<unsigned int>(std::time(0)));
 }
 
-StreetGen::StreetGen() {
+StreetGen::StreetGen(CityView2D *view, Point size) {
 	ready = finished = false;
-	setSize(Point(2048.0f, 2048.0f));
+	setSize(size);
 
 	parkCol = qRgb(100, 170, 100);
 	landCol = qRgb(200, 200, 200);
 	waterCol = qRgb(140, 140, 220);
 
 	setDefaultValues();
+
+	streets = StreetManager::StreetManager(size, view);
+}
+
+StreetGen::StreetGen() {
 }
 
 void StreetGen::setDefaultValues() {
@@ -44,6 +49,8 @@ void StreetGen::setDefaultValues() {
 	manhattanBlockWidth = 30.0f;
 	manhattanBlockHeight = 20.0f;
 
+	minHighwayGrowthFactor = 0.5f;
+	minStreetGrowthFactor = 0.25f;
 	minHighwayGrowthScore = 10.0f;
 	minStreetGrowthScore = 10.0f;
 
@@ -56,18 +63,18 @@ void StreetGen::setDefaultValues() {
 
 	//Intersection fitting
 	extendRadius = 20.0f;
-	minDistanceSq = 225.0f;
+	roadSnap = 25.0f;
+	minDistanceSq = extendRadius * extendRadius;
 	minLength = 10.0f;
 	useWeightedVals = true;
 }
 
 StreetGen::VarList* StreetGen::applyGlobalConstraints(ruleAttr rules, roadAttr roads) {
 	//Create 3 sets of new variables
-
 	if (roads.connected) {
-		//We shouldnt return an empty variable
+		//Parent street has connected to an intersection -> stops growing.
 		VarList *result = new VarList();
-		result->push_back(Variable(variableType::ROAD, -1));
+		result->push_back(RoadVariable(variableType::ROAD, -1));
 		return result;
 	}
 
@@ -132,19 +139,17 @@ StreetGen::VarList* StreetGen::applyGlobalConstraints(ruleAttr rules, roadAttr r
 	delay[BRANCH2] = 10;
 	delay[ROAD] = 1;
 
-
 	//Set all roads to have some new length
-	float newLength = 50.0f;
 	nroads[BRANCH1].length = streetLength;// +uniform(rng) * 20.0f;
 	nroads[BRANCH2].length = streetLength;//  +uniform(rng) * 20.0f;
-
-	nroads[ROAD].length = newLength;
+	nroads[ROAD].length = highwaylength;
 
 	//Calculate new end positions
 	for (int i = 0; i < 3; i++) {
 		if (nroads[i].rtype == roadType::MAINROAD) nroads[i].length = highwaylength;
 
 		//Create unit vector in direction
+		//if (nroads[i].angle < 0.0f) nroads[i].angle += math::two_pi<float>();
 		nroads[i].angle = math::mod<float>(nroads[i].angle, math::two_pi<float>());
 		Point unit = Point(cosf(nroads[i].angle), sinf(nroads[i].angle));
 		unit *= nroads[i].length;
@@ -162,6 +167,20 @@ StreetGen::VarList* StreetGen::applyGlobalConstraints(ruleAttr rules, roadAttr r
 			getPatternWeightings(roads.end.x(), roads.end.y(), values);
 			Point ends[4];
 			int patternCount = 0;
+			float maxVal = 0.0f;
+			int maxIndex;
+
+			for (int x = 0; x < 4; x++) {
+				if (values[x] > maxVal) {
+					maxVal = values[x];
+					maxIndex = x;
+				}
+			}
+			roads.majorityPattern = static_cast<roadPattern>(maxIndex);
+			roads.manhattanFactor = values[MANHATTAN_PATTERN_INDEX];
+			roads.sfFactor = values[SF_PATTERN_INDEX];
+			roads.naturalFactor = values[NATURAL_PATTERN_INDEX];
+			roads.radialFactor = values[RADIAL_PATTERN_INDEX];
 
 			if (values[NATURAL_PATTERN_INDEX] - 0.01f > 0) {
 				ends[NATURAL_PATTERN_INDEX] = naturalRule(&nroads[i], &nrules[i]);
@@ -195,14 +214,21 @@ StreetGen::VarList* StreetGen::applyGlobalConstraints(ruleAttr rules, roadAttr r
 				}
 			}
 
+			roads.majorityPattern = static_cast<roadPattern>(maxIndex);
+			roads.manhattanFactor = roads.sfFactor = roads.naturalFactor = roads.radialFactor = 0;
+
 			if (maxIndex == MANHATTAN_PATTERN_INDEX) {
 				nroads[i].end = manhattanRule(&nroads[i]);
+				roads.manhattanFactor = 1.0f;
 			} else if (maxIndex == RADIAL_PATTERN_INDEX) {
 				nroads[i].end = radialRule(&nrules[i], &nroads[i]);
+				roads.radialFactor = 1.0f;
 			} else if (maxIndex == SF_PATTERN_INDEX) {
 				nroads[i].end = sanFransiscoRule(&nroads[i]);
+				roads.sfFactor = 1.0f;
 			} else {
 				nroads[i].end = naturalRule(&nroads[i], &nrules[i]);
+				roads.naturalFactor = 1.0f;
 			}
 		}
 	}
@@ -213,10 +239,10 @@ StreetGen::VarList* StreetGen::applyGlobalConstraints(ruleAttr rules, roadAttr r
 	}
 
 	//Create the new variables, for the production
-	Variable branch1 = Variable(variableType::BRANCH, delay[BRANCH1], nrules[BRANCH1], nroads[BRANCH1]);
-	Variable branch2 = Variable(variableType::BRANCH, delay[BRANCH2], nrules[BRANCH2], nroads[BRANCH2]);
-	Variable road = Variable(variableType::ROAD, delay[ROAD], nrules[ROAD], nroads[ROAD]);
-	Variable insertion = Variable(variableType::INSERTION, delay[ROAD], nrules[ROAD], nroads[ROAD]);
+	RoadVariable branch1 = RoadVariable(variableType::BRANCH, delay[BRANCH1], nrules[BRANCH1], nroads[BRANCH1]);
+	RoadVariable branch2 = RoadVariable(variableType::BRANCH, delay[BRANCH2], nrules[BRANCH2], nroads[BRANCH2]);
+	RoadVariable road = RoadVariable(variableType::ROAD, delay[ROAD], nrules[ROAD], nroads[ROAD]);
+	RoadVariable insertion = RoadVariable(variableType::INSERTION, delay[ROAD], nrules[ROAD], nroads[ROAD]);
 	insertion.state = solutionState::UNASSIGNED;
 
 	VarList* newList = new VarList();
@@ -228,21 +254,41 @@ StreetGen::VarList* StreetGen::applyGlobalConstraints(ruleAttr rules, roadAttr r
 	return newList;
 }
 
-void StreetGen::applyLocalConstraints(Variable *toCheck) {
+void StreetGen::applyLocalConstraints(RoadVariable *toCheck) {
 	Road temp = Road(toCheck->road.start, toCheck->road.end);
+
 	bool connectedToIntersection = false;
+	bool connectedToNewIntersection = false;
 	bool legalPlacement = tryMakeLegal(toCheck, &temp);
 
 	if (toCheck->road.parentRoad != nullptr)
 		assert(toCheck->road.start.x() - toCheck->road.parentRoad->getEnd().x() < 0.01f
 			&& toCheck->road.start.y() - toCheck->road.parentRoad->getEnd().y() < 0.01f);
 
-	bool legalIntersection = tryConnectToExisting(toCheck, &temp, connectedToIntersection);
+	if (toCheck->road.end.x() - 1627.4f < 1.0f && toCheck->road.end.y() == 1247.6f < 1.0f)
+		qDebug() << "A";
+	if (toCheck->road.end.x() - 1614.2f < 1.0f && toCheck->road.end.y() == 1267.6f < 1.0f)
+		qDebug() << "A";
+	if (toCheck->road.start.x() == 2045.0f && toCheck->road.start.y() == 1074.0f)
+		qDebug() << "A";
+
+	bool legalIntersection = tryConnectToExisting(toCheck, &temp, connectedToIntersection, connectedToNewIntersection);
+
+	if (toCheck->road.end.x() == 2045.0f && toCheck->road.end.y() == 1074.0f)
+		qDebug() << "A";
+	if (toCheck->road.end.x() == 2041.0f && toCheck->road.end.y() == 1050.0f)
+		qDebug() << "A";
+
 	//Check close to intersection here?
+	//Ensure unique ness here please
+	bool isUniqueRoad = true;
+	//If we are connecting to an intersection that already exists
+	if (!connectedToNewIntersection && connectedToIntersection) isUniqueRoad = isUnique(toCheck, &temp);
+
 	bool legalAngle = !overlapsConnected(toCheck, &temp);
-	bool legalLength =  toCheck->road.length * toCheck->road.length > minDistanceSq;
-	legalLength = temp.length() * temp.length() > minDistanceSq;
-	if (legalPlacement && legalIntersection && legalAngle && legalLength) toCheck->state = solutionState::SUCCEED;
+	bool legalLength =  toCheck->road.length * toCheck->road.length > minLength;
+	legalLength = temp.length() * temp.length() > minLength;
+	if (legalPlacement && legalIntersection && legalAngle && legalLength && isUniqueRoad) toCheck->state = solutionState::SUCCEED;
 	else toCheck->state = solutionState::FAILED;
 	//Stop growing street
 	if (connectedToIntersection) 
@@ -250,7 +296,7 @@ void StreetGen::applyLocalConstraints(Variable *toCheck) {
 }
 
 //Todo :: check angles
-bool StreetGen::tryMakeLegal(Variable * toCheck, Road * tempRoad) {
+bool StreetGen::tryMakeLegal(RoadVariable * toCheck, Road * tempRoad) {
 	//BUG angle change
 	bool isLegal = false;
 	bool withinBounds;
@@ -313,6 +359,20 @@ bool StreetGen::tryMakeLegal(Variable * toCheck, Road * tempRoad) {
 	return true;
 }
 
+bool StreetGen::isUnique(RoadVariable * toCheck, Road * tempRoad) {
+	RoadIntersection *s = toCheck->road.target;
+	if (s == nullptr) return true;
+	BOOST_FOREACH(Road *rItr, s->connected) {
+		if (rItr == tempRoad) continue; 
+		else {
+			if ((rItr->getStart() == tempRoad->getEnd()) && (rItr->getEnd() == tempRoad->getStart())) 
+				return false;
+		}
+	}
+
+	return true;
+}
+
 void StreetGen::getIllegalSegment(Road segment, bool &legal) {
 		//Linearly interpolate between start and end, sample for invalid positions
 		float rLength = segment.length();
@@ -360,7 +420,7 @@ void StreetGen::getIllegalSegment(Road segment, bool &legal) {
 		return;
 }
 
-bool StreetGen::overlapsConnected(Variable * toCheck, Road * tempRoad) {
+bool StreetGen::overlapsConnected(RoadVariable * toCheck, Road * tempRoad) {
 	//Test connected roads for roads of similar angle (prevent this)
 	//For roads at each intersection, test for angle / weird
 
@@ -386,7 +446,7 @@ bool StreetGen::overlapsConnected(Variable * toCheck, Road * tempRoad) {
 	return false;
 }
 
-bool StreetGen::tryConnectToExisting(Variable * toCheck, Road *tempRoad, bool &connectedToIntersection) {
+bool StreetGen::tryConnectToExisting(RoadVariable * toCheck, Road *tempRoad, bool &connectedToIntersection, bool &connectedToNewIntersection) {
 	std::vector<StreetManager::intersectionRec> intersections;
 	streets.getIntersectingEdges(*tempRoad, intersections);
 
@@ -402,22 +462,30 @@ bool StreetGen::tryConnectToExisting(Variable * toCheck, Road *tempRoad, bool &c
 		toCheck->state = solutionState::SUCCEED;
 		legalPlacement = true;
 		connectedToIntersection = true;
+		connectedToNewIntersection = true;
 	}
 	else { //Road does not intersect, so lets see if it is near to an existing crossing.
-		std::vector<RoadIntersection *> existingIntersections;
-		streets.getNearbyVertices(toCheck->road.end, extendRadius, existingIntersections);
+		std::vector<RoadIntersection *> possibleExistingIntersections;
+		streets.getNearbyVertices(toCheck->road.end, extendRadius, possibleExistingIntersections);
 		bool connectToIntersection = false;
 
-		if (existingIntersections.size() > 0) {
+		if (possibleExistingIntersections.size() > 0) {
 			//we may be able to extend the road to join an intersection
+			std::sort(possibleExistingIntersections.begin(), possibleExistingIntersections.end(),
+				[&toCheck](RoadIntersection * a, RoadIntersection * b) { return a->location.getDistanceSq(toCheck->road.start) 
+					< b->location.getDistanceSq(toCheck->road.start); });
 
 			//sort by closest, then attach to the first intersection which doesn't intersect other lines
-			BOOST_FOREACH(RoadIntersection *it, existingIntersections) {
+			BOOST_FOREACH(RoadIntersection *it, possibleExistingIntersections) {
 				streets.getIntersectingEdges(Road(toCheck->road.start, it->location), intersections);
-				if (intersections.size() == 0 && toCheck->road.start.getDistanceSq(it->location) > minDistanceSq) {
+				//TODO :: Filter when intersections are part of the road we are joining to?
+				bool legalIntersection = (intersections.size() == 0);
+
+				if (legalIntersection && toCheck->road.start.getDistanceSq(it->location) > minDistanceSq) {
 					toCheck->road.end = it->location;
 					toCheck->road.targetRoad = it->connected.front();
 					toCheck->road.target = it;
+					connectedToNewIntersection = false;
 					connectToIntersection = true; legalPlacement = true;
 					break;
 				}
@@ -436,14 +504,32 @@ bool StreetGen::tryConnectToExisting(Variable * toCheck, Road *tempRoad, bool &c
 			//TODO :: SEARCH FOR MINIMUM
 			if (intersections.size() > 0 && toCheck->road.start.getDistanceSq(extended) > minDistanceSq) {
 				//Allign road to first intersection
-				toCheck->road.end = intersections.front().first;
-				toCheck->road.targetRoad = intersections.front().second;
-				connectToIntersection = true;
+				auto minIntersect = streets.getClosest(toCheck->road.start, intersections);
+				bool isSnapped = false;
+				BOOST_FOREACH(RoadIntersection *intersection, *minIntersect->second->getIntersections()) {
+					if (isSnapped) continue;
+					//Try and snap to an intersection if it is arbritrarily close
+					if (intersection->location.getDistanceSq(minIntersect->first) < 5.0f * 5.0f) {
+						toCheck->road.end = intersection->location;
+						toCheck->road.target = intersection;
+						toCheck->road.targetRoad = minIntersect->second;
+						connectedToIntersection = true;
+						connectedToNewIntersection = false;
+						isSnapped = true;
+					}
+				}
 
+				if (!isSnapped) {
+					toCheck->road.end = minIntersect->first;
+					toCheck->road.targetRoad = minIntersect->second;
+					connectToIntersection = true;
+					connectedToNewIntersection = true;
+				}
 			}
 		}
 	}
 
+	if (connectedToIntersection) assert(toCheck->road.targetRoad != nullptr);
 	tempRoad->setEnd(toCheck->road.end);
 	return legalPlacement;
 }
@@ -452,6 +538,11 @@ void StreetGen::addRoadToSystem(roadAttr &roads) {
 
 	//Create first intersection if necessary
 	std::vector<RoadIntersection*> nearby;
+
+	if (roads.end.x() == 2045.0f && roads.end.y() == 1074.0f)
+		qDebug() << "A";
+	if (roads.end.x() == 2041.0f && roads.end.y() == 1050.0f)
+		qDebug() << "B";
 
 	//Case for initial road. We have to manually attach the start intersection before creating the road.
 	if (roads.parentRoad == nullptr) {
@@ -490,53 +581,6 @@ void StreetGen::addRoadToSystem(roadAttr &roads) {
 	assert(road->intersections.size() >= 2);
 }
 
-//Splice new variables into position, then remove all empty variables
-void StreetGen::afterIteration() {
-	//Only replace if toInsert isn't empty
-	//if (toInsert.size() == 0) return;
-
-	VarIterator it = current.begin();
-	std::list<std::pair<VarIterator, VarList>>::iterator replaceItr = toInsert.begin();
-
-	while (it != current.end()) {
-		//Delete all e variables
-		//TODO :: hopefully redundant
-		if (it->varType == variableType::EMPTY) {
-			it = current.erase(it);
-			//TODO :: This?
-			continue;
-		}
-
-		//Check if there are any productions to replace
-		if (replaceItr == toInsert.end()) break;
-
-		//Insert all new productions
-		if (it == replaceItr->first) {
-			//Empty production -> delete current variable
-			if (replaceItr->second.size() == 0) {
-				it = current.erase(it);
-				replaceItr++;
-				if (it == current.end()) break;
-				else continue;
-			} else {
-				//Replace current variable with new productions
-				current.splice(it, replaceItr->second);
-				it = current.erase(it);
-				it--;
-			}
-
-			replaceItr++;
-		}
-
-		it++;
-	}
-
-	//We should have reached the end of all productions
-	assert(replaceItr == toInsert.end());
-
-	toInsert.clear();
-}
-
 void StreetGen::insertProduction(VarIterator before, VarList after) {
 	//toInsert.emplace_front(std::pair<VarIterator, VarList>(before, after));
 }
@@ -545,8 +589,8 @@ StreetGen::VarList StreetGen::getInitialProduction() {
 	VarList initial;
 	ruleAttr emptyRule;
 	roadAttr emptyRoad;
-	initial.push_front(Variable(variableType::INSERTION, 0, emptyRule, getInitialRoadAttr()));
-	initial.push_front(Variable(variableType::ROAD, 0, getInitialRuleAttr(), emptyRoad));
+	initial.push_front(RoadVariable(variableType::INSERTION, 0, emptyRule, getInitialRoadAttr()));
+	initial.push_front(RoadVariable(variableType::ROAD, 0, getInitialRuleAttr(), emptyRoad));
 
 	return initial;
 }
@@ -585,8 +629,11 @@ bool StreetGen::applyRule(VarIterator currentVar, VarList *productions) {
 		//Production 6
 		if (currentVar->delay < 0) return true;
 		else if (currentVar->delay > 0) {
-			//Production 4, reduce delay
-			currentVar->delay--;
+			//Production 4, reduce delay (but not for streets just yet
+			if (currentVar->road.rtype != roadType::STREET || genStreets) {
+				currentVar->delay--;
+				delayChanged = true;
+			}
 			return false;
 		}
 		else {
@@ -594,8 +641,8 @@ bool StreetGen::applyRule(VarIterator currentVar, VarList *productions) {
 			if (currentVar->road.parentRoad != nullptr)
 				assert(currentVar->road.start.getDistanceSq(currentVar->road.parentRoad->getEnd()) < 5.0f);
 
-			productions->push_front(Variable(variableType::INSERTION, 0, currentVar->rules, currentVar->road));
-			productions->push_front(Variable(variableType::ROAD, 0, currentVar->rules, currentVar->road));
+			productions->push_front(RoadVariable(variableType::INSERTION, 0, currentVar->rules, currentVar->road));
+			productions->push_front(RoadVariable(variableType::ROAD, 0, currentVar->rules, currentVar->road));
 			return true;
 		}
 		break;
@@ -635,9 +682,9 @@ bool StreetGen::applyRule(VarIterator currentVar, VarList *productions) {
 			//Production 2 - right iterator is a succeeded insertion. Create new branches / road / insertion module with parameters set by
 			//global goals. Add this road and vertices to the system.
 			if (right->varType == variableType::INSERTION && right->state == solutionState::SUCCEED) {
-				std::list<Variable> it = *applyGlobalConstraints(currentVar->rules, right->road);
+				std::list<RoadVariable> it = *applyGlobalConstraints(currentVar->rules, right->road);
 
-				BOOST_FOREACH(Variable lol, it) {
+				BOOST_FOREACH(RoadVariable lol, it) {
 					productions->push_back(lol);
 				}
 
@@ -707,7 +754,7 @@ float StreetGen::maxPopDensity(float startAngle, Point &start, Point &end, QPoin
 	Point curPoint = start;
 
 	//Keep track of sector searched so we don't deal with wrap around issues.
-	while (sectorSearched < maxAngleSearch) {
+	while (sectorSearched <= maxAngleSearch) {
 		QLineF temp = QLineF::fromPolar(length, curAngle * r2dFactor);
 		temp.translate(start);
 		
@@ -769,7 +816,7 @@ float StreetGen::getLowestGradient(float startAngle, Point start, float length) 
 	float sectorSearched = 0;
 
 	//get density at each sample point, compare to max
-	while (sectorSearched < maxAngleSearch) {
+	while (sectorSearched <= maxAngleSearch) {
 		float xAdd = cosf(curAngle) * length;
 		float yAdd = sinf(curAngle) * length;
 		float sampleDensity = sampleHeight(start.x() + xAdd, start.y() + yAdd);
@@ -857,6 +904,7 @@ Point StreetGen::weighValues(float weights[], Point * vals, Point *start) {
 	return cumulativeDistance;
 }
 
+//Not used
 bool StreetGen::pointToTarget(roadAttr * road, ruleAttr * rules) {
 	//Get point difference, see if it is valid.
 	//If not, cull angle, then cull length.
@@ -864,92 +912,67 @@ bool StreetGen::pointToTarget(roadAttr * road, ruleAttr * rules) {
 	//Bounded by angle change
 	Point dif = rules->peakTarget - road->start;
 	if ((dif.x() * dif.x() + dif.y() * dif.y()) > highwaylength * highwaylength) {
-		//Point is withing bounds
+		//Point is within bounds, so we can simply move it to there
 		road->end = rules->peakTarget;
 		return true;
 	}
 	else {
-		//Point is further away, so lets point to as far as we can
+		//Point is further away, so lets point to as far as we can, capped by angle
+		float angleDif = atan2f(road->start.x() - rules->peakTarget.x(), road->start.y() - rules->peakTarget.y());
+
 	}
+
+	return false;//for now, delete this
 }
 
-void StreetGen::Run() {
+void StreetGen::filterStreets() {
+	if (haveStreetsBeenFiltered) return;
 	
-	while (!finished) {
-		nextIteration();
-	}
-}
-
-void StreetGen::nextIteration() {
-	if (!finishedIteration) return;
-	finishedIteration = false;
-
-	assert(toInsert.empty());
-
-	printProductions();
-
-	bool changed = false;
-	//Apply rules to each element in turn, track for finish
-	VarIterator it = current.begin();
-	VarList productions = VarList();
-
-	//TODO :: applyRule sometimes returns true and doesn't push back a production
-	//Also deletes a road but not insertion
-	//Doesnt insert all the vars either
-
-	while (it != current.end()) {
-		if (applyRule(it, &productions)) {
-			//Production has occured, add this to the list
-			//Empty production => delete current variable.
-			if (productions.size() == 0) {
-				//it++;
-				//continue;
-				productions.push_back(Variable(variableType::EMPTY));
-				toInsert.emplace_back(it, VarList(productions));
-			}
-			else {
-				toInsert.emplace_back(it, VarList(productions));
-			}
-			productions.clear();
-			changed = true;
-		}
-
-		it++;
+	BOOST_FOREACH(RoadIntersection *intersect, streets.getIntersections()) {
+		assert(intersect->connected.size() > 0);
 	}
 
-	//delete productions;
+	//Do some filtering
 
-	afterIteration();
+	//Intersections with one incident road?
 
-	finished = (current.size() == 0);
-	iterationCount++;
+	//Small Roads that don't go anywhere. We don't need ya
+	//For region generation, we need to remove all dead end streets.
 
-	streets.getScene()->update();
-	assert(toInsert.empty());
+	//Q: Do we need to split roads so that one road for every two intersections? I.e. joining to a road splits that road in two?
 
-	finishedIteration = true;
+	//A: Yes -> easy to create the geometry, then each road only has to track left and right. Easy to pad roads left.	
+	//Connect.size() == 2 -> already simple
+	//Otherwise, split every road into new ones simple roads, attach each intersection along
+
+	//Assert all streets >= connected size 2
+
+	haveStreetsBeenFiltered = true;
 }
 
-//Initialise the system, add initial variable productions
-void StreetGen::initialise() {
-	streets.reset();
+// L - System
 
-	current.clear();
-	toInsert.clear();
-	current = getInitialProduction();
-
-	ready = true;
-	finished = false;
-	finishedIteration = true;
-	iterationCount = 0;
+void StreetGen::LSystemBeforeIterationBegin() {
+	delayChanged = false;
 }
 
-bool StreetGen::isReady() {
-	return ready;
+void StreetGen::LSystemAfterIteration(bool changed) {
+	finished = (!delayChanged && !changed);
+	delayChanged = false;
+
+	if (finished && !genStreets) {
+		//We need to iterate again, this time flag that we can generate the streets
+		finished = false;
+		genStreets = true;
+	}
 }
 
 bool StreetGen::isFinished() {
 	return finished;
+}
+
+bool StreetGen::isLSystemFinished(bool changed) {
+	return this->finished;
 }
 
 void StreetGen::printProductions() {
@@ -969,11 +992,27 @@ void StreetGen::printProductions() {
 	qDebug() << "";
 	qDebug() << "Roads generated: " << streets.roadCount();
 	qDebug() << "Verts generated: " << streets.vertCount();
-	qDebug() << "ITEMS COUNT: " << streets.getScene()->items().count();
 }
 
-std::vector<Road>* StreetGen::getGenerated() {
-	return nullptr;
+//End L - System
+
+//Initialise the system, add initial variable productions
+void StreetGen::initialise() {
+	streets.reset();
+	genStreets = false;
+	ready = true;
+	finished = false;
+	haveStreetsBeenFiltered = false;
+
+	initialiseLSystem();
+
+	//Set growth score
+	minHighwayGrowthScore = popDensityRadiusSearch * minHighwayGrowthFactor;
+	minStreetGrowthFactor = popDensityRadiusSearch * minStreetGrowthFactor;
+}
+
+bool StreetGen::isReady() {
+	return ready;
 }
 
 StreetGen::~StreetGen()
@@ -985,8 +1024,8 @@ void StreetGen::setExtendRadius(float val) {
 	extendRadius = val;
 }
 
-void StreetGen::setMinDistanceSq(float val) {
-	minDistanceSq = val;
+void StreetGen::setRoadSnap(float val) {
+	roadSnap = val;
 }
 
 void StreetGen::setMinLength(float val) {
@@ -1045,28 +1084,32 @@ void StreetGen::setPopRadiusSearch(float val) {
 	popDensityRadiusSearch = val;
 }
 
+void StreetGen::setHighwayGrowthFactor(float factor) {
+	minHighwayGrowthFactor = factor;
+}
+
+void StreetGen::setStreetGrowthFactor(float factor) {
+	minStreetGrowthFactor = factor;
+}
+
 void StreetGen::setHeightMap(QImage & hMap, bool use) {
 
 	this->hMap = QImage(hMap);
-	streets.setHeight(&hMap);
 	useHeight = use;
 }
 
 void StreetGen::setPopMap(QImage & pMap, bool use) {
 	this->pMap = QImage(pMap);
-	streets.setPop(&pMap);
 	usePop = use;
 }
 
 void StreetGen::setGeogMap(QImage & gMap, bool use) {
 	this->gMap = QImage(gMap);
-	streets.setGeog(&gMap);
 	useGeog = use;
 }
 
 void StreetGen::setPatternMap(QImage & sMap, bool use) {
 	this->sMap = QImage(sMap);
-	streets.setPattern(&sMap);
 	usePattern = use;
 }
 
@@ -1076,6 +1119,11 @@ void StreetGen::setSize(Point newSize) {
 	genY = boost::random::uniform_int_distribution<>(0, size.y());
 }
 
-QGraphicsScene *StreetGen::getScene() {
-	return streets.getScene();
+std::list<Road*> StreetGen::getGeneratedRoads() {
+	return streets.getRoads();
 }
+
+std::list<RoadIntersection*> StreetGen::getGeneratedIntersections() {
+	return streets.getIntersections();
+}
+
