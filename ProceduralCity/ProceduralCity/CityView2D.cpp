@@ -32,6 +32,11 @@ QPen CityView2D::getRoadPen(Road * road) {
 	else return mainRoadPen;
 }
 
+QPen CityView2D::getRoadPen(roadPtr road) {
+	if (road->rtype == roadType::STREET) return roadPen;
+	else return mainRoadPen;
+}
+
 void CityView2D::setPop(QImage *pop) {
 	this->pop = *pop;
 	//Create the pixmap now for the scene
@@ -127,6 +132,25 @@ void CityView2D::Reset(Point size) {
 
 }
 
+void CityView2D::clearGeometry() {
+	//Destroy groups
+	//scene->destroyItemGroup(intersectionsRender);
+	//scene->destroyItemGroup(roadsRender);
+	//scene->destroyItemGroup(lotsRender);
+	//scene->destroyItemGroup(regionRender);
+	scene->clear();
+
+	//Recreate groups, set visibility
+	intersectionsRender = scene->createItemGroup(QList<QGraphicsItem*>());
+	intersectionsRender->setVisible(renderVerts);
+	regionRender = scene->createItemGroup(QList<QGraphicsItem*>());
+	regionRender->setVisible(drawRegions);
+	lotsRender = scene->createItemGroup(QList<QGraphicsItem*>());
+	lotsRender->setVisible(drawLots);
+	roadsRender = scene->createItemGroup(QList<QGraphicsItem*>());
+	roadsRender->setVisible(true);
+}
+
 void CityView2D::Update() {
 	scene->update();
 }
@@ -142,6 +166,25 @@ void CityView2D::addIntersection(RoadIntersection * toAdd) {
 	vert->setZValue(1.0f);
 	intersectionsRender->addToGroup(vert);
 	intersectionsRender->setZValue(1.0f);
+}
+
+void CityView2D::addRoads(std::list<roadPtr> roads) {
+	BOOST_FOREACH(roadPtr roadItr, roads) {
+		QGraphicsLineItem *road = scene->addLine(QLineF(roadItr->getStart()->getIntersectionPoint(), roadItr->getEnd()->getIntersectionPoint()), getRoadPen(roadItr));
+		road->setZValue(roadItr->rtype == roadType::MAINROAD ? 2.0f : 3.f);
+		roadsRender->addToGroup(road);
+	}
+}
+
+void CityView2D::addIntersections(std::list<intersectionPtr> intersections) {
+	BOOST_FOREACH(intersectionPtr intersectionItr, intersections) {
+		float x = intersectionItr->getIntersectionPoint().x();
+		float y = intersectionItr->getIntersectionPoint().y();
+		QGraphicsRectItem *vert = scene->addRect(x - 5.0f, y - 5.0f, 10.0f, 10.0f);
+		vert->setZValue(1.0f);
+		intersectionsRender->addToGroup(vert);
+		intersectionsRender->setZValue(1.0f);
+	}
 }
 
 CityView2D::CityView2D() {

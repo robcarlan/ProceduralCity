@@ -74,13 +74,13 @@ void StreetManager::getNearbyVertices(Point queryPoint, double radius, std::vect
 	std::vector<intersectionIndex> result;
 
 	//Perform knn to find 3 nearest neighbours.
-	intersectionTree.query(boost::geometry::index::nearest(toBoostPoint(queryPoint), 3), std::back_inserter(result));
+	intersectionTree.query(boost::geometry::index::nearest(toBoostPoint(queryPoint), 5), std::back_inserter(result));
 
 	for (std::vector<intersectionIndex>::iterator it = result.begin(); it != result.end(); it++) {
-		QPointF pt = QPointF(it->first.x(), it->first.y());
+		Point pt = it->second->location;
 
 		//The result is only knn, so may not be within desired bounds at all.
-		if (queryPoint.isWithinBounds(pt, 5.0f))
+		if (queryPoint.isWithinBounds(pt, radius))
 			nearby.push_back(it->second);
 	}
 }

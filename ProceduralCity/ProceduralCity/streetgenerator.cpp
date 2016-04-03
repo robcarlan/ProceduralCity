@@ -45,8 +45,27 @@ void StreetGenerator::onClickSaveImage() {
 	//MsgBox to save whole view or just what can be seen
 }
 
+void StreetGenerator::onClickFilterRoads() {
+	assert(streetsGenerated);
+	generator.filterStreets();
+
+	SimpleStreetGeometryCreator toSimple = SimpleStreetGeometryCreator();
+	std::list<RoadIntersection*> intersections = generator.getGeneratedIntersections();
+	std::list<Road*> roads = generator.getGeneratedRoads();
+	cityView.getGeometry(toSimple.toGeometry(intersections, roads));
+
+	//Reset view to display updated geometry.
+	view.clearGeometry();
+	view.addIntersections(cityView.intersections);
+	view.addRoads(cityView.roads);
+
+	streetsFiltered = true;
+	ui.cmdGenerateRegions->setEnabled(true);
+}
+
 void StreetGenerator::onClickCreateLots() {
 	assert(regionsGenerated);
+
 	//Subdivide, add lots by colour (handle these in some new functions please)
 	cityView.createLots();
 	view.addLots(cityView.getLots());
@@ -59,14 +78,7 @@ void StreetGenerator::onClickCreateLots() {
 }
 
 void StreetGenerator::onClickCreateRegions() {
-	assert(streetsGenerated);
-
-	generator.filterStreets();
-
-	SimpleStreetGeometryCreator toSimple = SimpleStreetGeometryCreator();
-	std::list<RoadIntersection*> intersections = generator.getGeneratedIntersections();
-	std::list<Road*> roads = generator.getGeneratedRoads();
-	cityView.getGeometry(toSimple.toGeometry(intersections, roads));
+	assert(streetsFiltered);
 	cityView.createRegions();
 
 	//Now indicate this to 2D view
@@ -96,7 +108,8 @@ void StreetGenerator::onClickGenerate() {
 	//generate the stuff
 	generator.Run();
 
-	ui.cmdGenerateRegions->setEnabled(true);
+	ui.cmdFilterRoads->setEnabled(true);
+	streetsGenerated = true;
 }
 
 void StreetGenerator::on_comboBox_activated(const QString &arg1) {
@@ -245,6 +258,8 @@ void StreetGenerator::initialiseSystem() {
 	ui.chkShowRegions->setEnabled(false);
 	ui.cmdGenerateRegions->setEnabled(false);
 	ui.cmdCreateBuildingLots->setEnabled(false);
+	ui.cmdFilterRoads->setEnabled(false);
+	streetsFiltered = lotsGenerated = regionsGenerated = streetsGenerated = false;
 
 	//Scale images to fit 
 	QImage geog =  geogSet ?

@@ -4,7 +4,9 @@
 #include <QLine>
 
 #include "Road.h"
+#include "RoadGeometry.h"
 #include "RoadIntersection.h"
+#include "IntersectionGeometry.h"
 #include "BuildingRegion.h"
 #include "BuildingLot.h"
 #include "Point.h"
@@ -27,6 +29,7 @@ class CityView2D {
 
 	bool renderVerts, drawLots, drawRegions;
 	QPen getRoadPen(Road *road);
+	QPen getRoadPen(roadPtr road);
 	Point size;
 
 public:
@@ -46,12 +49,15 @@ public:
 
 	QGraphicsScene *getScene();
 	void Reset(Point Size);
+	void clearGeometry();
 	void Update();
 
 	void addRegions(std::vector<BuildingRegion> *regions);
 	void addLots(std::vector<BuildingLot> *lots);
 	void addRoad(Road * toAdd);
 	void addIntersection(RoadIntersection * toAdd);
+	void addRoads(std::list<roadPtr> roads);
+	void addIntersections(std::list<intersectionPtr> intersections);
 
 	CityView2D();
 	~CityView2D();

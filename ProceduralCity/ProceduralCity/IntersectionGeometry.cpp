@@ -1,6 +1,6 @@
 #include "IntersectionGeometry.h"
 
-std::pair<roadPtr, float> IntersectionGeometry::getBest(float angle, bool scanRight) {
+std::pair<roadPtr, float> IntersectionGeometry::getBest(float angle, bool searchClockwise) {
 	//Find angle with largest -ve change
 	std::list<float>::iterator angleItr = angles.begin();
 	std::list<roadPtr>::iterator roadItr = connected.begin();
@@ -16,10 +16,10 @@ std::pair<roadPtr, float> IntersectionGeometry::getBest(float angle, bool scanRi
 			continue; //Iterating over ourself!
 		}
 
-		bool searchClockwise = false;
-		bool isAngleAbove = isAbove(angle);
-		if (scanRight && isAngleAbove) searchClockwise = true;
-		else if (!scanRight && !isAngleAbove) searchClockwise = true;
+		//bool searchClockwise = false;
+		//bool isAngleAbove = isAbove(angle);
+		//if (scanRight && isAngleAbove) searchClockwise = true;
+		//else if (!scanRight && !isAngleAbove) searchClockwise = true;
 		float dif = getAngleBetween(angle, *angleItr, searchClockwise);
 		//float value = scanLeft ? *angleItr - angle : angle - *angleItr;
 		//float dif = fmodf(value, boost::math::float_constants::two_pi);
@@ -85,37 +85,39 @@ void IntersectionGeometry::removeRoad(RoadGeometry *toRemove) {
 	assert(false);
 }
 
-std::pair<roadPtr, bool> IntersectionGeometry::getLeftMost(float angle, bool side) {
+std::pair<roadPtr, bool> IntersectionGeometry::getAntiClockwise(float angle, bool clockwise) {
 	//Travelling on the right and looking for left most, is the same as looking for the right most(i.e. first)
-	if (side == true) return getRightMost(angle, side);
-	auto next = getBest(angle, side);
+	if (clockwise == true) return getClockwise(angle, clockwise);
+	auto next = getBest(angle, clockwise);
 	float outgoingAngle = next.second;
 	//Switch sides if travel vertically
-	return std::make_pair(next.first, getNextSide(angle, outgoingAngle, side));
+	return std::make_pair(next.first, getNextSide(angle, outgoingAngle, clockwise));
 }
 
-std::pair<roadPtr, bool> IntersectionGeometry::getRightMost(float angle, bool side) {
-	if (side == false) return getLeftMost(angle, side);
+std::pair<roadPtr, bool> IntersectionGeometry::getClockwise(float angle, bool clockwise) {
+	if (clockwise == false) return getAntiClockwise(angle, clockwise);
 	//Find angle with smalles +ve change
-	auto next = getBest(angle, side);
+	auto next = getBest(angle, clockwise);
 	float outgoingAngle = next.second;
 	//Switch sides if travel vertically
-	return std::make_pair(next.first, getNextSide(angle, outgoingAngle, side));
+	return std::make_pair(next.first, getNextSide(angle, outgoingAngle, clockwise));
 }
 
-bool IntersectionGeometry::getNextSide(float startAngle, float endAngle, bool sideBefore) {
+bool IntersectionGeometry::getNextSide(float startAngle, float endAngle, bool isClockwise) {
 	//Sides switch whenever we cross a horizontal boundary
 	// 0 angle is bottom, 1/2 pi is rhs ... 
 	//it is opposite : getNextSide(sideBefore) = !getNextSide(!sideBefore)
 
-	assert(startAngle >= 0 && startAngle < boost::math::float_constants::two_pi);
-	assert(endAngle >= 0 && endAngle < boost::math::float_constants::two_pi);
-	bool inBottomHalfStart = isBelow(startAngle);
-	bool inBottomHalfEnd = isBelow(endAngle);
+	return !isClockwise;
 
-	//If we are on the same half (horizontal plane) we take the opposite. Otherwise, stay the same
-	if ((inBottomHalfEnd && inBottomHalfStart) || (!inBottomHalfEnd && !inBottomHalfStart)) return (!sideBefore);
-	else return sideBefore;
+	//assert(startAngle >= 0 && startAngle < boost::math::float_constants::two_pi);
+	//assert(endAngle >= 0 && endAngle < boost::math::float_constants::two_pi);
+	//bool inBottomHalfStart = isBelow(startAngle);
+	//bool inBottomHalfEnd = isBelow(endAngle);
+
+	////If we are on the same half (horizontal plane) we take the opposite. Otherwise, stay the same
+	//if ((inBottomHalfEnd && inBottomHalfStart) || (!inBottomHalfEnd && !inBottomHalfStart)) return (!sideBefore);
+	//else return sideBefore;
 }
 
 bool IntersectionGeometry::isAbove(float angle) {

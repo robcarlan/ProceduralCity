@@ -260,16 +260,17 @@ void StreetGen::applyLocalConstraints(RoadVariable *toCheck) {
 	bool connectedToIntersection = false;
 	bool connectedToNewIntersection = false;
 	bool legalPlacement = tryMakeLegal(toCheck, &temp);
+	Point before = Point(toCheck->road.end);
 
 	if (toCheck->road.parentRoad != nullptr)
 		assert(toCheck->road.start.x() - toCheck->road.parentRoad->getEnd().x() < 0.01f
 			&& toCheck->road.start.y() - toCheck->road.parentRoad->getEnd().y() < 0.01f);
 
-	if (toCheck->road.end.x() - 1627.4f < 1.0f && toCheck->road.end.y() == 1247.6f < 1.0f)
+	if (abs(toCheck->road.end.x() - 1290.0f) < 1.0f && abs(toCheck->road.end.y() - 615.0f) < 1.0f)
 		qDebug() << "A";
-	if (toCheck->road.end.x() - 1614.2f < 1.0f && toCheck->road.end.y() == 1267.6f < 1.0f)
+	if (toCheck->road.end.x() == 598.0f && toCheck->road.end.y() == 950.0f)
 		qDebug() << "A";
-	if (toCheck->road.start.x() == 2045.0f && toCheck->road.start.y() == 1074.0f)
+	if (toCheck->road.end.x() == 1290.0f && toCheck->road.end.y() == 615.0f)
 		qDebug() << "A";
 
 	bool legalIntersection = tryConnectToExisting(toCheck, &temp, connectedToIntersection, connectedToNewIntersection);
@@ -289,10 +290,26 @@ void StreetGen::applyLocalConstraints(RoadVariable *toCheck) {
 	bool legalLength =  toCheck->road.length * toCheck->road.length > minLength;
 	legalLength = temp.length() * temp.length() > minLength;
 	if (legalPlacement && legalIntersection && legalAngle && legalLength && isUniqueRoad) toCheck->state = solutionState::SUCCEED;
-	else toCheck->state = solutionState::FAILED;
+	else {
+		toCheck->state = solutionState::FAILED;
+		return;
+	}
 	//Stop growing street
 	if (connectedToIntersection) 
 		toCheck->road.connected = true;
+
+	std::vector<RoadIntersection *> possibleExistingIntersections;
+	streets.getNearbyVertices(toCheck->road.end, 2.0f, possibleExistingIntersections);
+	if (possibleExistingIntersections.size() > 0) {
+		//assert(connectedToNewIntersection == false);
+		//Possibly merge these intersections?
+		//TODO :: Improve this
+		if (connectedToNewIntersection || !connectedToIntersection) {
+			toCheck->road.connected = true;
+			toCheck->road.target = possibleExistingIntersections.front();
+			toCheck->road.targetRoad = possibleExistingIntersections.front()->connected.front();
+		}
+	}
 }
 
 //Todo :: check angles
@@ -362,6 +379,7 @@ bool StreetGen::tryMakeLegal(RoadVariable * toCheck, Road * tempRoad) {
 bool StreetGen::isUnique(RoadVariable * toCheck, Road * tempRoad) {
 	RoadIntersection *s = toCheck->road.target;
 	if (s == nullptr) return true;
+	if (s->connected.size() == 0) return true;
 	BOOST_FOREACH(Road *rItr, s->connected) {
 		if (rItr == tempRoad) continue; 
 		else {
@@ -454,15 +472,33 @@ bool StreetGen::tryConnectToExisting(RoadVariable * toCheck, Road *tempRoad, boo
 
 	//Road intersects with other roads in the system
 	if (intersections.size() > 0) {
+		//Check to see if this is arbritrarily close to an intersection along this road.
 		auto minIntersect = streets.getClosest(toCheck->road.start, intersections);
+		bool snapped = false;
 
-		toCheck->road.end = minIntersect->first;
-		//Add a crossing, leave target as null as we need to create this
-		toCheck->road.targetRoad = minIntersect->second;
-		toCheck->state = solutionState::SUCCEED;
-		legalPlacement = true;
-		connectedToIntersection = true;
-		connectedToNewIntersection = true;
+		//BOOST_FOREACH(RoadIntersection *rItr, *minIntersect->second->getIntersections()) {
+		//	if (toCheck->road.end.getDistanceSq(rItr->location) <= 5.0f * 5.0f) {
+		//		//Snap
+		//		toCheck->road.end = rItr->location;
+		//		toCheck->road.target = rItr;
+		//		toCheck->road.targetRoad = minIntersect->second;
+		//		toCheck->state = solutionState::SUCCEED;
+		//		legalPlacement = true;
+		//		connectedToIntersection = true;
+		//		connectedToNewIntersection = false;
+		//		snapped = true;
+		//	}
+		//}
+
+		if (!snapped) {
+			toCheck->road.end = minIntersect->first;
+			//Add a crossing, leave target as null as we need to create this
+			toCheck->road.targetRoad = minIntersect->second;
+			toCheck->state = solutionState::SUCCEED;
+			legalPlacement = true;
+			connectedToIntersection = true;
+			connectedToNewIntersection = true;
+		}
 	}
 	else { //Road does not intersect, so lets see if it is near to an existing crossing.
 		std::vector<RoadIntersection *> possibleExistingIntersections;
@@ -474,19 +510,33 @@ bool StreetGen::tryConnectToExisting(RoadVariable * toCheck, Road *tempRoad, boo
 			std::sort(possibleExistingIntersections.begin(), possibleExistingIntersections.end(),
 				[&toCheck](RoadIntersection * a, RoadIntersection * b) { return a->location.getDistanceSq(toCheck->road.start) 
 					< b->location.getDistanceSq(toCheck->road.start); });
+			bool found = false;
 
 			//sort by closest, then attach to the first intersection which doesn't intersect other lines
 			BOOST_FOREACH(RoadIntersection *it, possibleExistingIntersections) {
+				if (found) continue;
+
 				streets.getIntersectingEdges(Road(toCheck->road.start, it->location), intersections);
 				//TODO :: Filter when intersections are part of the road we are joining to?
-				bool legalIntersection = (intersections.size() == 0);
+				bool legalIntersection = true;
+
+				//Still legal if the intersecting edges are connected to the intersection we are joining to
+				for (auto collisionItr = intersections.begin(); collisionItr != intersections.end(); collisionItr++) {
+					Road* colliding = collisionItr->second;
+					Point collisionPoint = collisionItr->first;
+					if (!(it->location.getDistanceSq(collisionPoint) < 5.0f * 5.0f)) legalIntersection = false;
+				}
+
+				legalIntersection |= intersections.size() == 0;
 
 				if (legalIntersection && toCheck->road.start.getDistanceSq(it->location) > minDistanceSq) {
 					toCheck->road.end = it->location;
 					toCheck->road.targetRoad = it->connected.front();
 					toCheck->road.target = it;
 					connectedToNewIntersection = false;
-					connectToIntersection = true; legalPlacement = true;
+					connectedToIntersection = true; legalPlacement = true;
+					connectToIntersection = true;
+					found = true;
 					break;
 				}
 			}
@@ -522,9 +572,21 @@ bool StreetGen::tryConnectToExisting(RoadVariable * toCheck, Road *tempRoad, boo
 				if (!isSnapped) {
 					toCheck->road.end = minIntersect->first;
 					toCheck->road.targetRoad = minIntersect->second;
-					connectToIntersection = true;
+					connectedToIntersection = true;
 					connectedToNewIntersection = true;
 				}
+			}
+		}
+	}
+
+	if (connectedToIntersection && connectedToNewIntersection) {
+		BOOST_FOREACH(RoadIntersection *rItr, *toCheck->road.targetRoad->getIntersections()) {
+			if (toCheck->road.end.getDistanceSq(rItr->location) <= 5.0f * 5.0f) {
+				//Snap
+				toCheck->road.end = rItr->location;
+				toCheck->road.target = rItr;
+				connectedToIntersection = true;
+				connectedToNewIntersection = false;
 			}
 		}
 	}

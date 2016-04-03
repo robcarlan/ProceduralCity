@@ -16,8 +16,8 @@ private:
 	Point intersectionPoint;
 	std::list<roadPtr> connected;
 	std::list<float> angles;
-	std::pair<roadPtr, float> getBest(float angle, bool scanRight);
-	bool getNextSide(float startAngle, float endAngle, bool sideBefore);
+	std::pair<roadPtr, float> getBest(float angle, bool searchClockwise);
+	bool getNextSide(float startAngle, float endAngle, bool isClockwise);
 	bool isAbove(float angle);
 	bool isBelow(float angle);
 	float getAngleBetween(float angleStart, float angleEnd, bool clockwise);
@@ -27,8 +27,8 @@ public:
 	Point getIntersectionPoint();
 	void connectRoad(roadPtr toAdd);
 	void removeRoad(RoadGeometry* toRemove);
-	std::pair<roadPtr, bool> getLeftMost(float angle, bool side);
-	std::pair<roadPtr, bool> getRightMost(float angle, bool side);
+	std::pair<roadPtr, bool> getAntiClockwise(float angle, bool clockwise);
+	std::pair<roadPtr, bool> getClockwise(float angle, bool clockwise);
 	std::list<roadPtr> getIntersections();
 	void flagInvalid();
 	bool isValid();

@@ -44,6 +44,7 @@ RoadIntersection::RoadIntersection(Point Position, Road *creator, Road *incident
 	this->location = Position;
 	this->setPos(location);
 	parent = creator;
+	connected = std::list<Road*>();
 	connected.push_front(creator);
 	connected.push_front(incidentOnto);
 	creator->addEndIntersection(this);
@@ -56,6 +57,7 @@ RoadIntersection::RoadIntersection(Point Position, Road *creator) : QGraphicsIte
 	this->location = Position;
 	this->setPos(location);
 	parent = creator;
+	connected = std::list<Road*>();
 	connected.push_front(creator);
 	creator->addEndIntersection(this);
 
@@ -67,6 +69,7 @@ RoadIntersection::RoadIntersection(Point Position) {
 	this->location = Position;
 	this->setPos(location);
 	isCrossing = false;
+	connected = std::list<Road*>();
 	calculateBoundingBox();
 }
 
@@ -81,6 +84,7 @@ RoadIntersection::RoadIntersection(const RoadIntersection &road) : QGraphicsItem
 }
 
 RoadIntersection::RoadIntersection() : QGraphicsItem() {
+	connected = std::list<Road*>();
 }
 
 

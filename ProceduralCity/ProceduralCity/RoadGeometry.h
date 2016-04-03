@@ -12,7 +12,6 @@ typedef std::shared_ptr<IntersectionGeometry> intersectionPtr;
 //Represents a simple road - i.e. a line going from one intersection to another
 class RoadGeometry {
 protected:
-	roadType rtype;
 	float startElevation;
 	float endElevation;
 	float angle;
@@ -24,6 +23,7 @@ protected:
 	void calcAngles();
 	void removeIntersection(intersectionPtr toRemove);
 public:
+	roadType rtype;
 	roadType getRoadType();
 
 	float getAngleToEnd();

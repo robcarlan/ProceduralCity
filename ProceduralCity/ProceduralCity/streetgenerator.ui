@@ -778,19 +778,6 @@
     <property name="title">
      <string>Controls</string>
     </property>
-    <widget class="QPushButton" name="cmdGenerateStreets">
-     <property name="geometry">
-      <rect>
-       <x>260</x>
-       <y>150</y>
-       <width>141</width>
-       <height>31</height>
-      </rect>
-     </property>
-     <property name="text">
-      <string>Generate Street Network</string>
-     </property>
-    </widget>
     <widget class="QPushButton" name="cmdSaveOutput">
      <property name="geometry">
       <rect>
@@ -940,32 +927,6 @@
       </item>
      </layout>
     </widget>
-    <widget class="QPushButton" name="cmdReset">
-     <property name="geometry">
-      <rect>
-       <x>260</x>
-       <y>70</y>
-       <width>141</width>
-       <height>31</height>
-      </rect>
-     </property>
-     <property name="text">
-      <string>Initialise / Reset</string>
-     </property>
-    </widget>
-    <widget class="QPushButton" name="cmdStep">
-     <property name="geometry">
-      <rect>
-       <x>260</x>
-       <y>110</y>
-       <width>141</width>
-       <height>31</height>
-      </rect>
-     </property>
-     <property name="text">
-      <string>Step...</string>
-     </property>
-    </widget>
     <widget class="QWidget" name="layoutWidget">
      <property name="geometry">
       <rect>
@@ -1002,43 +963,77 @@
       </item>
      </layout>
     </widget>
-    <widget class="QPushButton" name="cmdGenerateRegions">
-     <property name="enabled">
-      <bool>false</bool>
-     </property>
+    <widget class="QWidget" name="">
      <property name="geometry">
       <rect>
        <x>260</x>
-       <y>190</y>
+       <y>80</y>
        <width>141</width>
-       <height>31</height>
+       <height>181</height>
       </rect>
      </property>
-     <property name="text">
-      <string>Create Regions</string>
-     </property>
-     <property name="default">
-      <bool>false</bool>
-     </property>
-     <property name="flat">
-      <bool>false</bool>
-     </property>
-    </widget>
-    <widget class="QPushButton" name="cmdCreateBuildingLots">
-     <property name="enabled">
-      <bool>false</bool>
-     </property>
-     <property name="geometry">
-      <rect>
-       <x>260</x>
-       <y>230</y>
-       <width>141</width>
-       <height>31</height>
-      </rect>
-     </property>
-     <property name="text">
-      <string>Create Building Lots</string>
-     </property>
+     <layout class="QGridLayout" name="gridLayout_4">
+      <item row="0" column="0">
+       <widget class="QPushButton" name="cmdReset">
+        <property name="text">
+         <string>Initialise / Reset</string>
+        </property>
+       </widget>
+      </item>
+      <item row="1" column="0">
+       <widget class="QPushButton" name="cmdStep">
+        <property name="text">
+         <string>Step...</string>
+        </property>
+       </widget>
+      </item>
+      <item row="2" column="0">
+       <widget class="QPushButton" name="cmdGenerateStreets">
+        <property name="text">
+         <string>Generate Street Network</string>
+        </property>
+       </widget>
+      </item>
+      <item row="3" column="0">
+       <widget class="QPushButton" name="cmdFilterRoads">
+        <property name="enabled">
+         <bool>false</bool>
+        </property>
+        <property name="text">
+         <string>Filter Roads</string>
+        </property>
+        <property name="checkable">
+         <bool>false</bool>
+        </property>
+       </widget>
+      </item>
+      <item row="4" column="0">
+       <widget class="QPushButton" name="cmdGenerateRegions">
+        <property name="enabled">
+         <bool>false</bool>
+        </property>
+        <property name="text">
+         <string>Create Regions</string>
+        </property>
+        <property name="default">
+         <bool>false</bool>
+        </property>
+        <property name="flat">
+         <bool>false</bool>
+        </property>
+       </widget>
+      </item>
+      <item row="5" column="0">
+       <widget class="QPushButton" name="cmdCreateBuildingLots">
+        <property name="enabled">
+         <bool>false</bool>
+        </property>
+        <property name="text">
+         <string>Create Building Lots</string>
+        </property>
+       </widget>
+      </item>
+     </layout>
     </widget>
    </widget>
    <widget class="QStreetRenderWidget" name="streetRender">
@@ -1160,8 +1155,8 @@
    <slot>onClickGenerate()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>1650</x>
-     <y>923</y>
+     <x>1651</x>
+     <y>907</y>
     </hint>
     <hint type="destinationlabel">
      <x>1134</x>
@@ -1224,8 +1219,8 @@
    <slot>onClickReset()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>1650</x>
-     <y>843</y>
+     <x>1651</x>
+     <y>847</y>
     </hint>
     <hint type="destinationlabel">
      <x>1378</x>
@@ -1240,8 +1235,8 @@
    <slot>onClickStep()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>1650</x>
-     <y>883</y>
+     <x>1651</x>
+     <y>877</y>
     </hint>
     <hint type="destinationlabel">
      <x>1374</x>
@@ -1585,6 +1580,22 @@
     </hint>
    </hints>
   </connection>
+  <connection>
+   <sender>cmdFilterRoads</sender>
+   <signal>clicked()</signal>
+   <receiver>StreetGenerator</receiver>
+   <slot>onClickFilterRoads()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>1720</x>
+     <y>929</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>1814</x>
+     <y>924</y>
+    </hint>
+   </hints>
+  </connection>
  </connections>
  <slots>
   <slot>on_buttonPMap_clicked()</slot>
@@ -1610,6 +1621,7 @@
   <slot>clearStreetmap()</slot>
   <slot>on_button_SMap_Clicked()</slot>
   <slot>onClickRenderVerts(bool)</slot>
+  <slot>onClickFilterRoads()</slot>
  </slots>
  <buttongroups>
   <buttongroup name="buttonGroup"/>

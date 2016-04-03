@@ -14,11 +14,11 @@
 
 class CityRegionGenerator {
 	int maxEdgeTraversal;
-	std::map<roadPtr, bool> leftVisited;
-	std::map<roadPtr, bool> rightVisited;
+	std::map<roadPtr, bool> anticlockwiseVisited;
+	std::map<roadPtr, bool> clockwiseVisited;
 
-	bool hasVisited(bool side, const roadPtr traversing);
-	bool isValidRegion(bool side, const roadPtr traversing);
+	bool hasVisited(bool side, bool forwards, const roadPtr traversing);
+	bool isValidRegion(bool side, bool forwards, const roadPtr traversing);
 	void flagRoads(std::list<roadPtr> traversing, std::list<bool> side, bool flagFound);
 public:
 	std::vector<BuildingRegion> createRegions(std::list<roadPtr> const roads, std::list<intersectionPtr> const intersections);

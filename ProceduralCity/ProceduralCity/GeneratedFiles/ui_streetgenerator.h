@@ -114,7 +114,6 @@ public:
     QDoubleSpinBox *highwayGrowthFactor;
     QDoubleSpinBox *streetGrowthFactor;
     QGroupBox *groupBox_3;
-    QPushButton *cmdGenerateStreets;
     QPushButton *cmdSaveOutput;
     QPushButton *cmdSaveOutputImage;
     QWidget *layoutWidget;
@@ -130,13 +129,17 @@ public:
     QCheckBox *chkShowVerts;
     QCheckBox *chkShowRegions;
     QCheckBox *chkShowLots;
-    QPushButton *cmdReset;
-    QPushButton *cmdStep;
     QWidget *layoutWidget2;
     QFormLayout *formLayout;
     QLabel *label;
     QSpinBox *intSeedValue;
     QCheckBox *chkTimeSeed;
+    QWidget *widget;
+    QGridLayout *gridLayout_4;
+    QPushButton *cmdReset;
+    QPushButton *cmdStep;
+    QPushButton *cmdGenerateStreets;
+    QPushButton *cmdFilterRoads;
     QPushButton *cmdGenerateRegions;
     QPushButton *cmdCreateBuildingLots;
     QStreetRenderWidget *streetRender;
@@ -520,9 +523,6 @@ public:
         sizePolicy.setVerticalStretch(0);
         sizePolicy.setHeightForWidth(groupBox_3->sizePolicy().hasHeightForWidth());
         groupBox_3->setSizePolicy(sizePolicy);
-        cmdGenerateStreets = new QPushButton(groupBox_3);
-        cmdGenerateStreets->setObjectName(QStringLiteral("cmdGenerateStreets"));
-        cmdGenerateStreets->setGeometry(QRect(260, 150, 141, 31));
         cmdSaveOutput = new QPushButton(groupBox_3);
         cmdSaveOutput->setObjectName(QStringLiteral("cmdSaveOutput"));
         cmdSaveOutput->setGeometry(QRect(130, 230, 121, 31));
@@ -604,12 +604,6 @@ public:
 
         verticalLayout->addWidget(groupBox_4);
 
-        cmdReset = new QPushButton(groupBox_3);
-        cmdReset->setObjectName(QStringLiteral("cmdReset"));
-        cmdReset->setGeometry(QRect(260, 70, 141, 31));
-        cmdStep = new QPushButton(groupBox_3);
-        cmdStep->setObjectName(QStringLiteral("cmdStep"));
-        cmdStep->setGeometry(QRect(260, 110, 141, 31));
         layoutWidget2 = new QWidget(groupBox_3);
         layoutWidget2->setObjectName(QStringLiteral("layoutWidget2"));
         layoutWidget2->setGeometry(QRect(236, 20, 171, 51));
@@ -635,16 +629,50 @@ public:
 
         formLayout->setWidget(1, QFormLayout::FieldRole, chkTimeSeed);
 
-        cmdGenerateRegions = new QPushButton(groupBox_3);
+        widget = new QWidget(groupBox_3);
+        widget->setObjectName(QStringLiteral("widget"));
+        widget->setGeometry(QRect(260, 80, 141, 181));
+        gridLayout_4 = new QGridLayout(widget);
+        gridLayout_4->setSpacing(6);
+        gridLayout_4->setContentsMargins(11, 11, 11, 11);
+        gridLayout_4->setObjectName(QStringLiteral("gridLayout_4"));
+        gridLayout_4->setContentsMargins(0, 0, 0, 0);
+        cmdReset = new QPushButton(widget);
+        cmdReset->setObjectName(QStringLiteral("cmdReset"));
+
+        gridLayout_4->addWidget(cmdReset, 0, 0, 1, 1);
+
+        cmdStep = new QPushButton(widget);
+        cmdStep->setObjectName(QStringLiteral("cmdStep"));
+
+        gridLayout_4->addWidget(cmdStep, 1, 0, 1, 1);
+
+        cmdGenerateStreets = new QPushButton(widget);
+        cmdGenerateStreets->setObjectName(QStringLiteral("cmdGenerateStreets"));
+
+        gridLayout_4->addWidget(cmdGenerateStreets, 2, 0, 1, 1);
+
+        cmdFilterRoads = new QPushButton(widget);
+        cmdFilterRoads->setObjectName(QStringLiteral("cmdFilterRoads"));
+        cmdFilterRoads->setEnabled(false);
+        cmdFilterRoads->setCheckable(false);
+
+        gridLayout_4->addWidget(cmdFilterRoads, 3, 0, 1, 1);
+
+        cmdGenerateRegions = new QPushButton(widget);
         cmdGenerateRegions->setObjectName(QStringLiteral("cmdGenerateRegions"));
         cmdGenerateRegions->setEnabled(false);
-        cmdGenerateRegions->setGeometry(QRect(260, 190, 141, 31));
         cmdGenerateRegions->setDefault(false);
         cmdGenerateRegions->setFlat(false);
-        cmdCreateBuildingLots = new QPushButton(groupBox_3);
+
+        gridLayout_4->addWidget(cmdGenerateRegions, 4, 0, 1, 1);
+
+        cmdCreateBuildingLots = new QPushButton(widget);
         cmdCreateBuildingLots->setObjectName(QStringLiteral("cmdCreateBuildingLots"));
         cmdCreateBuildingLots->setEnabled(false);
-        cmdCreateBuildingLots->setGeometry(QRect(260, 230, 141, 31));
+
+        gridLayout_4->addWidget(cmdCreateBuildingLots, 5, 0, 1, 1);
+
         streetRender = new QStreetRenderWidget(centralWidget);
         streetRender->setObjectName(QStringLiteral("streetRender"));
         streetRender->setGeometry(QRect(350, 20, 1451, 681));
@@ -703,6 +731,7 @@ public:
         QObject::connect(cmdClearStreetMap, SIGNAL(clicked()), StreetGenerator, SLOT(clearStreetmap()));
         QObject::connect(buttonSMap, SIGNAL(clicked()), StreetGenerator, SLOT(on_button_SMap_Clicked()));
         QObject::connect(chkShowVerts, SIGNAL(toggled(bool)), StreetGenerator, SLOT(onClickRenderVerts(bool)));
+        QObject::connect(cmdFilterRoads, SIGNAL(clicked()), StreetGenerator, SLOT(onClickFilterRoads()));
 
         QMetaObject::connectSlotsByName(StreetGenerator);
     } // setupUi
@@ -757,7 +786,6 @@ public:
         label_21->setText(QApplication::translate("StreetGenerator", "200", 0));
         label_25->setText(QApplication::translate("StreetGenerator", "Street Growth Score", 0));
         groupBox_3->setTitle(QApplication::translate("StreetGenerator", "Controls", 0));
-        cmdGenerateStreets->setText(QApplication::translate("StreetGenerator", "Generate Street Network", 0));
         cmdSaveOutput->setText(QApplication::translate("StreetGenerator", "Save...", 0));
         cmdSaveOutputImage->setText(QApplication::translate("StreetGenerator", "Save Image", 0));
         groupBox_4->setTitle(QApplication::translate("StreetGenerator", "Render Options", 0));
@@ -769,10 +797,12 @@ public:
         chkShowVerts->setText(QApplication::translate("StreetGenerator", "Show Vertices", 0));
         chkShowRegions->setText(QApplication::translate("StreetGenerator", "Render Building Regions", 0));
         chkShowLots->setText(QApplication::translate("StreetGenerator", "Render Building Lots", 0));
-        cmdReset->setText(QApplication::translate("StreetGenerator", "Initialise / Reset", 0));
-        cmdStep->setText(QApplication::translate("StreetGenerator", "Step...", 0));
         label->setText(QApplication::translate("StreetGenerator", "Seed:", 0));
         chkTimeSeed->setText(QApplication::translate("StreetGenerator", "Use system time", 0));
+        cmdReset->setText(QApplication::translate("StreetGenerator", "Initialise / Reset", 0));
+        cmdStep->setText(QApplication::translate("StreetGenerator", "Step...", 0));
+        cmdGenerateStreets->setText(QApplication::translate("StreetGenerator", "Generate Street Network", 0));
+        cmdFilterRoads->setText(QApplication::translate("StreetGenerator", "Filter Roads", 0));
         cmdGenerateRegions->setText(QApplication::translate("StreetGenerator", "Create Regions", 0));
         cmdCreateBuildingLots->setText(QApplication::translate("StreetGenerator", "Create Building Lots", 0));
         menuWindows->setTitle(QApplication::translate("StreetGenerator", "Windows", 0));

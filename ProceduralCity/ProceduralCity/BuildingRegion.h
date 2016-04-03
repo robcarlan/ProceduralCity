@@ -16,7 +16,7 @@ protected:
 	float popDensity;
 public:
 	std::list<Point> getPoints();
-	BuildingRegion(std::list<roadPtr> roadList, std::list<bool> travelDirection);
+	BuildingRegion(std::list<roadPtr> roadList, std::list<bool> travelDirection, std::list<bool> side);
 	BuildingRegion();
 	~BuildingRegion();
 };

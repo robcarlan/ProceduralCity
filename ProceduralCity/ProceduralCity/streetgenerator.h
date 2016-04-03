@@ -30,6 +30,7 @@ private slots:
 	void onClickStep();
 	void onClickSave();
 	void onClickSaveImage();
+	void onClickFilterRoads();
 	void onClickCreateLots();
 	void onClickCreateRegions();
 	void onClickRenderRegions(bool render);
@@ -72,7 +73,7 @@ private:
 	QString getFileChoice();
 	void setParameters();
 
-	bool streetsGenerated, regionsGenerated, lotsGenerated;
+	bool streetsGenerated, streetsFiltered, regionsGenerated, lotsGenerated;
 
 };
 

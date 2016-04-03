@@ -6,8 +6,9 @@ std::vector<BuildingRegion> CityRegionGenerator::createRegions(std::list<roadPtr
 	// -> we can store where there aren't loops -> we can check these later?
 	//Keep looping until max_edges, if we loop mark that as a loop and continue.
 
-	leftVisited = std::map<roadPtr, bool>();
-	rightVisited = std::map<roadPtr, bool>();
+
+	anticlockwiseVisited = std::map<roadPtr, bool>();
+	clockwiseVisited = std::map<roadPtr, bool>();
 	std::vector<BuildingRegion> out = std::vector<BuildingRegion>();
 
 	std::list<roadPtr> traversing = std::list<roadPtr>();
@@ -15,6 +16,8 @@ std::vector<BuildingRegion> CityRegionGenerator::createRegions(std::list<roadPtr
 	std::list<bool> side = std::list<bool>();
 
 	bool sideToStartSearch = true;
+	bool followingRoadForwards = true;
+	bool searchComplete = false;
 
 	//TODO :: SIMPLE STREETS HAVE TWO ROADS THE SAME AT AN INTERSECTION
 
@@ -22,25 +25,25 @@ std::vector<BuildingRegion> CityRegionGenerator::createRegions(std::list<roadPtr
 		BOOST_FOREACH(const roadPtr roadStart, roads) {
 			if (roadStart->getStart()->getIntersectionPoint() == Point(900, 800))
 				qDebug() << "The start";
-			if (!hasVisited(sideToStartSearch, roadStart)) {
+			if (!hasVisited(sideToStartSearch, followingRoadForwards, roadStart)) {
 				int pathLength = 1;
 				bool found = false;
-				//true -> right
-				bool currentSide = sideToStartSearch;
-				bool followingRoadForwards = true;
+				searchComplete = false;
+				//true -> clockwise
+				bool clockwise = sideToStartSearch;
 
 				//This edge isn't associated with a region. Start following it left for MAX_EDGE runs
 				roadPtr currentRoad = roadStart;
 				intersectionPtr intersectionCrossed = currentRoad->getStart();
 				intersectionPtr startPtr = intersectionCrossed;
 
-				while (pathLength <= maxEdgeTraversal) {
+				while (pathLength <= maxEdgeTraversal && !searchComplete) {
 					//Check to see if we have already searched this node, or size of road is 1 (implies a convex region, so we won't add it).
-					if (hasVisited(currentSide, currentRoad) || intersectionCrossed->getNumIntersections() < 2) {
+					if (hasVisited(clockwise, followingRoadForwards, currentRoad) || intersectionCrossed->getNumIntersections() < 2) {
 					//	assert(isValidRegion(currentSide, currentRoad) == false); 
 						
 						//Mark all connected as should not be searched
-						pathLength = maxEdgeTraversal + 1;
+						searchComplete = true;
 					}
 					else {
 						//Keep searching, as these edges are unexplored
@@ -57,14 +60,15 @@ std::vector<BuildingRegion> CityRegionGenerator::createRegions(std::list<roadPtr
 							//Keep searching, find the next road at the intersection
 							//Take the OPPOSITE ANGLE OMG
 							float angleHeading = !followingRoadForwards ? currentRoad->getAngleToEnd() : currentRoad->getAngleToStart();
-							auto next = (currentSide ? nextIntersection->getRightMost(angleHeading, currentSide)
-								: nextIntersection->getLeftMost(angleHeading, currentSide));
+							auto next = (clockwise ? nextIntersection->getClockwise(angleHeading, clockwise)
+								: nextIntersection->getAntiClockwise(angleHeading, clockwise));
 							traversing.push_back(currentRoad);
 							direction.push_back(followingRoadForwards);
-							side.push_back(currentSide);
+							side.push_back(followingRoadForwards ? clockwise : !clockwise);
 							//TODO :: Fails because of two seperate roads with the same start and end vertices.
 							currentRoad = next.first;
-							currentSide = next.second;
+							//switches every iteration.
+							//clockwise = next.second;
 							assert(currentRoad != nullptr);
 							intersectionCrossed = nextIntersection;
 							pathLength++;
@@ -79,7 +83,7 @@ std::vector<BuildingRegion> CityRegionGenerator::createRegions(std::list<roadPtr
 				flagRoads(traversing, side, found);
 
 				if (found)
-					out.push_back(BuildingRegion(traversing, direction));
+					out.push_back(BuildingRegion(traversing, direction, side));
 
 				//Clear variables
 				pathLength = 1;
@@ -93,6 +97,19 @@ std::vector<BuildingRegion> CityRegionGenerator::createRegions(std::list<roadPtr
 		else break;
 	}
 
+	//We have to remove the longest item, as this iterates over the outside
+	auto itr = out.begin();
+	auto toRemove = out.begin();
+	int maxLength = 0;
+	for (itr; itr != out.end(); itr++) {
+		if (itr->getPoints().size() > maxLength) {
+			maxLength = itr->getPoints().size();
+			toRemove = itr;
+		}
+	}
+
+	out.erase(toRemove);
+
 	//Need to 'push' in to allow for roads thickness
 	//visited looping yeahh
 
@@ -100,15 +117,16 @@ std::vector<BuildingRegion> CityRegionGenerator::createRegions(std::list<roadPtr
 	return out;
 }
 
-bool CityRegionGenerator::hasVisited(bool side, roadPtr traversing) {
-	if (side) return !(rightVisited.find(traversing) == rightVisited.end());
-	else return !(leftVisited.find(traversing) == leftVisited.end());
+bool CityRegionGenerator::hasVisited(bool side, bool forwards, roadPtr traversing) {
+	//Clockwise + Forward or AntiCW + Backwards = search clockwise
+	if ((side && forwards) || (!side && !forwards)) return !(clockwiseVisited.find(traversing) == clockwiseVisited.end());
+	else return !(anticlockwiseVisited.find(traversing) == anticlockwiseVisited.end());
 }
 
-bool CityRegionGenerator::isValidRegion(bool side, roadPtr traversing) {
-	assert(hasVisited(side, traversing));
-	if (side) return rightVisited[traversing];
-	else return leftVisited[traversing];
+bool CityRegionGenerator::isValidRegion(bool side, bool forwards, roadPtr traversing) {
+	assert(hasVisited(side, forwards, traversing));
+	if ((side && forwards) || (!side && !forwards)) return clockwiseVisited[traversing];
+	else return anticlockwiseVisited[traversing];
 }
 
 void CityRegionGenerator::flagRoads(std::list<roadPtr> traversing, std::list<bool> side, bool flagFound) {
@@ -119,10 +137,14 @@ void CityRegionGenerator::flagRoads(std::list<roadPtr> traversing, std::list<boo
 
 	//Mark the explored edges as found or not
 	while (sideItr != side.end()) {
-		(*sideItr ? rightVisited : leftVisited)[*roadItr] = flagFound;
+		(*sideItr ? clockwiseVisited : anticlockwiseVisited)[*roadItr] = flagFound;
 		sideItr++;
 		roadItr++;
 	}
+}
+
+Point CityRegionGenerator::getRegionPoint(roadPtr r1, roadPtr r2, intersectionPtr intersection, bool cw1, bool cw2) {
+	return Point();
 }
 
 std::vector<BuildingLot> CityRegionGenerator::subdivideRegions(std::list<BuildingRegion> const buildings) {
