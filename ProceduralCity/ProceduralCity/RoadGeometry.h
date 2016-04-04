@@ -28,6 +28,7 @@ public:
 
 	float getAngleToEnd();
 	float getAngleToStart();
+	float getWidth();
 
 	std::pair<intersectionPtr, bool> getOtherEnd(intersectionPtr toCheck) const;
 	intersectionPtr getStart();

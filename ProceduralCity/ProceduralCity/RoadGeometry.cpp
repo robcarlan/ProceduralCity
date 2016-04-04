@@ -16,6 +16,17 @@ float RoadGeometry::getAngleToStart() {
 	return angleAway;
 }
 
+float RoadGeometry::getWidth() {
+	switch (rtype) {
+	case roadType::MAINROAD:
+		return 10.0f;
+	case roadType::STREET:
+		return 5.0f;
+	default:
+		return 2.0f;
+	}
+}
+
 std::pair<intersectionPtr, bool> RoadGeometry::getOtherEnd(intersectionPtr toCheck) const {
 	if (toCheck->getIntersectionPoint().getDistanceSq(start) < 0.1f)
 		return std::make_pair(endIntersect, true);

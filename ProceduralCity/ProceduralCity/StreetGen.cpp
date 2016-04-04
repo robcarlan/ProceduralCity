@@ -266,7 +266,9 @@ void StreetGen::applyLocalConstraints(RoadVariable *toCheck) {
 		assert(toCheck->road.start.x() - toCheck->road.parentRoad->getEnd().x() < 0.01f
 			&& toCheck->road.start.y() - toCheck->road.parentRoad->getEnd().y() < 0.01f);
 
-	if (abs(toCheck->road.end.x() - 1290.0f) < 1.0f && abs(toCheck->road.end.y() - 615.0f) < 1.0f)
+	if (abs(toCheck->road.start.x() - 79.0f) < 1.0f && abs(toCheck->road.start.y() - 1030.0f) < 1.0f)
+		qDebug() << "A";
+	if (abs(toCheck->road.end.x() - 79.0f) < 1.0f && abs(toCheck->road.end.y() - 1030.0f) < 1.0f)
 		qDebug() << "A";
 	if (toCheck->road.end.x() == 598.0f && toCheck->road.end.y() == 950.0f)
 		qDebug() << "A";
@@ -441,25 +443,27 @@ void StreetGen::getIllegalSegment(Road segment, bool &legal) {
 bool StreetGen::overlapsConnected(RoadVariable * toCheck, Road * tempRoad) {
 	//Test connected roads for roads of similar angle (prevent this)
 	//For roads at each intersection, test for angle / weird
-
-	return false;
 	if (toCheck->road.parentRoad == nullptr) return false;
 	//test dot produce of connected roads
 	const float dotThreshold = 0.2f;
-	BOOST_FOREACH(Road *cRoad, toCheck->road.parentRoad->roadEndIntersection->connected) {
-		//float angleVal = cRoad->angleTo(*tempRoad);
-		//if (abs(angleVal - 180.0f) < 5.0f) return true;
-		float dot = tempRoad->getDot(*cRoad);
-		dot /= tempRoad->length();
-		dot /= cRoad->length();
-		if (dot >= dotThreshold) return true;
+	if (toCheck->road.target != nullptr) {
+		BOOST_FOREACH(Road *cRoad, toCheck->road.target->connected) {
+			float angleVal = cRoad->angleTo(*tempRoad);
+			if (abs(angleVal - 180.0f) < 5.0f) return true;
+			//float dot = tempRoad->getDot(*cRoad);
+			//dot /= tempRoad->length();
+			//dot /= cRoad->length();
+			//if (dot >= dotThreshold) return true;
+		}
 	}
 
-	BOOST_FOREACH(Road *cRoad, tempRoad->roadEndIntersection->connected) {
-		float dot = tempRoad->getDot(*cRoad);
-		dot /= tempRoad->length();
-		dot /= cRoad->length();
-		if (dot >= dotThreshold) return true;
+	BOOST_FOREACH(Road *cRoad, toCheck->road.parentRoad->roadEndIntersection->connected) {
+		float angleVal = cRoad->angleTo(*tempRoad);
+		if (abs(angleVal - 180.0f) < 5.0f) return true;
+		//float dot = tempRoad->getDot(*cRoad);
+		//dot /= tempRoad->length();
+		//dot /= cRoad->length();
+		//if (dot >= dotThreshold) return true;
 	}
 	return false;
 }

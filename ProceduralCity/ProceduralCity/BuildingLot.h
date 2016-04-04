@@ -13,6 +13,8 @@ protected:
 	BuildingRegion* owner;
 public:
 	std::list<Point> getPoints();
+	void setOwner(BuildingRegion* owner);
+	BuildingLot(std::list<Point> points);
 	BuildingLot();
 	~BuildingLot();
 };

@@ -153,6 +153,7 @@
     <ClCompile Include="StreetGen.cpp" />
     <ClCompile Include="StreetManager.cpp" />
     <ClCompile Include="Variable.cpp" />
+    <ClCompile Include="cityview3d.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="streetgenerator.cpp" />
   </ItemGroup>
@@ -193,6 +194,16 @@
     <ClInclude Include="StreetGen.h" />
     <ClInclude Include="StreetManager.h" />
     <ClInclude Include="Variable.h" />
+    <CustomBuild Include="cityview3d.h">
+      <AdditionalInputs Condition="&apos;$(Configuration)|$(Platform)&apos;==&apos;Debug|Win32&apos;">cityview3d.h;%(AdditionalInputs)</AdditionalInputs>
+      <Command Condition="&apos;$(Configuration)|$(Platform)&apos;==&apos;Debug|Win32&apos;">setlocal&#x000D;&#x000A;if errorlevel 1 goto VCEnd&#x000D;&#x000A;C:\Qt\5.4\msvc2012_opengl\bin\moc.exe  -DUNICODE -DWIN32 -DWIN64 -DQT_DLL -DQT_OPENGL_LIB -DQT_WIDGETS_LIB -DQT_OPENGL_LIB -DQT_WIDGETS_LIB -DQT_GUI_LIB -DQT_CORE_LIB -D_MSC_VER=1700 -D_WIN32 -IC:/Qt/5.4/msvc2012_opengl/mkspecs/win32-msvc2012 -IC:/ProceduralCity/ProceduralCity/ProceduralCity -IC:/ProceduralCity/ProceduralCity/ProceduralCity/GeneratedFiles -IC:/ProceduralCity/ProceduralCity/ProceduralCity -IC:/ProceduralCity/ProceduralCity/ProceduralCity/GeneratedFiles/Debug -IF:/boost_1_59_0 -IC:/Qt/5.4/msvc2012_opengl/include -IC:/Qt/5.4/msvc2012_opengl/include/QtOpenGL -IC:/Qt/5.4/msvc2012_opengl/include/QtWidgets -IC:/Qt/5.4/msvc2012_opengl/include/QtGui -IC:/Qt/5.4/msvc2012_opengl/include/QtCore cityview3d.h -o GeneratedFiles\debug\moc_cityview3d.cpp&#x000D;&#x000A;if errorlevel 1 goto VCEnd&#x000D;&#x000A;endlocal</Command>
+      <Message Condition="&apos;$(Configuration)|$(Platform)&apos;==&apos;Debug|Win32&apos;">MOC cityview3d.h</Message>
+      <Outputs Condition="&apos;$(Configuration)|$(Platform)&apos;==&apos;Debug|Win32&apos;">GeneratedFiles\debug\moc_cityview3d.cpp;%(Outputs)</Outputs>
+      <AdditionalInputs Condition="&apos;$(Configuration)|$(Platform)&apos;==&apos;Release|Win32&apos;">cityview3d.h;%(AdditionalInputs)</AdditionalInputs>
+      <Command Condition="&apos;$(Configuration)|$(Platform)&apos;==&apos;Release|Win32&apos;">setlocal&#x000D;&#x000A;if errorlevel 1 goto VCEnd&#x000D;&#x000A;C:\Qt\5.4\msvc2012_opengl\bin\moc.exe  -DUNICODE -DWIN32 -DWIN64 -DQT_DLL -DQT_OPENGL_LIB -DQT_WIDGETS_LIB -DQT_NO_DEBUG -DQT_OPENGL_LIB -DQT_WIDGETS_LIB -DQT_GUI_LIB -DQT_CORE_LIB -D_MSC_VER=1700 -D_WIN32 -IC:/Qt/5.4/msvc2012_opengl/mkspecs/win32-msvc2012 -IC:/ProceduralCity/ProceduralCity/ProceduralCity -IC:/ProceduralCity/ProceduralCity/ProceduralCity/GeneratedFiles -IC:/ProceduralCity/ProceduralCity/ProceduralCity -IC:/ProceduralCity/ProceduralCity/ProceduralCity/GeneratedFiles/Debug -IF:/boost_1_59_0 -IC:/Qt/5.4/msvc2012_opengl/include -IC:/Qt/5.4/msvc2012_opengl/include/QtOpenGL -IC:/Qt/5.4/msvc2012_opengl/include/QtWidgets -IC:/Qt/5.4/msvc2012_opengl/include/QtGui -IC:/Qt/5.4/msvc2012_opengl/include/QtCore cityview3d.h -o GeneratedFiles\release\moc_cityview3d.cpp&#x000D;&#x000A;if errorlevel 1 goto VCEnd&#x000D;&#x000A;endlocal</Command>
+      <Message Condition="&apos;$(Configuration)|$(Platform)&apos;==&apos;Release|Win32&apos;">MOC cityview3d.h</Message>
+      <Outputs Condition="&apos;$(Configuration)|$(Platform)&apos;==&apos;Release|Win32&apos;">GeneratedFiles\release\moc_cityview3d.cpp;%(Outputs)</Outputs>
+    </CustomBuild>
     <CustomBuild Include="streetgenerator.h">
       <AdditionalInputs Condition="&apos;$(Configuration)|$(Platform)&apos;==&apos;Debug|Win32&apos;">streetgenerator.h;%(AdditionalInputs)</AdditionalInputs>
       <Command Condition="&apos;$(Configuration)|$(Platform)&apos;==&apos;Debug|Win32&apos;">setlocal&#x000D;&#x000A;if errorlevel 1 goto VCEnd&#x000D;&#x000A;C:\Qt\5.4\msvc2012_opengl\bin\moc.exe  -DUNICODE -DWIN32 -DWIN64 -DQT_DLL -DQT_OPENGL_LIB -DQT_WIDGETS_LIB -DQT_OPENGL_LIB -DQT_WIDGETS_LIB -DQT_GUI_LIB -DQT_CORE_LIB -D_MSC_VER=1700 -D_WIN32 -IC:/Qt/5.4/msvc2012_opengl/mkspecs/win32-msvc2012 -IC:/ProceduralCity/ProceduralCity/ProceduralCity -IC:/ProceduralCity/ProceduralCity/ProceduralCity/GeneratedFiles -IC:/ProceduralCity/ProceduralCity/ProceduralCity -IC:/ProceduralCity/ProceduralCity/ProceduralCity/GeneratedFiles/Debug -IF:/boost_1_59_0 -IC:/Qt/5.4/msvc2012_opengl/include -IC:/Qt/5.4/msvc2012_opengl/include/QtOpenGL -IC:/Qt/5.4/msvc2012_opengl/include/QtWidgets -IC:/Qt/5.4/msvc2012_opengl/include/QtGui -IC:/Qt/5.4/msvc2012_opengl/include/QtCore streetgenerator.h -o GeneratedFiles\debug\moc_streetgenerator.cpp&#x000D;&#x000A;if errorlevel 1 goto VCEnd&#x000D;&#x000A;endlocal</Command>
@@ -215,6 +226,12 @@
       <ExcludedFromBuild Condition="&apos;$(Configuration)|$(Platform)&apos;==&apos;Release|Win32&apos;">true</ExcludedFromBuild>
     </ClCompile>
     <ClCompile Include="GeneratedFiles\release\moc_QStreetRenderWidget.cpp">
+      <ExcludedFromBuild Condition="&apos;$(Configuration)|$(Platform)&apos;==&apos;Debug|Win32&apos;">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="GeneratedFiles\debug\moc_cityview3d.cpp">
+      <ExcludedFromBuild Condition="&apos;$(Configuration)|$(Platform)&apos;==&apos;Release|Win32&apos;">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="GeneratedFiles\release\moc_cityview3d.cpp">
       <ExcludedFromBuild Condition="&apos;$(Configuration)|$(Platform)&apos;==&apos;Debug|Win32&apos;">true</ExcludedFromBuild>
     </ClCompile>
     <ClCompile Include="GeneratedFiles\debug\moc_streetgenerator.cpp">

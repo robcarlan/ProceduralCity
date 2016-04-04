@@ -42,6 +42,8 @@ struct roadAttr {
 	bool failed;
 
 	roadAttr() {
+		parentRoad = rootRoad = generated = targetRoad  = nullptr;
+		target = branchSource = nullptr;
 		connected = false;
 		failed = false;
 	}

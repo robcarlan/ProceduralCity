@@ -14,6 +14,7 @@
 #include "City.h"
 #include "SimpleStreetGeometryCreator.h"
 #include "CityView2D.h"
+#include "cityview3d.h"
 
 class StreetGenerator : public QMainWindow
 {
@@ -33,6 +34,7 @@ private slots:
 	void onClickFilterRoads();
 	void onClickCreateLots();
 	void onClickCreateRegions();
+	void onClickShowRendered();
 	void onClickRenderRegions(bool render);
 	void onClickRenderLots(bool render);
 	void onClickRenderVerts(bool render);

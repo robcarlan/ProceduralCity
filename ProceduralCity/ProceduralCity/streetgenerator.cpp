@@ -74,7 +74,9 @@ void StreetGenerator::onClickCreateLots() {
 	
 	ui.chkShowLots->setEnabled(true);
 	lotsGenerated = true;
-	//TODO :: Enable 3D
+
+	//Enable 3d view
+	ui.cmdCreateView->setEnabled(true);
 }
 
 void StreetGenerator::onClickCreateRegions() {
@@ -88,6 +90,19 @@ void StreetGenerator::onClickCreateRegions() {
 	ui.chkShowRegions->setEnabled(true);
 	ui.cmdCreateBuildingLots->setEnabled(true);
 	regionsGenerated = true;
+}
+
+void StreetGenerator::onClickShowRendered() {
+	assert(lotsGenerated);
+
+	//Prepare new form, pass geometry
+	//Build geometry, show as progres dialog
+	//Open view
+	CityView3D *cview = new CityView3D();
+	cview->setAnimating(true);
+	cview->resize(640, 480);
+	cview->show();
+	
 }
 
 void StreetGenerator::onClickRenderRegions(bool render) {
@@ -259,6 +274,7 @@ void StreetGenerator::initialiseSystem() {
 	ui.cmdGenerateRegions->setEnabled(false);
 	ui.cmdCreateBuildingLots->setEnabled(false);
 	ui.cmdFilterRoads->setEnabled(false);
+	ui.cmdCreateView->setEnabled(false);
 	streetsFiltered = lotsGenerated = regionsGenerated = streetsGenerated = false;
 
 	//Scale images to fit 

@@ -101,6 +101,9 @@
     <ClCompile Include="Variable.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="cityview3d.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
     <ClCompile Include="main.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -163,6 +166,9 @@
     <ClInclude Include="Variable.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <CustomBuild Include="cityview3d.h">
+      <Filter>Header Files</Filter>
+    </CustomBuild>
     <CustomBuild Include="streetgenerator.h">
       <Filter>Header Files</Filter>
     </CustomBuild>
@@ -178,6 +184,12 @@
       <Filter>Generated Files</Filter>
     </ClCompile>
     <ClCompile Include="GeneratedFiles\release\moc_QStreetRenderWidget.cpp">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="GeneratedFiles\debug\moc_cityview3d.cpp">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="GeneratedFiles\release\moc_cityview3d.cpp">
       <Filter>Generated Files</Filter>
     </ClCompile>
     <ClCompile Include="GeneratedFiles\debug\moc_streetgenerator.cpp">

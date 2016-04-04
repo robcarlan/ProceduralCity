@@ -2,7 +2,15 @@
 
 void City::createLots() {
 	if (!regionsCreated) return;
-	//lots = regionCreator.subdivideRegions(regions);
+	regionCreator.subdivideRegions(regions);
+
+	//Build lots vector
+	BOOST_FOREACH(BuildingRegion region, regions) {
+		BOOST_FOREACH(BuildingLot lot, region.getLots()) {
+			lots.push_back(lot);
+		}
+	}
+
 	lotsCreated = true;
 }
 
@@ -19,7 +27,7 @@ void City::getGeometry(std::pair<std::list<roadPtr>, std::list<intersectionPtr>>
 	hasGeometry = true;
 }
 
-std::vector<BuildingLot>* City::getLots() {
+std::vector<BuildingLot&>* City::getLots() {
 	return &lots;
 }
 

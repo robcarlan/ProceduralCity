@@ -53,7 +53,7 @@ public:
 	void Update();
 
 	void addRegions(std::vector<BuildingRegion> *regions);
-	void addLots(std::vector<BuildingLot> *lots);
+	void addLots(std::vector<BuildingLot&> *lots);
 	void addRoad(Road * toAdd);
 	void addIntersection(RoadIntersection * toAdd);
 	void addRoads(std::list<roadPtr> roads);

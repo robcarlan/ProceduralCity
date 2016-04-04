@@ -4,5 +4,5 @@
 
 HEADERS += ./*.h
 SOURCES += ./*.cpp
-FORMS += ./streetgenerator.ui
+FORMS += ./streetgenerator.ui 
 RESOURCES += streetgenerator.qrc

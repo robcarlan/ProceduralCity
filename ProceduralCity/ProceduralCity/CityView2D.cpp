@@ -8,13 +8,21 @@ void CityView2D::addRegions(std::vector<BuildingRegion> *regions) {
 		}
 
 		//TODO
-		
-		auto polyItem = scene->addPolygon(poly, QPen(QBrush(QColor(100, 0, 0)), 2.0f), QBrush(QColor(std::fmodf((poly.at(0).x() * 100), 256), 0, std::fmodf((poly.at(0).y() * 100), 256))));
-		regionRender->addToGroup(polyItem);
+		QGraphicsItem* polyItem;
+
+		if (region.isValid()) {
+			polyItem = scene->addPolygon(poly, QPen(QBrush(QColor(100, 0, 0)), 2.0f), QBrush(QColor(rand() % 256, rand() % 256, rand() % 256)));
+			regionRender->addToGroup(polyItem);
+		}
+		else {
+			//	polyItem = scene->addPolygon(poly, QPen(QBrush(QColor(100, 0, 0)), 2.0f), QBrush(QColor(0,0,0)));
+			//regionRender->addToGroup(polyItem);
+		}
+
 	}
 }
 
-void CityView2D::addLots(std::vector<BuildingLot> *lots) {
+void CityView2D::addLots(std::vector<BuildingLot&> *lots) {
 	BOOST_FOREACH(BuildingLot lot, *lots) {
 		QPolygonF poly = QPolygonF();
 		BOOST_FOREACH(Point p, lot.getPoints()) {
@@ -22,7 +30,7 @@ void CityView2D::addLots(std::vector<BuildingLot> *lots) {
 		}
 
 		//TODO 
-		auto polyItem = scene->addPolygon(poly, QPen(QBrush(QColor(0, 0, 0)), 2.0f), QBrush(QColor(100, 0, 0)));
+		auto polyItem = scene->addPolygon(poly, QPen(QBrush(QColor(0, 0, 0)), 2.0f), QBrush(QColor(rand() % 256, rand() % 256, rand() % 256)));
 		lotsRender->addToGroup(polyItem);
 	}
 }
@@ -129,7 +137,7 @@ void CityView2D::Reset(Point size) {
 	regionRender->setVisible(drawRegions);
 
 	scene->setSceneRect(QRectF(-100, -100, size.x() + 100, size.y() + 100));
-
+	scene->setSortCacheEnabled(true);
 }
 
 void CityView2D::clearGeometry() {

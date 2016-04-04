@@ -87,7 +87,8 @@ void IntersectionGeometry::removeRoad(RoadGeometry *toRemove) {
 
 std::pair<roadPtr, bool> IntersectionGeometry::getAntiClockwise(float angle, bool clockwise) {
 	//Travelling on the right and looking for left most, is the same as looking for the right most(i.e. first)
-	if (clockwise == true) return getClockwise(angle, clockwise);
+	if (clockwise == true)
+		return getClockwise(angle, clockwise);
 	auto next = getBest(angle, clockwise);
 	float outgoingAngle = next.second;
 	//Switch sides if travel vertically
@@ -95,7 +96,8 @@ std::pair<roadPtr, bool> IntersectionGeometry::getAntiClockwise(float angle, boo
 }
 
 std::pair<roadPtr, bool> IntersectionGeometry::getClockwise(float angle, bool clockwise) {
-	if (clockwise == false) return getAntiClockwise(angle, clockwise);
+	if (clockwise == false) 
+		return getAntiClockwise(angle, clockwise);
 	//Find angle with smalles +ve change
 	auto next = getBest(angle, clockwise);
 	float outgoingAngle = next.second;

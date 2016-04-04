@@ -433,7 +433,7 @@
           <number>5</number>
          </property>
          <property name="maximum">
-          <number>200</number>
+          <number>500</number>
          </property>
          <property name="singleStep">
           <number>5</number>
@@ -449,7 +449,7 @@
           <number>5</number>
          </property>
          <property name="maximum">
-          <number>500</number>
+          <number>1000</number>
          </property>
          <property name="singleStep">
           <number>5</number>
@@ -739,7 +739,7 @@
           <double>0.050000000000000</double>
          </property>
          <property name="value">
-          <double>0.750000000000000</double>
+          <double>0.000000000000000</double>
          </property>
         </widget>
        </item>
@@ -752,7 +752,7 @@
           <double>0.050000000000000</double>
          </property>
          <property name="value">
-          <double>0.500000000000000</double>
+          <double>0.000000000000000</double>
          </property>
         </widget>
        </item>
@@ -764,9 +764,9 @@
     <property name="geometry">
      <rect>
       <x>1390</x>
-      <y>710</y>
+      <y>700</y>
       <width>411</width>
-      <height>271</height>
+      <height>281</height>
      </rect>
     </property>
     <property name="sizePolicy">
@@ -963,13 +963,13 @@
       </item>
      </layout>
     </widget>
-    <widget class="QWidget" name="">
+    <widget class="QWidget" name="layoutWidget">
      <property name="geometry">
       <rect>
        <x>260</x>
        <y>80</y>
        <width>141</width>
-       <height>181</height>
+       <height>199</height>
       </rect>
      </property>
      <layout class="QGridLayout" name="gridLayout_4">
@@ -1030,6 +1030,16 @@
         </property>
         <property name="text">
          <string>Create Building Lots</string>
+        </property>
+       </widget>
+      </item>
+      <item row="6" column="0">
+       <widget class="QPushButton" name="cmdCreateView">
+        <property name="enabled">
+         <bool>false</bool>
+        </property>
+        <property name="text">
+         <string>3D View</string>
         </property>
        </widget>
       </item>
@@ -1156,7 +1166,7 @@
    <hints>
     <hint type="sourcelabel">
      <x>1651</x>
-     <y>907</y>
+     <y>894</y>
     </hint>
     <hint type="destinationlabel">
      <x>1134</x>
@@ -1172,7 +1182,7 @@
    <hints>
     <hint type="sourcelabel">
      <x>1416</x>
-     <y>795</y>
+     <y>785</y>
     </hint>
     <hint type="destinationlabel">
      <x>955</x>
@@ -1188,7 +1198,7 @@
    <hints>
     <hint type="sourcelabel">
      <x>1416</x>
-     <y>818</y>
+     <y>808</y>
     </hint>
     <hint type="destinationlabel">
      <x>956</x>
@@ -1204,7 +1214,7 @@
    <hints>
     <hint type="sourcelabel">
      <x>1412</x>
-     <y>841</y>
+     <y>831</y>
     </hint>
     <hint type="destinationlabel">
      <x>954</x>
@@ -1220,7 +1230,7 @@
    <hints>
     <hint type="sourcelabel">
      <x>1651</x>
-     <y>847</y>
+     <y>836</y>
     </hint>
     <hint type="destinationlabel">
      <x>1378</x>
@@ -1236,7 +1246,7 @@
    <hints>
     <hint type="sourcelabel">
      <x>1651</x>
-     <y>877</y>
+     <y>865</y>
     </hint>
     <hint type="destinationlabel">
      <x>1374</x>
@@ -1252,7 +1262,7 @@
    <hints>
     <hint type="sourcelabel">
      <x>1640</x>
-     <y>1003</y>
+     <y>993</y>
     </hint>
     <hint type="destinationlabel">
      <x>1377</x>
@@ -1268,7 +1278,7 @@
    <hints>
     <hint type="sourcelabel">
      <x>1511</x>
-     <y>1003</y>
+     <y>993</y>
     </hint>
     <hint type="destinationlabel">
      <x>1164</x>
@@ -1284,7 +1294,7 @@
    <hints>
     <hint type="sourcelabel">
      <x>1414</x>
-     <y>879</y>
+     <y>869</y>
     </hint>
     <hint type="destinationlabel">
      <x>955</x>
@@ -1476,7 +1486,7 @@
    <hints>
     <hint type="sourcelabel">
      <x>1704</x>
-     <y>988</y>
+     <y>972</y>
     </hint>
     <hint type="destinationlabel">
      <x>1808</x>
@@ -1508,7 +1518,7 @@
    <hints>
     <hint type="sourcelabel">
      <x>1453</x>
-     <y>929</y>
+     <y>919</y>
     </hint>
     <hint type="destinationlabel">
      <x>1387</x>
@@ -1524,7 +1534,7 @@
    <hints>
     <hint type="sourcelabel">
      <x>1442</x>
-     <y>948</y>
+     <y>938</y>
     </hint>
     <hint type="destinationlabel">
      <x>1385</x>
@@ -1572,7 +1582,7 @@
    <hints>
     <hint type="sourcelabel">
      <x>1482</x>
-     <y>902</y>
+     <y>892</y>
     </hint>
     <hint type="destinationlabel">
      <x>1508</x>
@@ -1588,11 +1598,27 @@
    <hints>
     <hint type="sourcelabel">
      <x>1720</x>
-     <y>929</y>
+     <y>915</y>
     </hint>
     <hint type="destinationlabel">
      <x>1814</x>
      <y>924</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>cmdCreateView</sender>
+   <signal>clicked()</signal>
+   <receiver>StreetGenerator</receiver>
+   <slot>onClickShowRendered()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>1734</x>
+     <y>1001</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>1813</x>
+     <y>905</y>
     </hint>
    </hints>
   </connection>
@@ -1622,6 +1648,7 @@
   <slot>on_button_SMap_Clicked()</slot>
   <slot>onClickRenderVerts(bool)</slot>
   <slot>onClickFilterRoads()</slot>
+  <slot>onClickShowRendered()</slot>
  </slots>
  <buttongroups>
   <buttongroup name="buttonGroup"/>
