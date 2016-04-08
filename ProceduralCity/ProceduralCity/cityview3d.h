@@ -27,6 +27,7 @@ public:
 	virtual void initialize();
 
 	void setAnimating(bool animating);
+	void initaliseCamera();
 
 public slots:
 	void renderLater();
@@ -35,6 +36,8 @@ public slots:
 protected:
 	bool event(QEvent *event) Q_DECL_OVERRIDE;
 	void mouseMoveEvent(QMouseEvent *event) Q_DECL_OVERRIDE;
+	void keyPressEvent(QKeyEvent *event) Q_DECL_OVERRIDE;
+	void keyReleaseEvent(QKeyEvent *event) Q_DECL_OVERRIDE;
 	void exposeEvent(QExposeEvent *event) Q_DECL_OVERRIDE;
 
 private:
@@ -53,9 +56,21 @@ private:
 	QOpenGLShaderProgram *m_program;
 	int m_frame;
 
+	//Camera Variables 
+	//Is it worth having a camera class? (Handles visibility etc)
+	float posX, posY, posZ;
+	float xRot, yRot, zRot;
+
 	//Mouse Controls
 	QPointF prev;
 	QPointF dif;
+
+	//Keyboard controls
+	static const int moveLeftKey;
+	static const int moveRightKey;
+	static const int moveForwardKey;
+	static const int moveBackKey;
+	bool isLeftHeld, isRightHeld, isBackHeld, isForwardHeld;
 
 };
 

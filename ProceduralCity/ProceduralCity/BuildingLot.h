@@ -1,6 +1,7 @@
 #pragma once
 #include "BuildingRegion.h"
 #include "Point.h"
+#include "Road.h"
 #include <list>
 
 class BuildingRegion;
@@ -11,9 +12,14 @@ class BuildingLot {
 protected:
 	std::list<Point> points;
 	BuildingRegion* owner;
+	buildingStyle style;
+	float popDensity;
 public:
-	std::list<Point> getPoints();
+	std::list<Point>& getPoints();
 	void setOwner(BuildingRegion* owner);
+	void setStyle(buildingStyle style);
+	void setPopDensity(float popDensity);
+	BuildingRegion * getOwner();
 	BuildingLot(std::list<Point> points);
 	BuildingLot();
 	~BuildingLot();

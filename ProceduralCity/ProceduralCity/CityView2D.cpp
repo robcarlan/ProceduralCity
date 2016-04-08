@@ -15,22 +15,29 @@ void CityView2D::addRegions(std::vector<BuildingRegion> *regions) {
 			regionRender->addToGroup(polyItem);
 		}
 		else {
-			//	polyItem = scene->addPolygon(poly, QPen(QBrush(QColor(100, 0, 0)), 2.0f), QBrush(QColor(0,0,0)));
+			//polyItem = scene->addPolygon(poly, QPen(QBrush(QColor(100, 0, 0)), 2.0f), QBrush(QColor(0,0,0)));
 			//regionRender->addToGroup(polyItem);
 		}
 
 	}
 }
 
-void CityView2D::addLots(std::vector<BuildingLot&> *lots) {
-	BOOST_FOREACH(BuildingLot lot, *lots) {
+void CityView2D::addLots(std::vector<BuildingLot*> &lots) {
+	BOOST_FOREACH(BuildingLot *lot, lots) {
 		QPolygonF poly = QPolygonF();
-		BOOST_FOREACH(Point p, lot.getPoints()) {
+		BOOST_FOREACH(Point p, lot->getPoints()) {
 			poly.append(p);
 		}
 
-		//TODO 
-		auto polyItem = scene->addPolygon(poly, QPen(QBrush(QColor(0, 0, 0)), 2.0f), QBrush(QColor(rand() % 256, rand() % 256, rand() % 256)));
+		QGraphicsItem* polyItem;
+
+		//if (lot->getOwner()->isConvex()) {
+		//	polyItem = scene->addPolygon(poly, QPen(QBrush(QColor(0, 0, 0)), 0.5f), QBrush(QColor(rand() % 256, rand() % 256, rand() % 256)));
+		//}
+		//else {
+			polyItem = scene->addPolygon(poly, QPen(QBrush(QColor(0, 0, 0)), 0.5f), QBrush(QColor(255, 255, 255)));
+		//}
+
 		lotsRender->addToGroup(polyItem);
 	}
 }

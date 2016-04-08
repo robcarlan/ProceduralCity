@@ -49,6 +49,8 @@ void StreetGenerator::onClickFilterRoads() {
 	assert(streetsGenerated);
 	generator.filterStreets();
 
+	cityView.resetStreets();
+
 	SimpleStreetGeometryCreator toSimple = SimpleStreetGeometryCreator();
 	std::list<RoadIntersection*> intersections = generator.getGeneratedIntersections();
 	std::list<Road*> roads = generator.getGeneratedRoads();
@@ -65,8 +67,20 @@ void StreetGenerator::onClickFilterRoads() {
 
 void StreetGenerator::onClickCreateLots() {
 	assert(regionsGenerated);
+	//Set params here
+	cityView.getRegionGenerator().setParams(
+		ui.spinMinBuildingArea->value(),
+		ui.spinMaxBuildingArea->value(),
+		ui.spinLotGenerationOffset->value(),
+		ui.spinMinLotDim->value(),
+		ui.spinMaxLotDim->value(),
+		ui.spinHighwayWidth->value(),
+		ui.spinStreetWidth->value(),
+		ui.chkAllowLotMerge->isChecked(),
+		ui.chkTimeSeed->isChecked() ? time(NULL) : ui.intSeedValue->value()
+		);
 
-	//Subdivide, add lots by colour (handle these in some new functions please)
+	cityView.setImageData(pop, bType);
 	cityView.createLots();
 	view.addLots(cityView.getLots());
 	view.setDrawLots(true);
@@ -81,6 +95,8 @@ void StreetGenerator::onClickCreateLots() {
 
 void StreetGenerator::onClickCreateRegions() {
 	assert(streetsFiltered);
+
+	cityView.resetRegions();
 	cityView.createRegions();
 
 	//Now indicate this to 2D view
@@ -169,6 +185,9 @@ void StreetGenerator::on_buttonGMap_clicked() {
 	}
 }
 
+void StreetGenerator::on_buttonBMap_clicked() {
+}
+
 void StreetGenerator::on_buttonSMap_clicked() {
 	QString fName = getFileChoice();
 
@@ -186,8 +205,8 @@ void StreetGenerator::cmdLoadDirectory() {
 	QDir directory = QDir(dName);
 	QStringList files = directory.entryList();
 
-	bool gotPop, gotHeight, gotGeog, gotPattern;
-	gotPop = gotHeight = gotGeog = gotPattern = false;
+	bool gotPop, gotHeight, gotGeog, gotPattern, gotBuildings;
+	gotPop = gotHeight = gotGeog = gotPattern = gotBuildings = false;
 
 	//Find files by exact filename, update render views.
 	BOOST_FOREACH(QString file, files) {
@@ -215,9 +234,19 @@ void StreetGenerator::cmdLoadDirectory() {
 			QFileInfo info(res);
 			ui.labelGMap->setText("Geography Map: " + info.fileName());
 			ui.geogMapRender->setImage(res.fileName());
+		} else if (file == tr("buildings.png")) {
+			gotGeog = true;
+			QFile res(dName + "/buildings.png");
+			QFileInfo info(res);
+			ui.labelBMap->setText("Building Map: " + info.fileName());
+			ui.buildingTypeRender->setImage(res.fileName());
 		}
 	}
 
+}
+
+void StreetGenerator::clearBuildingMap() {
+	ui.buildingTypeRender->clear();
 }
 
 void StreetGenerator::clearStreetmap() {
@@ -267,6 +296,7 @@ void StreetGenerator::initialiseSystem() {
 	bool heightSet = ui.hMapRender->isSet();
 	bool popSet = ui.popMapRender->isSet();
 	bool patternSet = ui.patternMapRender->isSet();
+	bool buildingSet = ui.buildingTypeRender->isSet();
 
 	//Reset ui elements
 	ui.chkShowLots->setEnabled(false);
@@ -282,9 +312,11 @@ void StreetGenerator::initialiseSystem() {
 		QImage(ui.geogMapRender->getImage()->scaled(size.x(), size.y())) : white;
 	QImage height = heightSet ? 
 		QImage(ui.hMapRender->getImage()->scaled(size.x(), size.y())) : white;
-	QImage pop = popSet ? 
+	pop = popSet ? 
 		QImage(ui.popMapRender->getImage()->scaled(size.x(), size.y())) : white;
 	QImage pattern = patternSet ?
+		QImage(ui.patternMapRender->getImage()->scaled(size.x(), size.y())) : white;
+	bType = buildingSet ?
 		QImage(ui.patternMapRender->getImage()->scaled(size.x(), size.y())) : white;
 	setParameters();
 	generator.initialise();

@@ -8,26 +8,10 @@
 #include <qline.h>
 #include <qgraphicsitem.h>
 
+#include "Enums.h"
+
 //typedef boost::geometry::model::d2::point_xy<float> Point;
 class RoadIntersection;
-
-enum class geogType {
-	LAND,
-	WATER,
-	PARK
-};
-
-enum class roadType {
-	STREET,
-	MAINROAD
-};
-
-enum class roadPattern {
-	NOPATTERN,
-	MANHATTAN,
-	RADIAL,
-	SANFRAN
-};
 
 ///Abstract class defining a simple road. 
 class Road : public QGraphicsItem, public QLineF {

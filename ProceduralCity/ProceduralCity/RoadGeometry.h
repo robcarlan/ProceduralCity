@@ -5,6 +5,7 @@
 #include "IntersectionGeometry.h"
 #include "Road.h"
 #include "Point.h"
+#include "Enums.h"
 
 class IntersectionGeometry;
 typedef std::shared_ptr<IntersectionGeometry> intersectionPtr;
@@ -28,7 +29,6 @@ public:
 
 	float getAngleToEnd();
 	float getAngleToStart();
-	float getWidth();
 
 	std::pair<intersectionPtr, bool> getOtherEnd(intersectionPtr toCheck) const;
 	intersectionPtr getStart();

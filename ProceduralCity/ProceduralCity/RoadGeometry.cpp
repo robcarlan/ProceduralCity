@@ -8,23 +8,16 @@ void RoadGeometry::calcAngles() {
 	angleAway = std::fmodf(angle + pi, boost::math::float_constants::two_pi);
 }
 
+roadType RoadGeometry::getRoadType() {
+	return rtype;
+}
+
 float RoadGeometry::getAngleToEnd() {
 	return angle;
 }
 
 float RoadGeometry::getAngleToStart() {
 	return angleAway;
-}
-
-float RoadGeometry::getWidth() {
-	switch (rtype) {
-	case roadType::MAINROAD:
-		return 10.0f;
-	case roadType::STREET:
-		return 5.0f;
-	default:
-		return 2.0f;
-	}
 }
 
 std::pair<intersectionPtr, bool> RoadGeometry::getOtherEnd(intersectionPtr toCheck) const {

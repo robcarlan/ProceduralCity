@@ -2,6 +2,8 @@
 #include "RoadGeometry.h"
 #include "BuildingLot.h"
 #include "Point.h"
+
+#include <qdebug.h>
 #include <list>
 
 
@@ -31,12 +33,12 @@ protected:
 
 	void calculateArea();
 public:
-	std::list<Point> getPoints();
+	std::list<Point>& getPoints();
 	std::vector<BuildingLot>& getLots();
 	bool isValid();
 	bool isConvex();
 	void flagInvalid();
-	void setLots(std::vector<BuildingLot>& lots);
+	void setLots(std::vector<BuildingLot> lots);
 	BuildingRegion(std::list<Point> bounds, std::list<float> angles);
 	BuildingRegion();
 	~BuildingRegion();
@@ -45,9 +47,10 @@ public:
 	static float getPolyArea(const std::list<Point>& bounds);
 	static Point getCentroid(const std::list<Point>& bounds);
 	//Splits polygon into multiple convex polygons.
-	static std::vector<std::list<Point>> splitConvex(const std::list<Point>& bounds);
+	static void splitConvex(const std::list<Point>& bounds, std::vector<std::list<Point>> &convex);
 	//Returns index of point which breaks convexity. If convex, returns end iterator.
 	static std::list<Point>::const_iterator getConcave(const std::list<Point>& bounds);
+	static bool isPolyConvex(const std::list<Point>& bounds, const std::list<Point>::const_iterator itr);
 	static std::pair<std::list<Point>, std::list<Point>> splitPolygon(const std::list<Point>& bounds, const std::list<Point>::const_iterator splitStart, const std::list<Point>::const_iterator splitEnd);
 };
 

@@ -1,5 +1,10 @@
 #include "cityview3d.h"
 
+const int CityView3D::moveLeftKey = Qt::Key::Key_A;
+const int CityView3D::moveRightKey = Qt::Key::Key_D;
+const int CityView3D::moveForwardKey = Qt::Key::Key_W;
+const int CityView3D::moveBackKey = Qt::Key::Key_S;
+
 static const char *vertexShaderSource =
 "attribute highp vec4 posAttr;\n"
 "attribute lowp vec4 colAttr;\n"
@@ -24,6 +29,8 @@ CityView3D::CityView3D(QWindow *parent) :
 	, m_device(0)
 {
 	setSurfaceType(QWindow::OpenGLSurface);
+	isLeftHeld = isRightHeld = isBackHeld = isForwardHeld = false;
+	initaliseCamera();
 }
 
 
@@ -132,6 +139,20 @@ void CityView3D::mouseMoveEvent(QMouseEvent * event) {
 	prev = event->screenPos();
 }
 
+void CityView3D::keyPressEvent(QKeyEvent * event) {
+	bool accepted = false;
+
+	switch (event->key()) {
+	case moveLeftKey :
+		accepted = true;
+		
+	}
+}
+
+void CityView3D::keyReleaseEvent(QKeyEvent * event) {
+
+}
+
 void CityView3D::exposeEvent(QExposeEvent *event) {
 	Q_UNUSED(event);
 
@@ -173,6 +194,16 @@ void CityView3D::setAnimating(bool animating) {
 
 	if (animating)
 		renderLater();
+}
+
+void CityView3D::initaliseCamera() {
+	posX = 512.0f;
+	posY = 512.0f;
+	posZ = 512.0f;
+
+	xRot = 0.0f;
+	yRot = 0.0f;
+	zRot = 0.0f;
 }
 
 GLuint CityView3D::loadShader(GLenum type, const char *source) {

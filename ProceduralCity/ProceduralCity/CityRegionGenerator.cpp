@@ -19,7 +19,7 @@ std::vector<BuildingRegion> CityRegionGenerator::createRegions(std::list<roadPtr
 	bool sideToStartSearch = true;
 	bool followingRoadForwards = true;
 	bool searchComplete = false;
-
+	
 	while (true) {
 		BOOST_FOREACH(const roadPtr roadStart, roads) {
 			if (roadStart->getStart()->getIntersectionPoint() == Point(900, 800))
@@ -89,8 +89,10 @@ std::vector<BuildingRegion> CityRegionGenerator::createRegions(std::list<roadPtr
 				if (found) {
 					//Turn into a region
 					auto bounds = toRegion(traversing, direction, side, angles);
+					//TODO :: Better region culling. Determine whether pushed in point goes outside a boundary, or size < threshold
+
 					//Filter by size
-					if (abs(BuildingRegion::getPolyArea(bounds)) > 150.0f)
+//					if (abs(BuildingRegion::getPolyArea(bounds)) > 150.0f)
 						out.push_back(BuildingRegion(bounds, angles));
 				}
 				//Clear variables
@@ -161,8 +163,8 @@ Point CityRegionGenerator::getRegionPoint(roadPtr r1, roadPtr r2, intersectionPt
 	float r1y = sinf(angle1);
 	float r2x = cosf(angle2);
 	float r2y = sinf(angle2);
-	float r1Width = r1->getWidth();
-	float r2Width = r2->getWidth();
+	float r1Width = getRoadWidth(r1->getRoadType());
+	float r2Width = getRoadWidth(r2->getRoadType());
 	r1x *= r1Width;
 	r1y *= r1Width;
 	r2x *= r2Width;
@@ -198,8 +200,6 @@ Point CityRegionGenerator::getRegionPoint(roadPtr r1, roadPtr r2, intersectionPt
 
 	QPointF intersectPoint;
 	auto intersectResult = roadSide1.intersect(roadSide2, &intersectPoint);
-
-	//assert(intersectPoint.x() > 0 && intersectPoint.y() < 2048.0f);
 
 	if (intersectResult == QLineF::IntersectType::NoIntersection) {
 		//Shouldnt occur
@@ -237,6 +237,7 @@ std::list<Point> CityRegionGenerator::toRegion(std::list<roadPtr>& roadList, std
 		angleNow = *aItr;
 
 		//bounds.push_back(intersection->getIntersectionPoint());
+
 		bounds.push_back(getRegionPoint(prevRoad, *rItr, intersection, forwardPrev ? !clockwisePrev : clockwisePrev, forward ? clockwiseRoad : !clockwiseRoad, anglePrev, angleNow));
 
 		clockwisePrev = clockwiseRoad;
@@ -253,48 +254,64 @@ std::list<Point> CityRegionGenerator::toRegion(std::list<roadPtr>& roadList, std
 
 	return bounds;
 }
+buildingStyle CityRegionGenerator::getBuildingStyle(Point & pos) {
+	QColor val = buildingTypeSampler->pixel(pos.x(), pos.y());
+	//TODO :: Calc colours
 
-std::pair<std::list<BuildingRegion>&, std::list<BuildingRegion>&> CityRegionGenerator::filterRegions(std::list<BuildingRegion>& regions) {
-	std::list<BuildingRegion> valid;
-	std::list<BuildingRegion> invalid;
-	return std::make_pair(valid, invalid);
+	return buildingStyle::FINANCIAL;
 }
-
-
+float CityRegionGenerator::getPopDensity(Point & pos) {
+	return densitySampler->pixel(pos.x(), pos.y());
+}
+float CityRegionGenerator::getRoadWidth(const roadType &road) {
+	switch (road) {
+	case roadType::MAINROAD:
+		return mainRoadWidth;
+	case roadType::STREET:
+		return streetWidth;
+	default:
+		return 5.0f;
+	}
+}
 void CityRegionGenerator::subdivideRegions(std::vector<BuildingRegion>& const buildings) {
-	BOOST_FOREACH(BuildingRegion regionItr, buildings) {
+	srand(0);
+
+	BOOST_FOREACH(BuildingRegion &regionItr, buildings) {
+		//Invalid regions aren't split into lots - i.e. those with small area.
+		if (!regionItr.isValid()) continue;
+
 		//Break into convex regions, if not already convex
-		std::vector<BuildingLot> resultLots = std::vector<BuildingLot>();
+		std::unique_ptr<std::vector<BuildingLot>> resultLots = std::unique_ptr<std::vector<BuildingLot>>(new std::vector<BuildingLot>());
 
 		if (!regionItr.isConvex()) {
-			auto convexLots = BuildingRegion::splitConvex(regionItr.getPoints());
+			std::vector<std::list<Point>> convexLots = std::vector<std::list<Point>>();
+			BuildingRegion::splitConvex(regionItr.getPoints(), convexLots);
 
 			BOOST_FOREACH(std::list<Point> convexPoly, convexLots) {
-				createLotsFromConvexPoly(convexPoly, resultLots);
+				createLotsFromConvexPoly(regionItr, convexPoly, resultLots);
+				//resultLots.push_back(BuildingLot(convexPoly));
 			}
 		}
 		else {
 			//Already convex
-			createLotsFromConvexPoly(regionItr.getPoints(), resultLots);	
+			createLotsFromConvexPoly(regionItr, regionItr.getPoints(), resultLots);	
+			//resultLots.push_back(BuildingLot(regionItr.getPoints()));
 		}
 		//Add to region
-		regionItr.setLots(resultLots);
+		regionItr.setLots(*resultLots);
 	}
 }
 
 //Recursive approach - split along edge w
-void CityRegionGenerator::createLotsFromConvexPoly(std::list<Point>& bounds, std::vector<BuildingLot>& out) {
+void CityRegionGenerator::createLotsFromConvexPoly(BuildingRegion& owner, std::list<Point>& bounds, std::unique_ptr<std::vector<BuildingLot>>& out) {
 	auto result = std::vector<BuildingLot>();
-
-	float buildingMinArea = 100.0f;
-	float buildingMaxArea = 500.0f;
 
 	float area = abs(BuildingRegion::getPolyArea(bounds));
 
-	if (area < buildingMinArea)
+	if (area < minBuildArea)
 		return;
-	if (area < buildingMaxArea) {
-		out.push_back(createLot(bounds));
+	if (area < maxBuildArea) {
+		out->push_back(createLot(bounds, owner));
 		return;
 	}
 		
@@ -308,31 +325,32 @@ void CityRegionGenerator::createLotsFromConvexPoly(std::list<Point>& bounds, std
 	float lengthSecondLongest = secondlongestp1.getDistance(secondlongestp2);
 
 	//Calculate midpoint, with some offset
-	static float randFactor = 0.4f;
-	float offset = rand() * randFactor + (randFactor / 2.0f);
+	float uniform = (static_cast<float> (rand()) / static_cast<float>(RAND_MAX));
+	float offset = 0.5f + (uniform) * randOffset - (randOffset/ 2.0f);
+
 	Point midLongest;
 	midLongest.setX(longestp1.x() + offset * (longestp2.x() - longestp1.x()));
-	midLongest.setX(longestp1.y() + offset * (longestp2.y() - longestp1.y()));
+	midLongest.setY(longestp1.y() + offset * (longestp2.y() - longestp1.y()));
 	Point midSecondLongest;
-	midLongest.setX(secondlongestp1.x() + offset * (secondlongestp2.x() - secondlongestp1.x()));
-	midLongest.setX(secondlongestp1.y() + offset * (secondlongestp2.y() - secondlongestp1.y()));
+	midSecondLongest.setX(secondlongestp1.x() + (1 - offset) * (secondlongestp2.x() - secondlongestp1.x()));
+	midSecondLongest.setY(secondlongestp1.y() + (1 - offset) * (secondlongestp2.y() - secondlongestp1.y()));
 
 	//Construct p1, p2
 	auto polygon1 = std::list<Point>();
 	polygon1.push_back(midLongest);
 
 	auto pItr = bounds.begin();
-	while (*pItr != longestp1) {
+	while (*pItr != longestp2) {
 		pItr++;
 	}
 
 	//Keep adding to new polygon
 	while (*pItr != secondlongestp2) {
+		polygon1.push_back(*pItr);
+
+		pItr++;
 		if (pItr == bounds.end())
 			pItr = bounds.begin();
-
-		polygon1.push_back(*pItr);
-		pItr++;
 	}
 
 	polygon1.push_back(midSecondLongest);
@@ -340,21 +358,27 @@ void CityRegionGenerator::createLotsFromConvexPoly(std::list<Point>& bounds, std
 	auto polygon2 = std::list<Point>();
 	polygon2.push_back(midSecondLongest);
 
+	if (pItr == bounds.end())
+		pItr = bounds.begin();
+
 	//pItr starts at secondLongestp2
 	while (*pItr != longestp2) {
-		if (pItr == bounds.end())
-			pItr = bounds.begin();
-
 		polygon2.push_back(*pItr);
 		pItr++;
+
+		if (pItr == bounds.end())
+			pItr = bounds.begin();
 	}
 
-	polygon1.push_back(midLongest);
+	polygon2.push_back(midLongest);
 
 	//Recursively construct lots inside these polygons
-	createLotsFromConvexPoly(polygon1, out);
-	createLotsFromConvexPoly(polygon2, out);
+	createLotsFromConvexPoly(owner, polygon1, out);
+	createLotsFromConvexPoly(owner, polygon2, out);
+	//out.push_back(createLot(polygon2));
+	//out.push_back(createLot(polygon1));
 }
+
 
 std::pair<std::pair<Point, Point>, std::pair<Point, Point>> CityRegionGenerator::getLongestEdgePair(const std::list<Point>& bounds) {
 	//Iterate through, keeping track of two max roads
@@ -365,45 +389,130 @@ std::pair<std::pair<Point, Point>, std::pair<Point, Point>> CityRegionGenerator:
 	float d1 = 0.0f;
 	float d2 = 0.0f;
 
-	auto pPrev = bounds.end();
+	auto pPrev = bounds.back();
 	auto pItr = bounds.begin();
 	while (pItr != bounds.end()) {
-
-		float dist = pItr->getDistanceSq(*pPrev);
+		float dist = pItr->getDistance(pPrev);
 
 		if (dist > d1) {
-			//sift l1 to l2, update max
+			//Update best distances found
+			p1 = *pItr;
+			p1Prev = pPrev;
 			p2 = p1;
 			p2Prev = p1Prev;
-			p1 = *pItr;
-			p1Prev = *pPrev;
-		}
-		else if (dist > d2) {
-			//Update d2
-			p2 = *pItr;
-			p2Prev = *pPrev;
-		} 
 
+			d2 = d1;
+			d1 = dist;
+		}
 		//Update 
-		pPrev = pItr;
+		pPrev = *pItr;
 		pItr++;
 	}
 
-	//Calculate actual dist
-	return std::make_pair(std::make_pair(p1, p1Prev), std::make_pair(p2, p2Prev));
+	//Direction vector of first line
+	float p1X = p1.x() - p1Prev.x();
+	float p1Y = p1.y() - p1Prev.y();
+
+	//Now look for roughly parallel
+	pItr = bounds.begin();
+	pPrev = bounds.back();
+	p2 = *pItr;
+	p2Prev = pPrev;
+
+	float product = 0.0f;
+	bool found = false;
+	bool before = true;
+	bool foundBefore = false;
+
+	//Find roughly parallel edge
+	while (pItr != bounds.end()) {
+		if (*pItr == p1) {
+			//Iterating over self
+			pPrev = *pItr;
+			pItr++;
+			before = false;
+		}
+		else {
+			//Calculate dot
+			float difX = pItr->x() - pPrev.x();
+			float difY = pItr->y() - pPrev.y();
+			float len = pItr->getDistance(pPrev);
+			float dot = ((p1X * difX + p1Y * difY) / (len * d1));
+
+			if (dot < product) {
+				//New best found
+				product = dot;
+				p2 = *pItr;
+				p2Prev = pPrev;
+				found = true;
+				foundBefore = before;
+			}
+
+			pPrev = *pItr;
+			pItr++;
+		}
+	}
+
+	if (!found) {
+		//Try something else
+
+		//Resorts to second longest line 
+	}
+
+	if (foundBefore)
+		return std::make_pair(std::make_pair(p2Prev, p2), std::make_pair(p1Prev, p1));
+	else
+		return std::make_pair(std::make_pair(p1Prev, p1), std::make_pair(p2Prev, p2));
 }
 
-BuildingLot CityRegionGenerator::createLot(std::list<Point> bounds) {
+BuildingLot CityRegionGenerator::createLot(std::list<Point> bounds, BuildingRegion& owner) {
 	//TODO :: Set required data, i.e. building params, pop density etc.
-	return BuildingLot(bounds);
+	assert(bounds.size() > 0);
+	BuildingLot newBuilding(bounds);
+	newBuilding.setOwner(&owner);
+	Point samplePoint = bounds.front();
+	newBuilding.setStyle(getBuildingStyle(bounds.front()));
+	newBuilding.setPopDensity(getPopDensity(bounds.front()));
+
+	return newBuilding;
 }
 
 void CityRegionGenerator::setMaxEdges(int max) {
 	maxEdgeTraversal = max;
 }
 
+void CityRegionGenerator::setImageData(QImage & density, QImage & buildingType) {
+	densitySampler = &density;
+	buildingTypeSampler = &buildingType;
+}
+
+void CityRegionGenerator::setParams(float minBuildArea, float maxBuildArea, float randomOffset, float minLotDim, float maxLotDim, 
+	float mainRoadWidth, float streetWidth, bool allowLotMerge, int seed) {
+	this->mainRoadWidth = mainRoadWidth;
+	this->streetWidth = streetWidth;
+	this->minBuildArea = minBuildArea;
+	this->maxBuildArea = maxBuildArea;
+	this->minLotDim = minLotDim;
+	this->maxLotDim = maxLotDim;
+	this->randOffset = randomOffset;
+	this->allowLotMerge = allowLotMerge;
+	this->seed = seed;
+	srand(seed);
+}
+
 CityRegionGenerator::CityRegionGenerator() {
 	maxEdgeTraversal = 1024;
+
+	mainRoadWidth = 10.0f;
+	streetWidth = 5.0f;
+	minBuildArea = 100.0f;
+	maxBuildArea = 1000.0f;
+	minLotDim = 0.0f;
+	maxLotDim = 200.0f;
+	randOffset = 0.0f;
+	allowLotMerge = false;
+	seed = 0;
+	srand(seed);
 }
 
 

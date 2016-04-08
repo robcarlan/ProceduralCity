@@ -45,8 +45,10 @@ private slots:
 	void on_buttonHMap_clicked();
 	void on_buttonPMap_clicked();
 	void on_buttonGMap_clicked();
+	void on_buttonBMap_clicked();
 	void on_buttonSMap_clicked();
 	void cmdLoadDirectory();
+	void clearBuildingMap();
 	void clearStreetmap();
 	void clearHeightmap();
 	void clearGeogmap();
@@ -65,6 +67,7 @@ private:
 	City cityView;
 	QFileDialog fd;
 	QFileDialog dir;
+	QImage pop, bType;
 
 	static const int DEFAULT_SIZE_X;
 	static const int DEFAULT_SIZE_Y;

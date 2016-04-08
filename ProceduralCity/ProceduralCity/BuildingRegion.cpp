@@ -10,7 +10,7 @@ void BuildingRegion::calculateArea() {
 	area = abs(boost::geometry::area(poly));
 }
 
-std::list<Point> BuildingRegion::getPoints() {
+std::list<Point>& BuildingRegion::getPoints() {
 	return bounds;
 }
 
@@ -30,8 +30,12 @@ void BuildingRegion::flagInvalid() {
 	valid = false;
 }
 
-void BuildingRegion::setLots(std::vector<BuildingLot>& lots) {
+void BuildingRegion::setLots(std::vector<BuildingLot> lots) {
 	this->lots = lots;
+
+	BOOST_FOREACH(BuildingLot& lot, this->lots) {
+		lot.setOwner(this);
+	}
 }
 
 BuildingRegion::BuildingRegion(std::list<Point> bounds, std::list<float> angles) {
@@ -41,9 +45,7 @@ BuildingRegion::BuildingRegion(std::list<Point> bounds, std::list<float> angles)
 	
 	//calculateArea();
 	area = abs(getPolyArea(bounds));
-	convex = getConcave(bounds) == bounds.end();
-
-	//if (area < 1000.0f) flagInvalid();
+	convex = isPolyConvex(bounds, getConcave(bounds));
 }
 
 BuildingRegion::BuildingRegion() {
@@ -86,50 +88,134 @@ float BuildingRegion::getPolyArea(const std::list<Point>& bounds) {
 }
 
 //Recursive approach
-std::vector<std::list<Point>> BuildingRegion::splitConvex(const std::list<Point>& bounds) {
+void BuildingRegion::splitConvex(const std::list<Point>& bounds, std::vector<std::list<Point>>& convex) {
 	//Test to see if already concave
+	auto splitStart = getConcave(bounds);
+	if (isPolyConvex(bounds, splitStart)) {
+		//Base case - convex, so add this
+		convex.push_back(bounds);
+		return;
+	}
+	
+	//Now search for an edge to split by
+	auto eItr = splitStart;
+	std::list<Point> p1 = std::list<Point>();
+	std::list<Point> p2 = std::list<Point>();
+	float bestLength = 10000.0f * 10000.0f;
+	float area = BuildingRegion::getPolyArea(bounds);
 
-	return std::vector<std::list<Point>>();
+	bool complete = false;
+	while (!complete) {
+		eItr++;
+		if (eItr == bounds.end()) 
+			eItr = bounds.begin();
+		if (eItr == splitStart) {
+			complete = true;
+			continue;
+		}
+
+		//See how good this split will be
+		auto split = splitPolygon(bounds, splitStart, eItr);
+		auto temp_p1 = split.first;
+		auto temp_p2 = split.second;
+
+		//Ensure new polys are >= 3 sides each
+		if (temp_p1.size() <= 2) continue;
+		if (temp_p2.size() <= 2) continue;
+		
+		float p1Area = BuildingRegion::getPolyArea(temp_p1);
+		float p2Area = BuildingRegion::getPolyArea(temp_p2);
+		float sumArea = p1Area + p2Area;
+		float lSquared = splitStart->getDistanceSq(*eItr);
+
+		if (lSquared < bestLength) {
+			//Ensure area adds up, so that the split actually preserved the shape of the polygon
+			//I.e cut doesnt go outside
+			if (sumArea < area + 0.01f && sumArea > area - 0.01f) {
+				p1 = temp_p1;
+				p2 = temp_p2;
+				bestLength = lSquared;
+			}
+		}
+
+	}
+
+	//Recursive on two new halves
+	splitConvex(p1, convex);
+	splitConvex(p2, convex);
+
+	return;
 }
 
 std::list<Point>::const_iterator BuildingRegion::getConcave(const std::list<Point>& bounds) {
-	if (bounds.size() == 3) return bounds.end();
+	//assert(bounds.size() > 2);
+	if (bounds.size() <= 3) return bounds.end();
 
 	//Iterate over edges
+
+	//Start at [0,1,2], end at [n-1, 0, 1]
 	auto vert = bounds.end();
-	auto prev = bounds.end()--;
-	auto itr = bounds.begin();
-	auto next = bounds.begin()++;
+	auto prev = bounds.begin();
+	auto itr = ++bounds.begin();
+	auto next = ++(++bounds.begin());
 	bool finished = false;
 	//Use sign to get winding
-	bool antiClockwise = (getPolyArea(bounds) >= 0.0);
+	bool antiClockwise = (getPolyArea(bounds) >= 0.0f);
 	while(!finished) {
+		bool notPrecise = true;
 		float ax = next->x() - itr->x();
 		float ay = next->y() - itr->y();
 		float bx = itr->x() - prev->x();
 		float by = itr->y() - prev->y();
+
+		static float threshold = 5.0f;
+		if (notPrecise) {
+			if (abs(ax) < threshold) ax = 0.0f;
+			if (abs(ay) < threshold) ay = 0.0f;
+			if (abs(bx) < threshold) bx = 0.0f;
+			if (abs(by) < threshold) by = 0.0f;
+		}
+
 		float co = bx * ay - by * ax;
 
-		if (antiClockwise && co < 0.0f) {
+		if (antiClockwise) {
+			if (co < 0.0f) {
+				if (bounds.size() == 4)
+					qDebug() << "Concave";
+				vert = itr;
+				break;
+			}
+		}
+		else if (co > 0.0f) {
+			if (bounds.size() == 4)
+				qDebug() << "Concave";
 			vert = itr;
 			break;
 		}
-		else if (co > 0.0) {
-			vert = itr;
-			break;
-		}
+
+		//if (next == bounds.begin()) {
+		//	finished = true;
+		//	break;
+		//} 
 
 		//Iterator updates
 		prev = itr;
 		itr = next;
 		next++;
+
 		if (next == bounds.end())
 			next = bounds.begin();
-		else if (next == bounds.begin())
+
+		//=> [n-1, 0, 1]
+		if (itr == bounds.begin())
 			finished = true;
 	}
 
 	return vert;
+}
+
+bool BuildingRegion::isPolyConvex(const std::list<Point>& bounds, const std::list<Point>::const_iterator itr) {
+	return (itr == bounds.end());
 }
 
 std::pair<std::list<Point>, std::list<Point>> BuildingRegion::splitPolygon(const std::list<Point>& bounds, std::list<Point>::const_iterator splitStart, std::list<Point>::const_iterator splitEnd) {
@@ -145,16 +231,30 @@ std::pair<std::list<Point>, std::list<Point>> BuildingRegion::splitPolygon(const
 		if (itr == bounds.end())
 			itr = bounds.begin();
 		polya.push_back(*itr);
+
+		itr++;
+
+		if (itr == bounds.end())
+			itr = bounds.begin();
 	}
 
 	polya.push_back(*itr);
+	polyb.push_back(*itr);
+	itr++; // Now points to splitEnd
+
+	if (itr == bounds.end())
+		itr = bounds.begin();
+
 	//Poly b
-	while (itr != splitStart) {
+	while (*itr != *splitStart) {
 		if (itr == bounds.end())
 			itr = bounds.begin();
 		polyb.push_back(*itr);
+		itr++;
+		if (itr == bounds.end())
+			itr = bounds.begin();
 	}
 
-	polya.push_back(*itr);
+	polyb.push_back(*itr);
 	return std::make_pair(polya, polyb);
 }
