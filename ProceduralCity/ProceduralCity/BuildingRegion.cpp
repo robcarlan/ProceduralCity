@@ -38,6 +38,10 @@ void BuildingRegion::setLots(std::vector<BuildingLot> lots) {
 	}
 }
 
+Point & BuildingRegion::getCentroid() {
+	return centroid;
+}
+
 BuildingRegion::BuildingRegion(std::list<Point> bounds, std::list<float> angles) {
 	valid = true;
 	this->bounds = bounds;
@@ -46,6 +50,7 @@ BuildingRegion::BuildingRegion(std::list<Point> bounds, std::list<float> angles)
 	//calculateArea();
 	area = abs(getPolyArea(bounds));
 	convex = isPolyConvex(bounds, getConcave(bounds));
+	centroid = getCentroid(bounds);
 }
 
 BuildingRegion::BuildingRegion() {

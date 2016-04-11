@@ -18,12 +18,21 @@ void BuildingLot::setPopDensity(float popDensity) {
 	this->popDensity = popDensity;
 }
 
+Point & BuildingLot::getCentroid() {
+	return centroid;
+}
+
+buildingStyle BuildingLot::getStyle() {
+	return style;
+}
+
 BuildingRegion * BuildingLot::getOwner() {
 	return owner;
 }
 
 BuildingLot::BuildingLot(std::list<Point> points) {
 	this->points = points;
+	this->centroid = BuildingRegion::getCentroid(points);
 }
 
 BuildingLot::BuildingLot() 

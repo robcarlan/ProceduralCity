@@ -89,11 +89,35 @@ std::vector<BuildingRegion> CityRegionGenerator::createRegions(std::list<roadPtr
 				if (found) {
 					//Turn into a region
 					auto bounds = toRegion(traversing, direction, side, angles);
-					//TODO :: Better region culling. Determine whether pushed in point goes outside a boundary, or size < threshold
+					BuildingRegion tmp = BuildingRegion(bounds, angles);
 
-					//Filter by size
-//					if (abs(BuildingRegion::getPolyArea(bounds)) > 150.0f)
-						out.push_back(BuildingRegion(bounds, angles));
+					if (abs(BuildingRegion::getPolyArea(bounds)) < minBuildArea)
+						tmp.flagInvalid();
+
+					//TODO :: Improve from this method
+					QPolygon enclosed;
+					QPolygon larger;
+					auto rItr = traversing.begin();
+					auto dItr = direction.begin();
+
+					while (rItr != traversing.end()) {
+						Point pt = (*dItr) ? (*rItr)->getStart()->getIntersectionPoint() : (*rItr)->getEnd()->getIntersectionPoint();
+						larger.append(QPoint(pt.x(), pt.y()));
+
+						rItr++;
+						dItr++;
+					}
+
+					BOOST_FOREACH(Point& pt, bounds) {
+						QPoint qpt = QPoint(pt.x(), pt.y());
+						enclosed.append(qpt);
+						if (!larger.containsPoint(qpt, Qt::WindingFill)) {
+							tmp.flagInvalid();
+							break;
+						}
+					}
+
+					out.push_back(tmp);
 				}
 				//Clear variables
 				pathLength = 1;
@@ -124,10 +148,6 @@ std::vector<BuildingRegion> CityRegionGenerator::createRegions(std::list<roadPtr
 
 	out.erase(toRemove);
 
-	//Need to 'push' in to allow for roads thickness
-	//visited looping yeahh
-
-	//Apply Street Widths
 	return out;
 }
 
@@ -236,8 +256,6 @@ std::list<Point> CityRegionGenerator::toRegion(std::list<roadPtr>& roadList, std
 		clockwiseRoad = *sItr;
 		angleNow = *aItr;
 
-		//bounds.push_back(intersection->getIntersectionPoint());
-
 		bounds.push_back(getRegionPoint(prevRoad, *rItr, intersection, forwardPrev ? !clockwisePrev : clockwisePrev, forward ? clockwiseRoad : !clockwiseRoad, anglePrev, angleNow));
 
 		clockwisePrev = clockwiseRoad;
@@ -255,14 +273,22 @@ std::list<Point> CityRegionGenerator::toRegion(std::list<roadPtr>& roadList, std
 	return bounds;
 }
 buildingStyle CityRegionGenerator::getBuildingStyle(Point & pos) {
-	QColor val = buildingTypeSampler->pixel(pos.x(), pos.y());
-	//TODO :: Calc colours
+	QColor val = QColor(buildingTypeSampler->pixel(pos.x(), pos.y()));
 
-	return buildingStyle::FINANCIAL;
+	if (val == RESIDENTIAL_COL)
+		return RESIDENTIAL;
+	else if (val == COMMERCIAL_COL)
+		return COMMERCIAL;
+	else if (val == INDUSTRIAL_COL)
+		return INDUSTRIAL;
+
+	else return NONE;
 }
+
 float CityRegionGenerator::getPopDensity(Point & pos) {
 	return densitySampler->pixel(pos.x(), pos.y());
 }
+
 float CityRegionGenerator::getRoadWidth(const roadType &road) {
 	switch (road) {
 	case roadType::MAINROAD:
@@ -270,7 +296,7 @@ float CityRegionGenerator::getRoadWidth(const roadType &road) {
 	case roadType::STREET:
 		return streetWidth;
 	default:
-		return 5.0f;
+		return defaultRoadWidth;
 	}
 }
 void CityRegionGenerator::subdivideRegions(std::vector<BuildingRegion>& const buildings) {
@@ -289,13 +315,11 @@ void CityRegionGenerator::subdivideRegions(std::vector<BuildingRegion>& const bu
 
 			BOOST_FOREACH(std::list<Point> convexPoly, convexLots) {
 				createLotsFromConvexPoly(regionItr, convexPoly, resultLots);
-				//resultLots.push_back(BuildingLot(convexPoly));
 			}
 		}
 		else {
 			//Already convex
 			createLotsFromConvexPoly(regionItr, regionItr.getPoints(), resultLots);	
-			//resultLots.push_back(BuildingLot(regionItr.getPoints()));
 		}
 		//Add to region
 		regionItr.setLots(*resultLots);
@@ -466,13 +490,13 @@ std::pair<std::pair<Point, Point>, std::pair<Point, Point>> CityRegionGenerator:
 }
 
 BuildingLot CityRegionGenerator::createLot(std::list<Point> bounds, BuildingRegion& owner) {
-	//TODO :: Set required data, i.e. building params, pop density etc.
+
+	//Initialises data from image maps
 	assert(bounds.size() > 0);
 	BuildingLot newBuilding(bounds);
 	newBuilding.setOwner(&owner);
-	Point samplePoint = bounds.front();
-	newBuilding.setStyle(getBuildingStyle(bounds.front()));
-	newBuilding.setPopDensity(getPopDensity(bounds.front()));
+	newBuilding.setStyle(getBuildingStyle(newBuilding.getCentroid()));
+	newBuilding.setPopDensity(getPopDensity(newBuilding.getCentroid()));
 
 	return newBuilding;
 }

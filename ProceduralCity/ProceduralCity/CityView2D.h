@@ -2,7 +2,9 @@
 #include <QGraphicsScene>
 #include <QImage>
 #include <QLine>
+#include <QColor>
 
+#include "Enums.h"
 #include "Road.h"
 #include "RoadGeometry.h"
 #include "RoadIntersection.h"
@@ -20,8 +22,10 @@ class CityView2D {
 	QImage pop, height, geog, pattern;
 	QPixmap pixPop, pixHeight, pixGeog, pixPattern;
 	QGraphicsItem *bg;
+
 	QPen roadPen;
 	QPen mainRoadPen;
+	QPen regionPen;
 
 	QGraphicsItemGroup *intersectionsRender;
 	QGraphicsItemGroup *roadsRender;

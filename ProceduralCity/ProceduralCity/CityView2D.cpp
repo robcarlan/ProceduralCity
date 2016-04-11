@@ -7,16 +7,11 @@ void CityView2D::addRegions(std::vector<BuildingRegion> *regions) {
 			poly.append(p);
 		}
 
-		//TODO
 		QGraphicsItem* polyItem;
 
 		if (region.isValid()) {
-			polyItem = scene->addPolygon(poly, QPen(QBrush(QColor(100, 0, 0)), 2.0f), QBrush(QColor(rand() % 256, rand() % 256, rand() % 256)));
+			polyItem = scene->addPolygon(poly, regionPen, QBrush(QColor(rand() % 256, rand() % 256, rand() % 256)));
 			regionRender->addToGroup(polyItem);
-		}
-		else {
-			//polyItem = scene->addPolygon(poly, QPen(QBrush(QColor(100, 0, 0)), 2.0f), QBrush(QColor(0,0,0)));
-			//regionRender->addToGroup(polyItem);
 		}
 
 	}
@@ -30,14 +25,7 @@ void CityView2D::addLots(std::vector<BuildingLot*> &lots) {
 		}
 
 		QGraphicsItem* polyItem;
-
-		//if (lot->getOwner()->isConvex()) {
-		//	polyItem = scene->addPolygon(poly, QPen(QBrush(QColor(0, 0, 0)), 0.5f), QBrush(QColor(rand() % 256, rand() % 256, rand() % 256)));
-		//}
-		//else {
-			polyItem = scene->addPolygon(poly, QPen(QBrush(QColor(0, 0, 0)), 0.5f), QBrush(QColor(255, 255, 255)));
-		//}
-
+		polyItem = scene->addPolygon(poly, regionPen, QBrush(getLotColour(lot->getStyle())));
 		lotsRender->addToGroup(polyItem);
 	}
 }
@@ -209,6 +197,7 @@ CityView2D::CityView2D() {
 	//Create pens
 	roadPen = QPen(QBrush(QColor::fromRgb(50, 50, 50)), 2.0f);
 	mainRoadPen = QPen(QBrush(QColor::fromRgb(0, 0, 0)), 4.0f);
+	regionPen = QPen(QBrush(QColor(0, 0, 0)), 2.0f);
 }
 
 CityView2D::~CityView2D() {

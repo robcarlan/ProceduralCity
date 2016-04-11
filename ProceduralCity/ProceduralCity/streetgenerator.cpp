@@ -115,8 +115,9 @@ void StreetGenerator::onClickShowRendered() {
 	//Build geometry, show as progres dialog
 	//Open view
 	CityView3D *cview = new CityView3D();
+	cview->setData(&cityView);
 	cview->setAnimating(true);
-	cview->resize(640, 480);
+	cview->resize(1200, 1200);
 	cview->show();
 	
 }
@@ -317,7 +318,7 @@ void StreetGenerator::initialiseSystem() {
 	QImage pattern = patternSet ?
 		QImage(ui.patternMapRender->getImage()->scaled(size.x(), size.y())) : white;
 	bType = buildingSet ?
-		QImage(ui.patternMapRender->getImage()->scaled(size.x(), size.y())) : white;
+		QImage(ui.buildingTypeRender->getImage()->scaled(size.x(), size.y())) : white;
 	setParameters();
 	generator.initialise();
 	generator.setGeogMap(geog, geogSet);

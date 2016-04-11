@@ -218,4 +218,12 @@
       <Filter>Resource Files</Filter>
     </CustomBuild>
   </ItemGroup>
+  <ItemGroup>
+    <None Include="buildingInstance.gl">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="buildingInstanceFragment.gl">
+      <Filter>Resource Files</Filter>
+    </None>
+  </ItemGroup>
 </Project>

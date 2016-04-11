@@ -28,8 +28,7 @@ protected:
 	float area;
 	bool valid;
 	bool convex;
-
-	//TODO :: Bounding box?
+	Point centroid;
 
 	void calculateArea();
 public:
@@ -39,6 +38,7 @@ public:
 	bool isConvex();
 	void flagInvalid();
 	void setLots(std::vector<BuildingLot> lots);
+	Point &getCentroid();
 	BuildingRegion(std::list<Point> bounds, std::list<float> angles);
 	BuildingRegion();
 	~BuildingRegion();
