@@ -23,7 +23,7 @@ public:
 	void createRegions();
 	void createLots();
 	void getGeometry(std::pair<std::list<roadPtr>, std::list<intersectionPtr>> geometry);
-	void setImageData(QImage& density, QImage& buildingType);
+	void setImageData(QImage& density, QImage& buildingType, QImage &height);
 	CityRegionGenerator& getRegionGenerator();
 	void resetRegions();
 	void resetStreets();

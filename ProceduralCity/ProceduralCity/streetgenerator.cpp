@@ -47,7 +47,6 @@ void StreetGenerator::onClickSaveImage() {
 
 void StreetGenerator::onClickFilterRoads() {
 	assert(streetsGenerated);
-	generator.filterStreets();
 
 	cityView.resetStreets();
 
@@ -77,10 +76,12 @@ void StreetGenerator::onClickCreateLots() {
 		ui.spinHighwayWidth->value(),
 		ui.spinStreetWidth->value(),
 		ui.chkAllowLotMerge->isChecked(),
+		ui.spnBaseHeight->value(), 
+		ui.spnHeightScale->value()	,
 		ui.chkTimeSeed->isChecked() ? time(NULL) : ui.intSeedValue->value()
 		);
 
-	cityView.setImageData(pop, bType);
+	cityView.setImageData(pop, bType, height);
 	cityView.createLots();
 	view.addLots(cityView.getLots());
 	view.setDrawLots(true);
@@ -97,6 +98,19 @@ void StreetGenerator::onClickCreateRegions() {
 	assert(streetsFiltered);
 
 	cityView.resetRegions();
+	cityView.getRegionGenerator().setParams(
+		ui.spinMinBuildingArea->value(),
+		ui.spinMaxBuildingArea->value(),
+		ui.spinLotGenerationOffset->value(),
+		ui.spinMinLotDim->value(),
+		ui.spinMaxLotDim->value(),
+		ui.spinHighwayWidth->value(),
+		ui.spinStreetWidth->value(),
+		ui.chkAllowLotMerge->isChecked(),
+		ui.spnBaseHeight->value(),
+		ui.spnHeightScale->value(),
+		ui.chkTimeSeed->isChecked() ? time(NULL) : ui.intSeedValue->value()
+		);
 	cityView.createRegions();
 
 	//Now indicate this to 2D view
@@ -114,10 +128,23 @@ void StreetGenerator::onClickShowRendered() {
 	//Prepare new form, pass geometry
 	//Build geometry, show as progres dialog
 	//Open view
+	BOOST_FOREACH(BuildingLot* lot, cityView.getLots()) {
+		int seed = rand();
+		lot->setSeed(seed);
+
+		if (lot->getPopDensity() > 0.0f) {
+			if (getBetween(rand(), 0.0f, 1.0f) > ui.spnSkyscraperPlacementChance->value()) 
+				lot->setSkyscraper(true);
+		}
+
+		lot->createBuilding();
+	}
+
 	CityView3D *cview = new CityView3D();
-	cview->setData(&cityView);
+	cview->setData(&cityView, &height, &geog, ui.spnBaseHeight->value(), ui.spnHeightScale->value());
+	cview->setRoadData(ui.spinStreetWidth->value(), ui.spinHighwayWidth->value());
 	cview->setAnimating(true);
-	cview->resize(1200, 1200);
+	cview->resize(1600, 1000);
 	cview->show();
 	
 }
@@ -309,13 +336,13 @@ void StreetGenerator::initialiseSystem() {
 	streetsFiltered = lotsGenerated = regionsGenerated = streetsGenerated = false;
 
 	//Scale images to fit 
-	QImage geog =  geogSet ?
+	geog =  geogSet ?
 		QImage(ui.geogMapRender->getImage()->scaled(size.x(), size.y())) : white;
-	QImage height = heightSet ? 
+	height = heightSet ? 
 		QImage(ui.hMapRender->getImage()->scaled(size.x(), size.y())) : white;
 	pop = popSet ? 
 		QImage(ui.popMapRender->getImage()->scaled(size.x(), size.y())) : white;
-	QImage pattern = patternSet ?
+	pattern = patternSet ?
 		QImage(ui.patternMapRender->getImage()->scaled(size.x(), size.y())) : white;
 	bType = buildingSet ?
 		QImage(ui.buildingTypeRender->getImage()->scaled(size.x(), size.y())) : white;
@@ -361,14 +388,15 @@ void StreetGenerator::setParameters() {
 	generator.setMaxWaterTraverse(ui.spinMaxBridgeLength->value());
 	generator.setMaxPruneFactor(ui.spinRoadPruneFactor->value());
 	generator.setRoadSampleInterval(ui.sliderRoadSampleInterval->value());
-	
 	generator.setUsePatternWeighting(ui.radUseWeightedStreet->isChecked());
-
 	generator.setRoadLength(ui.spinStreetLength->value());
 	generator.setHighwayLength(ui.spinHighwayLength->value());
 	generator.setPopRadiusSearch(ui.sliderPopSearchRadius->value());
 	generator.setHighwayGrowthFactor(ui.highwayGrowthFactor->value());
 	generator.setStreetGrowthFactor(ui.streetGrowthFactor->value());
+	generator.setStartParams(
+		Point(ui.spnStartX->value(), ui.spnStartY->value()),
+		Point(ui.spnEndX->value(), ui.spnEndY->value()));
 }
 
 

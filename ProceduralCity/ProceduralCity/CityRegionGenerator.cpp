@@ -19,11 +19,11 @@ std::vector<BuildingRegion> CityRegionGenerator::createRegions(std::list<roadPtr
 	bool sideToStartSearch = true;
 	bool followingRoadForwards = true;
 	bool searchComplete = false;
+	int numRegions = 0;
+	int numCulled = 0;
 	
 	while (true) {
 		BOOST_FOREACH(const roadPtr roadStart, roads) {
-			if (roadStart->getStart()->getIntersectionPoint() == Point(900, 800))
-				qDebug() << "The start";
 			if (!hasVisited(sideToStartSearch, followingRoadForwards, roadStart)) {
 				int pathLength = 1;
 				bool found = false;
@@ -87,12 +87,18 @@ std::vector<BuildingRegion> CityRegionGenerator::createRegions(std::list<roadPtr
 				
 				if (found) flagRoads(traversing, side, found);
 				if (found) {
+					numRegions++;
+					//Todo :: Check if the region passes over invalid territory
+
+					
 					//Turn into a region
 					auto bounds = toRegion(traversing, direction, side, angles);
 					BuildingRegion tmp = BuildingRegion(bounds, angles);
 
-					if (abs(BuildingRegion::getPolyArea(bounds)) < minBuildArea)
+					if (abs(BuildingRegion::getPolyArea(bounds)) < minBuildArea) {
 						tmp.flagInvalid();
+						numCulled++;
+					}
 
 					//TODO :: Improve from this method
 					QPolygon enclosed;
@@ -112,7 +118,9 @@ std::vector<BuildingRegion> CityRegionGenerator::createRegions(std::list<roadPtr
 						QPoint qpt = QPoint(pt.x(), pt.y());
 						enclosed.append(qpt);
 						if (!larger.containsPoint(qpt, Qt::WindingFill)) {
+							//Todo :: False negatives?
 							tmp.flagInvalid();
+							numCulled++;
 							break;
 						}
 					}
@@ -134,6 +142,9 @@ std::vector<BuildingRegion> CityRegionGenerator::createRegions(std::list<roadPtr
 		if (sideToStartSearch) sideToStartSearch = false;
 		else break;
 	}
+
+	qDebug() << "Created : " << numRegions << " regions";
+	qDebug() << "Culle : " << numCulled << " regions";
 
 	//We have to remove the longest item, as this iterates over the outside
 	auto itr = out.begin();
@@ -286,7 +297,15 @@ buildingStyle CityRegionGenerator::getBuildingStyle(Point & pos) {
 }
 
 float CityRegionGenerator::getPopDensity(Point & pos) {
-	return densitySampler->pixel(pos.x(), pos.y());
+	return (densitySampler->pixel(pos.x(), pos.y()) % 256) / 256.0f;
+}
+
+float CityRegionGenerator::getHeight(Point & pos) {
+	return (heightSampler->pixel(pos.x(), pos.y()) % 256) / 256.0f;
+}
+
+float CityRegionGenerator::getHeightValue(float factor) {
+	return (1 - factor) * heightScale + minHeight;
 }
 
 float CityRegionGenerator::getRoadWidth(const roadType &road) {
@@ -399,8 +418,6 @@ void CityRegionGenerator::createLotsFromConvexPoly(BuildingRegion& owner, std::l
 	//Recursively construct lots inside these polygons
 	createLotsFromConvexPoly(owner, polygon1, out);
 	createLotsFromConvexPoly(owner, polygon2, out);
-	//out.push_back(createLot(polygon2));
-	//out.push_back(createLot(polygon1));
 }
 
 
@@ -497,6 +514,7 @@ BuildingLot CityRegionGenerator::createLot(std::list<Point> bounds, BuildingRegi
 	newBuilding.setOwner(&owner);
 	newBuilding.setStyle(getBuildingStyle(newBuilding.getCentroid()));
 	newBuilding.setPopDensity(getPopDensity(newBuilding.getCentroid()));
+	newBuilding.setHeight(getHeightValue(getHeight(newBuilding.getCentroid())));
 
 	return newBuilding;
 }
@@ -505,13 +523,14 @@ void CityRegionGenerator::setMaxEdges(int max) {
 	maxEdgeTraversal = max;
 }
 
-void CityRegionGenerator::setImageData(QImage & density, QImage & buildingType) {
+void CityRegionGenerator::setImageData(QImage & density, QImage & buildingType, QImage &height) {
 	densitySampler = &density;
 	buildingTypeSampler = &buildingType;
+	heightSampler = &height;
 }
 
 void CityRegionGenerator::setParams(float minBuildArea, float maxBuildArea, float randomOffset, float minLotDim, float maxLotDim, 
-	float mainRoadWidth, float streetWidth, bool allowLotMerge, int seed) {
+	float mainRoadWidth, float streetWidth, bool allowLotMerge, float minHeight, float heightScale, int seed) {
 	this->mainRoadWidth = mainRoadWidth;
 	this->streetWidth = streetWidth;
 	this->minBuildArea = minBuildArea;
@@ -520,6 +539,8 @@ void CityRegionGenerator::setParams(float minBuildArea, float maxBuildArea, floa
 	this->maxLotDim = maxLotDim;
 	this->randOffset = randomOffset;
 	this->allowLotMerge = allowLotMerge;
+	this->minHeight = minHeight;
+	this->heightScale = heightScale;
 	this->seed = seed;
 	srand(seed);
 }

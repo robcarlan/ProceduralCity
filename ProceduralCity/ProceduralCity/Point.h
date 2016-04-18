@@ -16,6 +16,7 @@ public:
 
 	float getDistanceSq(const QPointF p2) const;
 	float getDistance(const QPointF p2) const;
+	float getManhattanDist(const QPointF p2) const;
 	bool isWithinBounds(const QPointF p2, float epsilon) const;
 	bool isWithinBounds(int xSize, int ySize) const;
 

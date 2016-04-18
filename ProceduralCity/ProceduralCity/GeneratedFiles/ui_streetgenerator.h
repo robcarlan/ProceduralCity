@@ -47,55 +47,57 @@ public:
     QGroupBox *groupBox;
     QScrollArea *scrollArea;
     QWidget *scrollAreaWidgetContents;
-    GLImagePreview *patternMapRender;
-    GLImagePreview *geogMapRender;
-    QPushButton *buttonPMap;
-    QPushButton *cmdClearGeog;
+    QGridLayout *gridLayout_8;
     GLImagePreview *hMapRender;
+    GLImagePreview *popMapRender;
+    GLImagePreview *geogMapRender;
+    GLImagePreview *patternMapRender;
+    GLImagePreview *buildingTypeRender;
+    QLabel *labelHMap;
     QPushButton *cmdClearHeight;
     QPushButton *buttonHMap;
-    QLabel *labelSMap;
-    QLabel *labelGMap;
-    QPushButton *buttonSMap;
-    QLabel *labelHMap;
-    GLImagePreview *popMapRender;
     QLabel *labelPMap;
     QPushButton *cmdClearPop;
+    QPushButton *buttonPMap;
+    QLabel *labelGMap;
+    QPushButton *cmdClearGeog;
     QPushButton *buttonGMap;
+    QLabel *labelSMap;
     QPushButton *cmdClearStreetMap;
-    GLImagePreview *buildingTypeRender;
+    QPushButton *buttonSMap;
     QLabel *labelBMap;
-    QPushButton *buttonBuildingType;
     QPushButton *cmdClearBuildingType;
+    QPushButton *buttonBuildingType;
     QTabWidget *tabParameters;
     QWidget *tabStreetParams;
-    QPushButton *cmdLoadImageDirectory;
     QGroupBox *groupBox_5;
     QRadioButton *radUseMajorityStreet;
     QRadioButton *radUseWeightedStreet;
     QGroupBox *groupBox_7;
     QWidget *gridLayoutWidget_2;
     QGridLayout *gridLayout_2;
-    QDoubleSpinBox *spinRoadBranchProb;
+    QLabel *label_33;
+    QDoubleSpinBox *spinHighwayWidth;
+    QDoubleSpinBox *spinStreetWidth;
+    QLabel *label_34;
+    QLabel *label_9;
+    QSpinBox *spinMaxBridgeLength;
+    QLabel *label_17;
+    QLabel *label_16;
+    QLabel *label_15;
+    QSlider *slideManhattanBlockHeight;
+    QLabel *label_14;
     QSpinBox *spinHighwayLength;
-    QSpinBox *spinStreetLength;
+    QSlider *slideManhattanBlocKWidth;
+    QLabel *label_13;
+    QLabel *label_19;
+    QSpinBox *spinMaxRoadAngleChange;
     QLabel *label_23;
     QLabel *label_22;
-    QSpinBox *spinMaxRoadAngleChange;
-    QLabel *label_19;
-    QLabel *label_13;
-    QSlider *slideManhattanBlocKWidth;
-    QLabel *label_14;
-    QSlider *slideManhattanBlockHeight;
-    QLabel *label_15;
-    QLabel *label_16;
-    QLabel *label_17;
-    QSpinBox *spinMaxBridgeLength;
-    QLabel *label_9;
-    QLabel *label_33;
-    QLabel *label_34;
-    QDoubleSpinBox *spinStreetWidth;
-    QDoubleSpinBox *spinHighwayWidth;
+    QSpinBox *spinStreetLength;
+    QDoubleSpinBox *spinRoadBranchProb;
+    QDoubleSpinBox *spnLengthVariation;
+    QLabel *label_39;
     QGroupBox *groupBox_8;
     QWidget *gridLayoutWidget_3;
     QGridLayout *gridLayout_3;
@@ -126,6 +128,13 @@ public:
     QLabel *label_25;
     QDoubleSpinBox *highwayGrowthFactor;
     QDoubleSpinBox *streetGrowthFactor;
+    QSpinBox *spnStartX;
+    QLabel *label_40;
+    QLabel *label_41;
+    QSpinBox *spnEndX;
+    QSpinBox *spnStartY;
+    QSpinBox *spnEndY;
+    QLabel *label_42;
     QWidget *tabBuildingParams;
     QGroupBox *groupBox_2;
     QWidget *gridLayoutWidget_4;
@@ -144,11 +153,22 @@ public:
     QGroupBox *groupBox_9;
     QWidget *gridLayoutWidget_5;
     QGridLayout *gridLayout_6;
-    QLabel *label_29;
     QLabel *label_30;
-    QLabel *label_28;
+    QLabel *label_29;
+    QDoubleSpinBox *spnSkyscraperPlacementChance;
+    QDoubleSpinBox *spnMinSkyscraperPopDensity;
     QCheckBox *chkAllowSkyscrapers;
-    QCheckBox *chkUseSpecialBuildings;
+    QLabel *label_28;
+    QLabel *label_38;
+    QDoubleSpinBox *spnDensitySuburban;
+    QGroupBox *groupBox_10;
+    QWidget *gridLayoutWidget_6;
+    QGridLayout *gridLayout_7;
+    QLabel *label_35;
+    QDoubleSpinBox *spnBaseHeight;
+    QLabel *label_36;
+    QLabel *label_37;
+    QDoubleSpinBox *spnHeightScale;
     QGroupBox *groupBox_3;
     QPushButton *cmdSaveOutput;
     QPushButton *cmdSaveOutputImage;
@@ -179,6 +199,7 @@ public:
     QPushButton *cmdGenerateRegions;
     QPushButton *cmdCreateBuildingLots;
     QPushButton *cmdCreateView;
+    QPushButton *cmdLoadImageDirectory;
     QStreetRenderWidget *streetRender;
     QMenuBar *menuBar;
     QMenu *menuWindows;
@@ -202,101 +223,128 @@ public:
         groupBox->setGeometry(QRect(10, 710, 1371, 271));
         scrollArea = new QScrollArea(groupBox);
         scrollArea->setObjectName(QStringLiteral("scrollArea"));
-        scrollArea->setGeometry(QRect(0, 10, 1601, 251));
+        scrollArea->setGeometry(QRect(10, 20, 1351, 251));
+        scrollArea->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
+        scrollArea->setSizeAdjustPolicy(QAbstractScrollArea::AdjustToContentsOnFirstShow);
         scrollArea->setWidgetResizable(true);
         scrollAreaWidgetContents = new QWidget();
         scrollAreaWidgetContents->setObjectName(QStringLiteral("scrollAreaWidgetContents"));
-        scrollAreaWidgetContents->setGeometry(QRect(0, 0, 1599, 249));
-        patternMapRender = new GLImagePreview(scrollAreaWidgetContents);
-        patternMapRender->setObjectName(QStringLiteral("patternMapRender"));
-        patternMapRender->setGeometry(QRect(966, 10, 300, 200));
-        geogMapRender = new GLImagePreview(scrollAreaWidgetContents);
-        geogMapRender->setObjectName(QStringLiteral("geogMapRender"));
-        geogMapRender->setGeometry(QRect(650, 10, 300, 200));
-        buttonPMap = new QPushButton(scrollAreaWidgetContents);
-        buttonPMap->setObjectName(QStringLiteral("buttonPMap"));
-        buttonPMap->setGeometry(QRect(560, 220, 61, 23));
-        cmdClearGeog = new QPushButton(scrollAreaWidgetContents);
-        cmdClearGeog->setObjectName(QStringLiteral("cmdClearGeog"));
-        cmdClearGeog->setGeometry(QRect(820, 220, 61, 23));
+        scrollAreaWidgetContents->setGeometry(QRect(0, 0, 1542, 247));
+        gridLayout_8 = new QGridLayout(scrollAreaWidgetContents);
+        gridLayout_8->setSpacing(6);
+        gridLayout_8->setContentsMargins(11, 11, 11, 11);
+        gridLayout_8->setObjectName(QStringLiteral("gridLayout_8"));
         hMapRender = new GLImagePreview(scrollAreaWidgetContents);
         hMapRender->setObjectName(QStringLiteral("hMapRender"));
-        hMapRender->setGeometry(QRect(10, 10, 300, 200));
-        cmdClearHeight = new QPushButton(scrollAreaWidgetContents);
-        cmdClearHeight->setObjectName(QStringLiteral("cmdClearHeight"));
-        cmdClearHeight->setGeometry(QRect(180, 220, 61, 23));
-        buttonHMap = new QPushButton(scrollAreaWidgetContents);
-        buttonHMap->setObjectName(QStringLiteral("buttonHMap"));
-        buttonHMap->setGeometry(QRect(240, 220, 61, 23));
-        labelSMap = new QLabel(scrollAreaWidgetContents);
-        labelSMap->setObjectName(QStringLiteral("labelSMap"));
-        labelSMap->setGeometry(QRect(980, 220, 201, 21));
-        labelGMap = new QLabel(scrollAreaWidgetContents);
-        labelGMap->setObjectName(QStringLiteral("labelGMap"));
-        labelGMap->setGeometry(QRect(660, 220, 201, 21));
-        buttonSMap = new QPushButton(scrollAreaWidgetContents);
-        buttonSMap->setObjectName(QStringLiteral("buttonSMap"));
-        buttonSMap->setGeometry(QRect(1200, 220, 61, 23));
-        labelHMap = new QLabel(scrollAreaWidgetContents);
-        labelHMap->setObjectName(QStringLiteral("labelHMap"));
-        labelHMap->setGeometry(QRect(20, 220, 201, 21));
+        hMapRender->setMinimumSize(QSize(300, 200));
+
+        gridLayout_8->addWidget(hMapRender, 0, 0, 1, 3);
+
         popMapRender = new GLImagePreview(scrollAreaWidgetContents);
         popMapRender->setObjectName(QStringLiteral("popMapRender"));
-        popMapRender->setGeometry(QRect(330, 10, 300, 200));
-        labelPMap = new QLabel(scrollAreaWidgetContents);
-        labelPMap->setObjectName(QStringLiteral("labelPMap"));
-        labelPMap->setGeometry(QRect(340, 220, 201, 21));
-        cmdClearPop = new QPushButton(scrollAreaWidgetContents);
-        cmdClearPop->setObjectName(QStringLiteral("cmdClearPop"));
-        cmdClearPop->setGeometry(QRect(500, 220, 61, 23));
-        buttonGMap = new QPushButton(scrollAreaWidgetContents);
-        buttonGMap->setObjectName(QStringLiteral("buttonGMap"));
-        buttonGMap->setGeometry(QRect(880, 220, 61, 23));
-        cmdClearStreetMap = new QPushButton(scrollAreaWidgetContents);
-        cmdClearStreetMap->setObjectName(QStringLiteral("cmdClearStreetMap"));
-        cmdClearStreetMap->setGeometry(QRect(1136, 220, 61, 23));
+        popMapRender->setMinimumSize(QSize(300, 200));
+
+        gridLayout_8->addWidget(popMapRender, 0, 3, 1, 3);
+
+        geogMapRender = new GLImagePreview(scrollAreaWidgetContents);
+        geogMapRender->setObjectName(QStringLiteral("geogMapRender"));
+        geogMapRender->setMinimumSize(QSize(300, 200));
+
+        gridLayout_8->addWidget(geogMapRender, 0, 6, 1, 3);
+
+        patternMapRender = new GLImagePreview(scrollAreaWidgetContents);
+        patternMapRender->setObjectName(QStringLiteral("patternMapRender"));
+        patternMapRender->setMinimumSize(QSize(300, 200));
+
+        gridLayout_8->addWidget(patternMapRender, 0, 9, 1, 3);
+
         buildingTypeRender = new GLImagePreview(scrollAreaWidgetContents);
         buildingTypeRender->setObjectName(QStringLiteral("buildingTypeRender"));
-        buildingTypeRender->setGeometry(QRect(1280, 10, 300, 200));
+        buildingTypeRender->setMinimumSize(QSize(300, 200));
+
+        gridLayout_8->addWidget(buildingTypeRender, 0, 12, 1, 3);
+
+        labelHMap = new QLabel(scrollAreaWidgetContents);
+        labelHMap->setObjectName(QStringLiteral("labelHMap"));
+
+        gridLayout_8->addWidget(labelHMap, 1, 0, 1, 1);
+
+        cmdClearHeight = new QPushButton(scrollAreaWidgetContents);
+        cmdClearHeight->setObjectName(QStringLiteral("cmdClearHeight"));
+
+        gridLayout_8->addWidget(cmdClearHeight, 1, 1, 1, 1);
+
+        buttonHMap = new QPushButton(scrollAreaWidgetContents);
+        buttonHMap->setObjectName(QStringLiteral("buttonHMap"));
+
+        gridLayout_8->addWidget(buttonHMap, 1, 2, 1, 1);
+
+        labelPMap = new QLabel(scrollAreaWidgetContents);
+        labelPMap->setObjectName(QStringLiteral("labelPMap"));
+
+        gridLayout_8->addWidget(labelPMap, 1, 3, 1, 1);
+
+        cmdClearPop = new QPushButton(scrollAreaWidgetContents);
+        cmdClearPop->setObjectName(QStringLiteral("cmdClearPop"));
+
+        gridLayout_8->addWidget(cmdClearPop, 1, 4, 1, 1);
+
+        buttonPMap = new QPushButton(scrollAreaWidgetContents);
+        buttonPMap->setObjectName(QStringLiteral("buttonPMap"));
+
+        gridLayout_8->addWidget(buttonPMap, 1, 5, 1, 1);
+
+        labelGMap = new QLabel(scrollAreaWidgetContents);
+        labelGMap->setObjectName(QStringLiteral("labelGMap"));
+
+        gridLayout_8->addWidget(labelGMap, 1, 6, 1, 1);
+
+        cmdClearGeog = new QPushButton(scrollAreaWidgetContents);
+        cmdClearGeog->setObjectName(QStringLiteral("cmdClearGeog"));
+
+        gridLayout_8->addWidget(cmdClearGeog, 1, 7, 1, 1);
+
+        buttonGMap = new QPushButton(scrollAreaWidgetContents);
+        buttonGMap->setObjectName(QStringLiteral("buttonGMap"));
+
+        gridLayout_8->addWidget(buttonGMap, 1, 8, 1, 1);
+
+        labelSMap = new QLabel(scrollAreaWidgetContents);
+        labelSMap->setObjectName(QStringLiteral("labelSMap"));
+
+        gridLayout_8->addWidget(labelSMap, 1, 9, 1, 1);
+
+        cmdClearStreetMap = new QPushButton(scrollAreaWidgetContents);
+        cmdClearStreetMap->setObjectName(QStringLiteral("cmdClearStreetMap"));
+
+        gridLayout_8->addWidget(cmdClearStreetMap, 1, 10, 1, 1);
+
+        buttonSMap = new QPushButton(scrollAreaWidgetContents);
+        buttonSMap->setObjectName(QStringLiteral("buttonSMap"));
+
+        gridLayout_8->addWidget(buttonSMap, 1, 11, 1, 1);
+
         labelBMap = new QLabel(scrollAreaWidgetContents);
         labelBMap->setObjectName(QStringLiteral("labelBMap"));
-        labelBMap->setGeometry(QRect(1300, 220, 201, 21));
-        buttonBuildingType = new QPushButton(scrollAreaWidgetContents);
-        buttonBuildingType->setObjectName(QStringLiteral("buttonBuildingType"));
-        buttonBuildingType->setGeometry(QRect(1524, 220, 61, 23));
+
+        gridLayout_8->addWidget(labelBMap, 1, 12, 1, 1);
+
         cmdClearBuildingType = new QPushButton(scrollAreaWidgetContents);
         cmdClearBuildingType->setObjectName(QStringLiteral("cmdClearBuildingType"));
-        cmdClearBuildingType->setGeometry(QRect(1460, 220, 61, 23));
+
+        gridLayout_8->addWidget(cmdClearBuildingType, 1, 13, 1, 1);
+
+        buttonBuildingType = new QPushButton(scrollAreaWidgetContents);
+        buttonBuildingType->setObjectName(QStringLiteral("buttonBuildingType"));
+
+        gridLayout_8->addWidget(buttonBuildingType, 1, 14, 1, 1);
+
         scrollArea->setWidget(scrollAreaWidgetContents);
-        hMapRender->raise();
-        patternMapRender->raise();
-        geogMapRender->raise();
-        buttonPMap->raise();
-        cmdClearGeog->raise();
-        hMapRender->raise();
-        cmdClearHeight->raise();
-        buttonHMap->raise();
-        labelSMap->raise();
-        labelGMap->raise();
-        buttonSMap->raise();
-        labelHMap->raise();
-        popMapRender->raise();
-        labelPMap->raise();
-        cmdClearPop->raise();
-        buttonGMap->raise();
-        cmdClearStreetMap->raise();
-        buildingTypeRender->raise();
-        labelBMap->raise();
-        buttonBuildingType->raise();
-        cmdClearBuildingType->raise();
         tabParameters = new QTabWidget(centralWidget);
         tabParameters->setObjectName(QStringLiteral("tabParameters"));
         tabParameters->setGeometry(QRect(10, 10, 331, 701));
         tabStreetParams = new QWidget();
         tabStreetParams->setObjectName(QStringLiteral("tabStreetParams"));
-        cmdLoadImageDirectory = new QPushButton(tabStreetParams);
-        cmdLoadImageDirectory->setObjectName(QStringLiteral("cmdLoadImageDirectory"));
-        cmdLoadImageDirectory->setGeometry(QRect(170, 600, 141, 31));
         groupBox_5 = new QGroupBox(tabStreetParams);
         groupBox_5->setObjectName(QStringLiteral("groupBox_5"));
         groupBox_5->setGeometry(QRect(10, 590, 151, 81));
@@ -309,22 +357,81 @@ public:
         radUseWeightedStreet->setChecked(true);
         groupBox_7 = new QGroupBox(tabStreetParams);
         groupBox_7->setObjectName(QStringLiteral("groupBox_7"));
-        groupBox_7->setGeometry(QRect(10, 200, 301, 251));
+        groupBox_7->setGeometry(QRect(10, 190, 301, 281));
         gridLayoutWidget_2 = new QWidget(groupBox_7);
         gridLayoutWidget_2->setObjectName(QStringLiteral("gridLayoutWidget_2"));
-        gridLayoutWidget_2->setGeometry(QRect(9, 19, 281, 228));
+        gridLayoutWidget_2->setGeometry(QRect(9, 19, 281, 254));
         gridLayout_2 = new QGridLayout(gridLayoutWidget_2);
         gridLayout_2->setSpacing(6);
         gridLayout_2->setContentsMargins(11, 11, 11, 11);
         gridLayout_2->setObjectName(QStringLiteral("gridLayout_2"));
         gridLayout_2->setContentsMargins(0, 0, 0, 0);
-        spinRoadBranchProb = new QDoubleSpinBox(gridLayoutWidget_2);
-        spinRoadBranchProb->setObjectName(QStringLiteral("spinRoadBranchProb"));
-        spinRoadBranchProb->setMaximum(1);
-        spinRoadBranchProb->setSingleStep(0.05);
-        spinRoadBranchProb->setValue(0.75);
+        label_33 = new QLabel(gridLayoutWidget_2);
+        label_33->setObjectName(QStringLiteral("label_33"));
 
-        gridLayout_2->addWidget(spinRoadBranchProb, 3, 1, 1, 1);
+        gridLayout_2->addWidget(label_33, 7, 0, 1, 1);
+
+        spinHighwayWidth = new QDoubleSpinBox(gridLayoutWidget_2);
+        spinHighwayWidth->setObjectName(QStringLiteral("spinHighwayWidth"));
+        spinHighwayWidth->setMinimum(1);
+        spinHighwayWidth->setMaximum(20);
+        spinHighwayWidth->setValue(7);
+
+        gridLayout_2->addWidget(spinHighwayWidth, 8, 1, 1, 1);
+
+        spinStreetWidth = new QDoubleSpinBox(gridLayoutWidget_2);
+        spinStreetWidth->setObjectName(QStringLiteral("spinStreetWidth"));
+        spinStreetWidth->setMinimum(1);
+        spinStreetWidth->setMaximum(15);
+        spinStreetWidth->setValue(5);
+
+        gridLayout_2->addWidget(spinStreetWidth, 7, 1, 1, 1);
+
+        label_34 = new QLabel(gridLayoutWidget_2);
+        label_34->setObjectName(QStringLiteral("label_34"));
+
+        gridLayout_2->addWidget(label_34, 8, 0, 1, 1);
+
+        label_9 = new QLabel(gridLayoutWidget_2);
+        label_9->setObjectName(QStringLiteral("label_9"));
+
+        gridLayout_2->addWidget(label_9, 0, 0, 1, 1);
+
+        spinMaxBridgeLength = new QSpinBox(gridLayoutWidget_2);
+        spinMaxBridgeLength->setObjectName(QStringLiteral("spinMaxBridgeLength"));
+        spinMaxBridgeLength->setMaximum(1000);
+        spinMaxBridgeLength->setValue(200);
+
+        gridLayout_2->addWidget(spinMaxBridgeLength, 0, 1, 1, 2);
+
+        label_17 = new QLabel(gridLayoutWidget_2);
+        label_17->setObjectName(QStringLiteral("label_17"));
+
+        gridLayout_2->addWidget(label_17, 3, 0, 1, 1);
+
+        label_16 = new QLabel(gridLayoutWidget_2);
+        label_16->setObjectName(QStringLiteral("label_16"));
+
+        gridLayout_2->addWidget(label_16, 1, 2, 1, 1);
+
+        label_15 = new QLabel(gridLayoutWidget_2);
+        label_15->setObjectName(QStringLiteral("label_15"));
+
+        gridLayout_2->addWidget(label_15, 2, 2, 1, 1);
+
+        slideManhattanBlockHeight = new QSlider(gridLayoutWidget_2);
+        slideManhattanBlockHeight->setObjectName(QStringLiteral("slideManhattanBlockHeight"));
+        slideManhattanBlockHeight->setMinimum(10);
+        slideManhattanBlockHeight->setMaximum(200);
+        slideManhattanBlockHeight->setValue(50);
+        slideManhattanBlockHeight->setOrientation(Qt::Horizontal);
+
+        gridLayout_2->addWidget(slideManhattanBlockHeight, 2, 1, 1, 1);
+
+        label_14 = new QLabel(gridLayoutWidget_2);
+        label_14->setObjectName(QStringLiteral("label_14"));
+
+        gridLayout_2->addWidget(label_14, 2, 0, 1, 1);
 
         spinHighwayLength = new QSpinBox(gridLayoutWidget_2);
         spinHighwayLength->setObjectName(QStringLiteral("spinHighwayLength"));
@@ -335,14 +442,31 @@ public:
 
         gridLayout_2->addWidget(spinHighwayLength, 6, 1, 1, 1);
 
-        spinStreetLength = new QSpinBox(gridLayoutWidget_2);
-        spinStreetLength->setObjectName(QStringLiteral("spinStreetLength"));
-        spinStreetLength->setMinimum(5);
-        spinStreetLength->setMaximum(500);
-        spinStreetLength->setSingleStep(5);
-        spinStreetLength->setValue(25);
+        slideManhattanBlocKWidth = new QSlider(gridLayoutWidget_2);
+        slideManhattanBlocKWidth->setObjectName(QStringLiteral("slideManhattanBlocKWidth"));
+        slideManhattanBlocKWidth->setMinimum(10);
+        slideManhattanBlocKWidth->setMaximum(200);
+        slideManhattanBlocKWidth->setValue(30);
+        slideManhattanBlocKWidth->setOrientation(Qt::Horizontal);
 
-        gridLayout_2->addWidget(spinStreetLength, 5, 1, 1, 1);
+        gridLayout_2->addWidget(slideManhattanBlocKWidth, 1, 1, 1, 1);
+
+        label_13 = new QLabel(gridLayoutWidget_2);
+        label_13->setObjectName(QStringLiteral("label_13"));
+
+        gridLayout_2->addWidget(label_13, 1, 0, 1, 1);
+
+        label_19 = new QLabel(gridLayoutWidget_2);
+        label_19->setObjectName(QStringLiteral("label_19"));
+
+        gridLayout_2->addWidget(label_19, 4, 0, 1, 1);
+
+        spinMaxRoadAngleChange = new QSpinBox(gridLayoutWidget_2);
+        spinMaxRoadAngleChange->setObjectName(QStringLiteral("spinMaxRoadAngleChange"));
+        spinMaxRoadAngleChange->setMaximum(360);
+        spinMaxRoadAngleChange->setValue(30);
+
+        gridLayout_2->addWidget(spinMaxRoadAngleChange, 4, 1, 1, 1);
 
         label_23 = new QLabel(gridLayoutWidget_2);
         label_23->setObjectName(QStringLiteral("label_23"));
@@ -354,102 +478,36 @@ public:
 
         gridLayout_2->addWidget(label_22, 5, 0, 1, 1);
 
-        spinMaxRoadAngleChange = new QSpinBox(gridLayoutWidget_2);
-        spinMaxRoadAngleChange->setObjectName(QStringLiteral("spinMaxRoadAngleChange"));
-        spinMaxRoadAngleChange->setMaximum(360);
-        spinMaxRoadAngleChange->setValue(30);
+        spinStreetLength = new QSpinBox(gridLayoutWidget_2);
+        spinStreetLength->setObjectName(QStringLiteral("spinStreetLength"));
+        spinStreetLength->setMinimum(5);
+        spinStreetLength->setMaximum(500);
+        spinStreetLength->setSingleStep(5);
+        spinStreetLength->setValue(25);
 
-        gridLayout_2->addWidget(spinMaxRoadAngleChange, 4, 1, 1, 1);
+        gridLayout_2->addWidget(spinStreetLength, 5, 1, 1, 1);
 
-        label_19 = new QLabel(gridLayoutWidget_2);
-        label_19->setObjectName(QStringLiteral("label_19"));
+        spinRoadBranchProb = new QDoubleSpinBox(gridLayoutWidget_2);
+        spinRoadBranchProb->setObjectName(QStringLiteral("spinRoadBranchProb"));
+        spinRoadBranchProb->setMaximum(1);
+        spinRoadBranchProb->setSingleStep(0.05);
+        spinRoadBranchProb->setValue(0.75);
 
-        gridLayout_2->addWidget(label_19, 4, 0, 1, 1);
+        gridLayout_2->addWidget(spinRoadBranchProb, 3, 1, 1, 1);
 
-        label_13 = new QLabel(gridLayoutWidget_2);
-        label_13->setObjectName(QStringLiteral("label_13"));
+        spnLengthVariation = new QDoubleSpinBox(gridLayoutWidget_2);
+        spnLengthVariation->setObjectName(QStringLiteral("spnLengthVariation"));
 
-        gridLayout_2->addWidget(label_13, 1, 0, 1, 1);
+        gridLayout_2->addWidget(spnLengthVariation, 9, 1, 1, 1);
 
-        slideManhattanBlocKWidth = new QSlider(gridLayoutWidget_2);
-        slideManhattanBlocKWidth->setObjectName(QStringLiteral("slideManhattanBlocKWidth"));
-        slideManhattanBlocKWidth->setMinimum(10);
-        slideManhattanBlocKWidth->setMaximum(200);
-        slideManhattanBlocKWidth->setValue(30);
-        slideManhattanBlocKWidth->setOrientation(Qt::Horizontal);
+        label_39 = new QLabel(gridLayoutWidget_2);
+        label_39->setObjectName(QStringLiteral("label_39"));
 
-        gridLayout_2->addWidget(slideManhattanBlocKWidth, 1, 1, 1, 1);
-
-        label_14 = new QLabel(gridLayoutWidget_2);
-        label_14->setObjectName(QStringLiteral("label_14"));
-
-        gridLayout_2->addWidget(label_14, 2, 0, 1, 1);
-
-        slideManhattanBlockHeight = new QSlider(gridLayoutWidget_2);
-        slideManhattanBlockHeight->setObjectName(QStringLiteral("slideManhattanBlockHeight"));
-        slideManhattanBlockHeight->setMinimum(10);
-        slideManhattanBlockHeight->setMaximum(200);
-        slideManhattanBlockHeight->setValue(50);
-        slideManhattanBlockHeight->setOrientation(Qt::Horizontal);
-
-        gridLayout_2->addWidget(slideManhattanBlockHeight, 2, 1, 1, 1);
-
-        label_15 = new QLabel(gridLayoutWidget_2);
-        label_15->setObjectName(QStringLiteral("label_15"));
-
-        gridLayout_2->addWidget(label_15, 2, 2, 1, 1);
-
-        label_16 = new QLabel(gridLayoutWidget_2);
-        label_16->setObjectName(QStringLiteral("label_16"));
-
-        gridLayout_2->addWidget(label_16, 1, 2, 1, 1);
-
-        label_17 = new QLabel(gridLayoutWidget_2);
-        label_17->setObjectName(QStringLiteral("label_17"));
-
-        gridLayout_2->addWidget(label_17, 3, 0, 1, 1);
-
-        spinMaxBridgeLength = new QSpinBox(gridLayoutWidget_2);
-        spinMaxBridgeLength->setObjectName(QStringLiteral("spinMaxBridgeLength"));
-        spinMaxBridgeLength->setMaximum(1000);
-        spinMaxBridgeLength->setValue(200);
-
-        gridLayout_2->addWidget(spinMaxBridgeLength, 0, 1, 1, 2);
-
-        label_9 = new QLabel(gridLayoutWidget_2);
-        label_9->setObjectName(QStringLiteral("label_9"));
-
-        gridLayout_2->addWidget(label_9, 0, 0, 1, 1);
-
-        label_33 = new QLabel(gridLayoutWidget_2);
-        label_33->setObjectName(QStringLiteral("label_33"));
-
-        gridLayout_2->addWidget(label_33, 7, 0, 1, 1);
-
-        label_34 = new QLabel(gridLayoutWidget_2);
-        label_34->setObjectName(QStringLiteral("label_34"));
-
-        gridLayout_2->addWidget(label_34, 8, 0, 1, 1);
-
-        spinStreetWidth = new QDoubleSpinBox(gridLayoutWidget_2);
-        spinStreetWidth->setObjectName(QStringLiteral("spinStreetWidth"));
-        spinStreetWidth->setMinimum(1);
-        spinStreetWidth->setMaximum(15);
-        spinStreetWidth->setValue(5);
-
-        gridLayout_2->addWidget(spinStreetWidth, 7, 1, 1, 1);
-
-        spinHighwayWidth = new QDoubleSpinBox(gridLayoutWidget_2);
-        spinHighwayWidth->setObjectName(QStringLiteral("spinHighwayWidth"));
-        spinHighwayWidth->setMinimum(1);
-        spinHighwayWidth->setMaximum(20);
-        spinHighwayWidth->setValue(7);
-
-        gridLayout_2->addWidget(spinHighwayWidth, 8, 1, 1, 1);
+        gridLayout_2->addWidget(label_39, 9, 0, 1, 1);
 
         groupBox_8 = new QGroupBox(tabStreetParams);
         groupBox_8->setObjectName(QStringLiteral("groupBox_8"));
-        groupBox_8->setGeometry(QRect(10, 450, 301, 131));
+        groupBox_8->setGeometry(QRect(10, 470, 301, 121));
         gridLayoutWidget_3 = new QWidget(groupBox_8);
         gridLayoutWidget_3->setObjectName(QStringLiteral("gridLayoutWidget_3"));
         gridLayoutWidget_3->setGeometry(QRect(10, 20, 281, 100));
@@ -510,7 +568,7 @@ public:
 
         groupBox_6 = new QGroupBox(tabStreetParams);
         groupBox_6->setObjectName(QStringLiteral("groupBox_6"));
-        groupBox_6->setGeometry(QRect(10, 0, 301, 201));
+        groupBox_6->setGeometry(QRect(10, 0, 301, 191));
         gridLayoutWidget = new QWidget(groupBox_6);
         gridLayoutWidget->setObjectName(QStringLiteral("gridLayoutWidget"));
         gridLayoutWidget->setGeometry(QRect(10, 20, 281, 171));
@@ -621,6 +679,35 @@ public:
 
         gridLayout->addWidget(streetGrowthFactor, 5, 1, 1, 1);
 
+        spnStartX = new QSpinBox(tabStreetParams);
+        spnStartX->setObjectName(QStringLiteral("spnStartX"));
+        spnStartX->setGeometry(QRect(220, 610, 42, 16));
+        spnStartX->setMaximum(2047);
+        spnStartX->setValue(900);
+        label_40 = new QLabel(tabStreetParams);
+        label_40->setObjectName(QStringLiteral("label_40"));
+        label_40->setGeometry(QRect(170, 590, 101, 16));
+        label_41 = new QLabel(tabStreetParams);
+        label_41->setObjectName(QStringLiteral("label_41"));
+        label_41->setGeometry(QRect(170, 630, 101, 16));
+        spnEndX = new QSpinBox(tabStreetParams);
+        spnEndX->setObjectName(QStringLiteral("spnEndX"));
+        spnEndX->setGeometry(QRect(220, 650, 42, 16));
+        spnEndX->setMaximum(2047);
+        spnEndX->setValue(800);
+        spnStartY = new QSpinBox(tabStreetParams);
+        spnStartY->setObjectName(QStringLiteral("spnStartY"));
+        spnStartY->setGeometry(QRect(270, 610, 42, 16));
+        spnStartY->setMaximum(2047);
+        spnStartY->setValue(800);
+        spnEndY = new QSpinBox(tabStreetParams);
+        spnEndY->setObjectName(QStringLiteral("spnEndY"));
+        spnEndY->setGeometry(QRect(270, 650, 42, 16));
+        spnEndY->setMaximum(2047);
+        spnEndY->setValue(800);
+        label_42 = new QLabel(tabStreetParams);
+        label_42->setObjectName(QStringLiteral("label_42"));
+        label_42->setGeometry(QRect(170, 610, 47, 13));
         tabParameters->addTab(tabStreetParams, QString());
         tabBuildingParams = new QWidget();
         tabBuildingParams->setObjectName(QStringLiteral("tabBuildingParams"));
@@ -703,39 +790,103 @@ public:
 
         groupBox_9 = new QGroupBox(tabBuildingParams);
         groupBox_9->setObjectName(QStringLiteral("groupBox_9"));
-        groupBox_9->setGeometry(QRect(10, 230, 311, 431));
+        groupBox_9->setGeometry(QRect(10, 230, 311, 271));
         gridLayoutWidget_5 = new QWidget(groupBox_9);
         gridLayoutWidget_5->setObjectName(QStringLiteral("gridLayoutWidget_5"));
-        gridLayoutWidget_5->setGeometry(QRect(10, 20, 378, 80));
+        gridLayoutWidget_5->setGeometry(QRect(10, 20, 291, 97));
         gridLayout_6 = new QGridLayout(gridLayoutWidget_5);
         gridLayout_6->setSpacing(6);
         gridLayout_6->setContentsMargins(11, 11, 11, 11);
         gridLayout_6->setObjectName(QStringLiteral("gridLayout_6"));
         gridLayout_6->setContentsMargins(0, 0, 0, 0);
-        label_29 = new QLabel(gridLayoutWidget_5);
-        label_29->setObjectName(QStringLiteral("label_29"));
-
-        gridLayout_6->addWidget(label_29, 3, 3, 1, 1);
-
         label_30 = new QLabel(gridLayoutWidget_5);
         label_30->setObjectName(QStringLiteral("label_30"));
 
-        gridLayout_6->addWidget(label_30, 4, 3, 1, 1);
+        gridLayout_6->addWidget(label_30, 2, 3, 1, 1);
 
-        label_28 = new QLabel(gridLayoutWidget_5);
-        label_28->setObjectName(QStringLiteral("label_28"));
+        label_29 = new QLabel(gridLayoutWidget_5);
+        label_29->setObjectName(QStringLiteral("label_29"));
 
-        gridLayout_6->addWidget(label_28, 0, 4, 1, 1);
+        gridLayout_6->addWidget(label_29, 1, 3, 1, 1);
+
+        spnSkyscraperPlacementChance = new QDoubleSpinBox(gridLayoutWidget_5);
+        spnSkyscraperPlacementChance->setObjectName(QStringLiteral("spnSkyscraperPlacementChance"));
+        spnSkyscraperPlacementChance->setMaximum(1);
+        spnSkyscraperPlacementChance->setSingleStep(0.05);
+        spnSkyscraperPlacementChance->setValue(0.4);
+
+        gridLayout_6->addWidget(spnSkyscraperPlacementChance, 1, 4, 1, 1);
+
+        spnMinSkyscraperPopDensity = new QDoubleSpinBox(gridLayoutWidget_5);
+        spnMinSkyscraperPopDensity->setObjectName(QStringLiteral("spnMinSkyscraperPopDensity"));
+        spnMinSkyscraperPopDensity->setMaximum(1);
+        spnMinSkyscraperPopDensity->setSingleStep(0.05);
+
+        gridLayout_6->addWidget(spnMinSkyscraperPopDensity, 2, 4, 1, 1);
 
         chkAllowSkyscrapers = new QCheckBox(gridLayoutWidget_5);
         chkAllowSkyscrapers->setObjectName(QStringLiteral("chkAllowSkyscrapers"));
 
         gridLayout_6->addWidget(chkAllowSkyscrapers, 0, 3, 1, 1);
 
-        chkUseSpecialBuildings = new QCheckBox(gridLayoutWidget_5);
-        chkUseSpecialBuildings->setObjectName(QStringLiteral("chkUseSpecialBuildings"));
+        label_28 = new QLabel(gridLayoutWidget_5);
+        label_28->setObjectName(QStringLiteral("label_28"));
 
-        gridLayout_6->addWidget(chkUseSpecialBuildings, 1, 3, 1, 1);
+        gridLayout_6->addWidget(label_28, 0, 4, 1, 1);
+
+        label_38 = new QLabel(gridLayoutWidget_5);
+        label_38->setObjectName(QStringLiteral("label_38"));
+
+        gridLayout_6->addWidget(label_38, 3, 3, 1, 1);
+
+        spnDensitySuburban = new QDoubleSpinBox(gridLayoutWidget_5);
+        spnDensitySuburban->setObjectName(QStringLiteral("spnDensitySuburban"));
+        spnDensitySuburban->setMaximum(1);
+        spnDensitySuburban->setSingleStep(0.05);
+
+        gridLayout_6->addWidget(spnDensitySuburban, 3, 4, 1, 1);
+
+        groupBox_10 = new QGroupBox(tabBuildingParams);
+        groupBox_10->setObjectName(QStringLiteral("groupBox_10"));
+        groupBox_10->setGeometry(QRect(10, 510, 311, 161));
+        gridLayoutWidget_6 = new QWidget(groupBox_10);
+        gridLayoutWidget_6->setObjectName(QStringLiteral("gridLayoutWidget_6"));
+        gridLayoutWidget_6->setGeometry(QRect(10, 20, 291, 80));
+        gridLayout_7 = new QGridLayout(gridLayoutWidget_6);
+        gridLayout_7->setSpacing(6);
+        gridLayout_7->setContentsMargins(11, 11, 11, 11);
+        gridLayout_7->setObjectName(QStringLiteral("gridLayout_7"));
+        gridLayout_7->setContentsMargins(0, 0, 0, 0);
+        label_35 = new QLabel(gridLayoutWidget_6);
+        label_35->setObjectName(QStringLiteral("label_35"));
+
+        gridLayout_7->addWidget(label_35, 1, 3, 1, 1);
+
+        spnBaseHeight = new QDoubleSpinBox(gridLayoutWidget_6);
+        spnBaseHeight->setObjectName(QStringLiteral("spnBaseHeight"));
+        spnBaseHeight->setMinimum(-1000);
+        spnBaseHeight->setMaximum(1000);
+        spnBaseHeight->setValue(-5);
+
+        gridLayout_7->addWidget(spnBaseHeight, 1, 4, 1, 1);
+
+        label_36 = new QLabel(gridLayoutWidget_6);
+        label_36->setObjectName(QStringLiteral("label_36"));
+
+        gridLayout_7->addWidget(label_36, 0, 4, 1, 1);
+
+        label_37 = new QLabel(gridLayoutWidget_6);
+        label_37->setObjectName(QStringLiteral("label_37"));
+
+        gridLayout_7->addWidget(label_37, 2, 3, 1, 1);
+
+        spnHeightScale = new QDoubleSpinBox(gridLayoutWidget_6);
+        spnHeightScale->setObjectName(QStringLiteral("spnHeightScale"));
+        spnHeightScale->setMinimum(1);
+        spnHeightScale->setMaximum(1000);
+        spnHeightScale->setValue(20);
+
+        gridLayout_7->addWidget(spnHeightScale, 2, 4, 1, 1);
 
         tabParameters->addTab(tabBuildingParams, QString());
         groupBox_3 = new QGroupBox(centralWidget);
@@ -748,10 +899,10 @@ public:
         groupBox_3->setSizePolicy(sizePolicy);
         cmdSaveOutput = new QPushButton(groupBox_3);
         cmdSaveOutput->setObjectName(QStringLiteral("cmdSaveOutput"));
-        cmdSaveOutput->setGeometry(QRect(130, 230, 121, 31));
+        cmdSaveOutput->setGeometry(QRect(180, 230, 71, 31));
         cmdSaveOutputImage = new QPushButton(groupBox_3);
         cmdSaveOutputImage->setObjectName(QStringLiteral("cmdSaveOutputImage"));
-        cmdSaveOutputImage->setGeometry(QRect(11, 230, 111, 31));
+        cmdSaveOutputImage->setGeometry(QRect(180, 190, 71, 31));
         layoutWidget = new QWidget(groupBox_3);
         layoutWidget->setObjectName(QStringLiteral("layoutWidget"));
         layoutWidget->setGeometry(QRect(10, 20, 161, 201));
@@ -902,6 +1053,9 @@ public:
 
         gridLayout_4->addWidget(cmdCreateView, 6, 0, 1, 1);
 
+        cmdLoadImageDirectory = new QPushButton(groupBox_3);
+        cmdLoadImageDirectory->setObjectName(QStringLiteral("cmdLoadImageDirectory"));
+        cmdLoadImageDirectory->setGeometry(QRect(20, 230, 141, 31));
         streetRender = new QStreetRenderWidget(centralWidget);
         streetRender->setObjectName(QStringLiteral("streetRender"));
         streetRender->setGeometry(QRect(350, 20, 1451, 681));
@@ -912,6 +1066,7 @@ public:
         streetRender->setSizePolicy(sizePolicy1);
         streetRender->setFrameShape(QFrame::Box);
         streetRender->setFrameShadow(QFrame::Sunken);
+        scrollArea->raise();
         StreetGenerator->setCentralWidget(centralWidget);
         menuBar = new QMenuBar(StreetGenerator);
         menuBar->setObjectName(QStringLiteral("menuBar"));
@@ -931,8 +1086,6 @@ public:
         menuWindows->addAction(actionTexture_Generator);
 
         retranslateUi(StreetGenerator);
-        QObject::connect(buttonPMap, SIGNAL(clicked()), StreetGenerator, SLOT(on_buttonPMap_clicked()));
-        QObject::connect(buttonGMap, SIGNAL(clicked()), StreetGenerator, SLOT(on_buttonGMap_clicked()));
         QObject::connect(cmdGenerateStreets, SIGNAL(clicked()), StreetGenerator, SLOT(onClickGenerate()));
         QObject::connect(radShowPopulation, SIGNAL(toggled(bool)), StreetGenerator, SLOT(on_radPopClicked()));
         QObject::connect(radShowGeography, SIGNAL(toggled(bool)), StreetGenerator, SLOT(on_radGeogClicked()));
@@ -940,24 +1093,32 @@ public:
         QObject::connect(cmdReset, SIGNAL(clicked()), StreetGenerator, SLOT(onClickReset()));
         QObject::connect(cmdStep, SIGNAL(clicked()), StreetGenerator, SLOT(onClickStep()));
         QObject::connect(cmdSaveOutput, SIGNAL(clicked()), StreetGenerator, SLOT(onClickSave()));
-        QObject::connect(cmdSaveOutputImage, SIGNAL(clicked()), StreetGenerator, SLOT(onClickSaveImage()));
         QObject::connect(radShowNone, SIGNAL(clicked()), StreetGenerator, SLOT(on_radNoneClicked()));
-        QObject::connect(cmdClearHeight, SIGNAL(clicked()), StreetGenerator, SLOT(clearHeightmap()));
-        QObject::connect(cmdClearPop, SIGNAL(clicked()), StreetGenerator, SLOT(clearPopmap()));
-        QObject::connect(cmdClearGeog, SIGNAL(clicked()), StreetGenerator, SLOT(clearGeogmap()));
         QObject::connect(radShowPatternmap, SIGNAL(clicked()), StreetGenerator, SLOT(on_radPatternClicked()));
         QObject::connect(cmdCreateBuildingLots, SIGNAL(clicked()), StreetGenerator, SLOT(onClickCreateLots()));
         QObject::connect(cmdGenerateRegions, SIGNAL(clicked()), StreetGenerator, SLOT(onClickCreateRegions()));
         QObject::connect(chkShowRegions, SIGNAL(toggled(bool)), StreetGenerator, SLOT(onClickRenderRegions(bool)));
         QObject::connect(chkShowLots, SIGNAL(toggled(bool)), StreetGenerator, SLOT(onClickRenderLots(bool)));
-        QObject::connect(cmdClearStreetMap, SIGNAL(clicked()), StreetGenerator, SLOT(clearStreetmap()));
-        QObject::connect(buttonSMap, SIGNAL(clicked()), StreetGenerator, SLOT(on_button_SMap_Clicked()));
         QObject::connect(chkShowVerts, SIGNAL(toggled(bool)), StreetGenerator, SLOT(onClickRenderVerts(bool)));
         QObject::connect(cmdFilterRoads, SIGNAL(clicked()), StreetGenerator, SLOT(onClickFilterRoads()));
         QObject::connect(cmdCreateView, SIGNAL(clicked()), StreetGenerator, SLOT(onClickShowRendered()));
         QObject::connect(cmdLoadImageDirectory, SIGNAL(clicked()), StreetGenerator, SLOT(cmdLoadDirectory()));
         QObject::connect(cmdClearBuildingType, SIGNAL(clicked()), StreetGenerator, SLOT(clearBuildingMap()));
         QObject::connect(buttonBuildingType, SIGNAL(clicked()), StreetGenerator, SLOT(on_buttonBMap_Clicked()));
+        QObject::connect(buttonSMap, SIGNAL(clicked()), StreetGenerator, SLOT(on_button_SMap_Clicked()));
+        QObject::connect(cmdClearStreetMap, SIGNAL(clicked()), StreetGenerator, SLOT(clearStreetmap()));
+        QObject::connect(cmdClearPop, SIGNAL(clicked()), StreetGenerator, SLOT(clearPopmap()));
+        QObject::connect(cmdClearHeight, SIGNAL(clicked()), StreetGenerator, SLOT(clearHeightmap()));
+        QObject::connect(cmdClearGeog, SIGNAL(clicked()), StreetGenerator, SLOT(clearGeogmap()));
+        QObject::connect(buttonGMap, SIGNAL(clicked()), StreetGenerator, SLOT(on_buttonGMap_clicked()));
+        QObject::connect(buttonPMap, SIGNAL(clicked()), StreetGenerator, SLOT(on_buttonPMap_clicked()));
+        QObject::connect(slideRoadSearchAngle, SIGNAL(valueChanged(int)), label_3, SLOT(setNum(int)));
+        QObject::connect(sliderSearchAngleIncrease, SIGNAL(valueChanged(int)), label_5, SLOT(setNum(int)));
+        QObject::connect(sliderRoadSampleInterval, SIGNAL(valueChanged(int)), label_8, SLOT(setNum(int)));
+        QObject::connect(sliderPopSearchRadius, SIGNAL(valueChanged(int)), label_21, SLOT(setNum(int)));
+        QObject::connect(slideManhattanBlocKWidth, SIGNAL(valueChanged(int)), label_16, SLOT(setNum(int)));
+        QObject::connect(slideManhattanBlockHeight, SIGNAL(valueChanged(int)), label_15, SLOT(setNum(int)));
+        QObject::connect(cmdSaveOutputImage, SIGNAL(clicked()), StreetGenerator, SLOT(onClickSaveImage()));
 
         tabParameters->setCurrentIndex(0);
 
@@ -971,37 +1132,37 @@ public:
         actionBuilding_Generator->setText(QApplication::translate("StreetGenerator", "Building Generator", 0));
         actionTexture_Generator->setText(QApplication::translate("StreetGenerator", "Texture Generator", 0));
         groupBox->setTitle(QApplication::translate("StreetGenerator", "Inputs", 0));
-        buttonPMap->setText(QApplication::translate("StreetGenerator", "Browse", 0));
-        cmdClearGeog->setText(QApplication::translate("StreetGenerator", "Clear", 0));
+        labelHMap->setText(QApplication::translate("StreetGenerator", "Height Map: ......", 0));
         cmdClearHeight->setText(QApplication::translate("StreetGenerator", "Clear", 0));
         buttonHMap->setText(QApplication::translate("StreetGenerator", "Browse", 0));
-        labelSMap->setText(QApplication::translate("StreetGenerator", "Street Pattern: ...", 0));
-        labelGMap->setText(QApplication::translate("StreetGenerator", "Geography: ...", 0));
-        buttonSMap->setText(QApplication::translate("StreetGenerator", "Browse", 0));
-        labelHMap->setText(QApplication::translate("StreetGenerator", "Height Map: ......", 0));
         labelPMap->setText(QApplication::translate("StreetGenerator", "Population Density...", 0));
         cmdClearPop->setText(QApplication::translate("StreetGenerator", "Clear", 0));
+        buttonPMap->setText(QApplication::translate("StreetGenerator", "Browse", 0));
+        labelGMap->setText(QApplication::translate("StreetGenerator", "Geography: ...", 0));
+        cmdClearGeog->setText(QApplication::translate("StreetGenerator", "Clear", 0));
         buttonGMap->setText(QApplication::translate("StreetGenerator", "Browse", 0));
+        labelSMap->setText(QApplication::translate("StreetGenerator", "Street Pattern: ...", 0));
         cmdClearStreetMap->setText(QApplication::translate("StreetGenerator", "Clear", 0));
+        buttonSMap->setText(QApplication::translate("StreetGenerator", "Browse", 0));
         labelBMap->setText(QApplication::translate("StreetGenerator", "Building Type: ...", 0));
-        buttonBuildingType->setText(QApplication::translate("StreetGenerator", "Browse", 0));
         cmdClearBuildingType->setText(QApplication::translate("StreetGenerator", "Clear", 0));
-        cmdLoadImageDirectory->setText(QApplication::translate("StreetGenerator", "Load from Directory", 0));
+        buttonBuildingType->setText(QApplication::translate("StreetGenerator", "Browse", 0));
         groupBox_5->setTitle(QApplication::translate("StreetGenerator", "Street Pattern Evaluation", 0));
         radUseMajorityStreet->setText(QApplication::translate("StreetGenerator", "Majority ", 0));
         radUseWeightedStreet->setText(QApplication::translate("StreetGenerator", "Weighted Values", 0));
         groupBox_7->setTitle(QApplication::translate("StreetGenerator", "Road Properties", 0));
-        label_23->setText(QApplication::translate("StreetGenerator", "Highway Length", 0));
-        label_22->setText(QApplication::translate("StreetGenerator", "Street Length", 0));
-        label_19->setText(QApplication::translate("StreetGenerator", "Road Max Angle Change", 0));
-        label_13->setText(QApplication::translate("StreetGenerator", "Manhattan Block Width", 0));
-        label_14->setText(QApplication::translate("StreetGenerator", "Manhattan Block Height", 0));
-        label_15->setText(QApplication::translate("StreetGenerator", "50", 0));
-        label_16->setText(QApplication::translate("StreetGenerator", "30", 0));
-        label_17->setText(QApplication::translate("StreetGenerator", "Road Branch Probability", 0));
-        label_9->setText(QApplication::translate("StreetGenerator", "Max Bridge Length", 0));
         label_33->setText(QApplication::translate("StreetGenerator", "Street Width", 0));
         label_34->setText(QApplication::translate("StreetGenerator", "Highway Width", 0));
+        label_9->setText(QApplication::translate("StreetGenerator", "Max Bridge Length", 0));
+        label_17->setText(QApplication::translate("StreetGenerator", "Road Branch Probability", 0));
+        label_16->setText(QApplication::translate("StreetGenerator", "30", 0));
+        label_15->setText(QApplication::translate("StreetGenerator", "50", 0));
+        label_14->setText(QApplication::translate("StreetGenerator", "Manhattan Block Height", 0));
+        label_13->setText(QApplication::translate("StreetGenerator", "Manhattan Block Width", 0));
+        label_19->setText(QApplication::translate("StreetGenerator", "Road Max Angle Change", 0));
+        label_23->setText(QApplication::translate("StreetGenerator", "Highway Length", 0));
+        label_22->setText(QApplication::translate("StreetGenerator", "Street Length", 0));
+        label_39->setText(QApplication::translate("StreetGenerator", "Length Variation", 0));
         groupBox_8->setTitle(QApplication::translate("StreetGenerator", "Intersection Fitting", 0));
         label_10->setText(QApplication::translate("StreetGenerator", "Road Extend Length", 0));
         label_11->setText(QApplication::translate("StreetGenerator", "Min Road Length", 0));
@@ -1018,6 +1179,9 @@ public:
         label_20->setText(QApplication::translate("StreetGenerator", "Pop Search Radius", 0));
         label_21->setText(QApplication::translate("StreetGenerator", "200", 0));
         label_25->setText(QApplication::translate("StreetGenerator", "Street Growth Score", 0));
+        label_40->setText(QApplication::translate("StreetGenerator", "Initial Road Start:", 0));
+        label_41->setText(QApplication::translate("StreetGenerator", "Initial Road End:", 0));
+        label_42->setText(QApplication::translate("StreetGenerator", "(X, Y):", 0));
         tabParameters->setTabText(tabParameters->indexOf(tabStreetParams), QApplication::translate("StreetGenerator", "Street Generation", 0));
         groupBox_2->setTitle(QApplication::translate("StreetGenerator", "Lot Creation", 0));
         label_31->setText(QApplication::translate("StreetGenerator", "Min Lot Dimension", 0));
@@ -1027,11 +1191,15 @@ public:
         label_6->setText(QApplication::translate("StreetGenerator", "Min Building Area", 0));
         label_32->setText(QApplication::translate("StreetGenerator", "Max Lot Dimension", 0));
         groupBox_9->setTitle(QApplication::translate("StreetGenerator", "Building Creation", 0));
-        label_29->setText(QApplication::translate("StreetGenerator", "Values to specify height / type of buildings?", 0));
-        label_30->setText(QApplication::translate("StreetGenerator", "Or put this in a file regarding building generation?", 0));
+        label_30->setText(QApplication::translate("StreetGenerator", "Min Skyscraper Pop Density", 0));
+        label_29->setText(QApplication::translate("StreetGenerator", "Skyscraper Placement Chance", 0));
+        chkAllowSkyscrapers->setText(QApplication::translate("StreetGenerator", "Allow Skyscrapers", 0));
         label_28->setText(QString());
-        chkAllowSkyscrapers->setText(QApplication::translate("StreetGenerator", "Allow Skyscraoers", 0));
-        chkUseSpecialBuildings->setText(QApplication::translate("StreetGenerator", "Allow Special Buildings", 0));
+        label_38->setText(QApplication::translate("StreetGenerator", "Suburban Pop Density", 0));
+        groupBox_10->setTitle(QApplication::translate("StreetGenerator", "Misc.", 0));
+        label_35->setText(QApplication::translate("StreetGenerator", "Base Height", 0));
+        label_36->setText(QString());
+        label_37->setText(QApplication::translate("StreetGenerator", "Height Scale", 0));
         tabParameters->setTabText(tabParameters->indexOf(tabBuildingParams), QApplication::translate("StreetGenerator", "Building Generation", 0));
         groupBox_3->setTitle(QApplication::translate("StreetGenerator", "Controls", 0));
         cmdSaveOutput->setText(QApplication::translate("StreetGenerator", "Save...", 0));
@@ -1054,6 +1222,7 @@ public:
         cmdGenerateRegions->setText(QApplication::translate("StreetGenerator", "Create Regions", 0));
         cmdCreateBuildingLots->setText(QApplication::translate("StreetGenerator", "Create Building Lots", 0));
         cmdCreateView->setText(QApplication::translate("StreetGenerator", "3D View", 0));
+        cmdLoadImageDirectory->setText(QApplication::translate("StreetGenerator", "Load from Directory", 0));
         menuWindows->setTitle(QApplication::translate("StreetGenerator", "Windows", 0));
     } // retranslateUi
 

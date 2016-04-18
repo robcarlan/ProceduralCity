@@ -105,6 +105,5 @@ public:
 	~RoadVariable();
 
 	std::string toString();
-
 };
 

@@ -10,7 +10,7 @@
 #include <QFileDialog>
 #include <QFile>
 
-#include "StreetGen.h"
+#include "LSystem\StreetGen.h"
 #include "City.h"
 #include "SimpleStreetGeometryCreator.h"
 #include "CityView2D.h"
@@ -67,7 +67,7 @@ private:
 	City cityView;
 	QFileDialog fd;
 	QFileDialog dir;
-	QImage pop, bType;
+	QImage pop, bType, geog, height, pattern;
 
 	static const int DEFAULT_SIZE_X;
 	static const int DEFAULT_SIZE_Y;

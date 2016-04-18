@@ -25,7 +25,7 @@ private:
 public:
 	int getNumIntersections();
 	Point getIntersectionPoint();
-	void connectRoad(roadPtr toAdd);
+	bool connectRoad(roadPtr toAdd);
 	void removeRoad(RoadGeometry* toRemove);
 	std::pair<roadPtr, bool> getAntiClockwise(float angle, bool clockwise);
 	std::pair<roadPtr, bool> getClockwise(float angle, bool clockwise);

@@ -136,22 +136,35 @@
     </ResourceCompile>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="Building.cpp" />
     <ClCompile Include="BuildingLot.cpp" />
     <ClCompile Include="BuildingRegion.cpp" />
+    <ClCompile Include="BuildingVariable\BaseVariable.cpp" />
+    <ClCompile Include="BuildingVariable\BuildingVariable.cpp" />
+    <ClCompile Include="BuildingVariable\CubeVariable.cpp" />
+    <ClCompile Include="BuildingVariable\GeometryVariable.cpp" />
+    <ClCompile Include="BuildingVariable\HouseVariable.cpp" />
+    <ClCompile Include="BuildingVariable\IndustrialVariable.cpp" />
+    <ClCompile Include="BuildingVariable\LotVariable.cpp" />
+    <ClCompile Include="BuildingVariable\RoofVariable.cpp" />
+    <ClCompile Include="BuildingVariable\TowerVariable.cpp" />
+    <ClCompile Include="BuildingVariable\UrbanHouse.cpp" />
     <ClCompile Include="City.cpp" />
     <ClCompile Include="CityRegionGenerator.cpp" />
     <ClCompile Include="CityView2D.cpp" />
     <ClCompile Include="GLImagePreview.cpp" />
     <ClCompile Include="IntersectionGeometry.cpp" />
-    <ClCompile Include="LSystem.cpp" />
+    <ClCompile Include="LSystem\BuildingLSystem.cpp" />
+    <ClCompile Include="LSystem\LSystem.cpp" />
+    <ClCompile Include="LSystem\StreetGen.cpp" />
     <ClCompile Include="Point.cpp" />
     <ClCompile Include="QStreetRenderWidget.cpp" />
     <ClCompile Include="Road.cpp" />
     <ClCompile Include="RoadGeometry.cpp" />
     <ClCompile Include="RoadIntersection.cpp" />
     <ClCompile Include="RoadVariable.cpp" />
+    <ClCompile Include="Shapes\Cube.cpp" />
     <ClCompile Include="SimpleStreetGeometryCreator.cpp" />
-    <ClCompile Include="StreetGen.cpp" />
     <ClCompile Include="StreetManager.cpp" />
     <ClCompile Include="Variable.cpp" />
     <ClCompile Include="cityview3d.cpp" />
@@ -159,11 +172,22 @@
     <ClCompile Include="streetgenerator.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="Building.h" />
     <ClInclude Include="BuildingLot.h" />
     <ClInclude Include="BuildingRegion.h" />
+    <ClInclude Include="BuildingVariable\BaseVariable.h" />
+    <ClInclude Include="BuildingVariable\BuildingVariable.h" />
+    <ClInclude Include="BuildingVariable\CubeVariable.h" />
+    <ClInclude Include="BuildingVariable\GeometryVariable.h" />
+    <ClInclude Include="BuildingVariable\HouseVariable.h" />
+    <ClInclude Include="BuildingVariable\IndustrialVariable.h" />
+    <ClInclude Include="BuildingVariable\LotVariable.h" />
+    <ClInclude Include="BuildingVariable\RoofVariable.h" />
+    <ClInclude Include="BuildingVariable\TowerVariable.h" />
     <ClInclude Include="City.h" />
     <ClInclude Include="CityRegionGenerator.h" />
     <ClInclude Include="CityView2D.h" />
+    <ClInclude Include="Enums.h" />
     <CustomBuild Include="GLImagePreview.h">
       <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">GLImagePreview.h;%(AdditionalInputs)</AdditionalInputs>
       <Command Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">setlocal
@@ -182,9 +206,10 @@ endlocal</Command>
       <Message Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">MOC GLImagePreview.h</Message>
       <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">GeneratedFiles\release\moc_GLImagePreview.cpp;%(Outputs)</Outputs>
     </CustomBuild>
-    <ClInclude Include="Enums.h" />
     <ClInclude Include="IntersectionGeometry.h" />
-    <ClInclude Include="LSystem.h" />
+    <ClInclude Include="LSystem\BuildingLSystem.h" />
+    <ClInclude Include="LSystem\LSystem.h" />
+    <ClInclude Include="LSystem\StreetGen.h" />
     <ClInclude Include="Point.h" />
     <CustomBuild Include="QStreetRenderWidget.h">
       <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">QStreetRenderWidget.h;%(AdditionalInputs)</AdditionalInputs>
@@ -208,9 +233,10 @@ endlocal</Command>
     <ClInclude Include="RoadGeometry.h" />
     <ClInclude Include="RoadIntersection.h" />
     <ClInclude Include="RoadVariable.h" />
+    <ClInclude Include="Shapes\Cube.h" />
     <ClInclude Include="SimpleStreetGeometryCreator.h" />
-    <ClInclude Include="StreetGen.h" />
     <ClInclude Include="StreetManager.h" />
+    <ClInclude Include="UrbanHouse.h" />
     <ClInclude Include="Variable.h" />
     <CustomBuild Include="cityview3d.h">
       <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">cityview3d.h;%(AdditionalInputs)</AdditionalInputs>
@@ -318,10 +344,6 @@ endlocal</Command>
       <Message Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">RCC streetgenerator.qrc</Message>
       <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">GeneratedFiles\qrc_streetgenerator.cpp;%(Outputs)</Outputs>
     </CustomBuild>
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="buildingInstance.gl" />
-    <None Include="buildingInstanceFragment.gl" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets" />

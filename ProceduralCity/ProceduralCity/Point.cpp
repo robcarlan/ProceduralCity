@@ -39,3 +39,7 @@ Point::Point() : QPointF() {
 
 Point::~Point() {
 }
+
+float Point::getManhattanDist(const QPointF p2) const {
+	return (abs(p2.y() - y()) + abs(p2.x() - x()));
+}

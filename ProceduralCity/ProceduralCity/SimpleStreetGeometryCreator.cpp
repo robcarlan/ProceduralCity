@@ -132,9 +132,14 @@ void SimpleStreetGeometryCreator::createRoadFromIntersections(intersectionPtr st
 	newRoad = roadPtr(new RoadGeometry(*toCopy));
 	newRoad->setStart(start);
 	newRoad->setEnd(end);
-	start->connectRoad(newRoad);
-	end->connectRoad(newRoad);
-	newRoads->push_front(newRoad);
+	if (start->connectRoad(newRoad)) {
+		if (end->connectRoad(newRoad))
+			newRoads->push_front(newRoad);
+		else start->removeRoad(newRoad.operator->());
+	}
+
+	//Post process for later processes
+	newRoad->calculateGeometry();
 }
 
 SimpleStreetGeometryCreator::SimpleStreetGeometryCreator() {

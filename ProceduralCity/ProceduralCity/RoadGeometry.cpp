@@ -20,6 +20,14 @@ float RoadGeometry::getAngleToStart() {
 	return angleAway;
 }
 
+float RoadGeometry::getLength() {
+	return length;
+}
+
+QLineF & RoadGeometry::getNorm() {
+	return norm;
+}
+
 std::pair<intersectionPtr, bool> RoadGeometry::getOtherEnd(intersectionPtr toCheck) const {
 	if (toCheck->getIntersectionPoint().getDistanceSq(start) < 0.1f)
 		return std::make_pair(endIntersect, true);
@@ -64,6 +72,11 @@ void RoadGeometry::flagInvalid() {
 
 bool RoadGeometry::isValid() {
 	return valid;
+}
+
+void RoadGeometry::calculateGeometry() {
+	this->length = startIntersect->getIntersectionPoint().getDistance(endIntersect->getIntersectionPoint());
+	norm = QLineF(start, end).unitVector();	
 }
 
 void RoadGeometry::removeIntersection(intersectionPtr toRemove) {

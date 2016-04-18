@@ -1,6 +1,8 @@
 #pragma once
 #include <list>
 #include <math.h>
+#include <QRect>
+
 #include "RoadVariable.h"
 #include "IntersectionGeometry.h"
 #include "Road.h"
@@ -17,8 +19,13 @@ protected:
 	float endElevation;
 	float angle;
 	float angleAway;
+	float length;
+
+	QLineF norm;
+
 	Point start, end;
 	intersectionPtr startIntersect, endIntersect;
+
 	bool valid;
 
 	void calcAngles();
@@ -29,6 +36,8 @@ public:
 
 	float getAngleToEnd();
 	float getAngleToStart();
+	float getLength();
+	QLineF &getNorm();
 
 	std::pair<intersectionPtr, bool> getOtherEnd(intersectionPtr toCheck) const;
 	intersectionPtr getStart();
@@ -38,6 +47,8 @@ public:
 	void disconnectRoad();
 	void flagInvalid();
 	bool isValid();
+
+	void calculateGeometry();
 
 	RoadGeometry(const Road &toCopy);
 	RoadGeometry();

@@ -1,18 +1,32 @@
 #pragma once
 #include <list>
-#include "Variable.h"
-#include "RoadVariable.h"
+#include <vector>
+#include <QRect>
 
-class LSystem {
+#include "BuildingVariable/BuildingVariable.h"
+#include "Enums.h"
+
+class BuildingLot;
+
+//Copying LSystem because no decent generic programming in this language
+class BuildingLSystem {
 public:
 	///Performs one iteration of the L-System
+	void setDesiredLOD(int LOD);
 	void nextIteration();
 	void initialiseLSystem();
 	void Run();
 
+	BuildingLSystem();
+	BuildingLSystem(BuildingLot *lot);
+	~BuildingLSystem();
+	
+	QRect &getConstructionArea();
+	void getGeometry(std::vector<Cube> &out);
+
 protected:
-	typedef std::list<RoadVariable> VarList;
-	typedef std::list<RoadVariable>::iterator VarIterator;
+	typedef std::list<BuildingVariable> VarList;
+	typedef std::list<BuildingVariable>::iterator VarIterator;
 
 	bool finishedIteration;
 	int iterationCount;
@@ -33,8 +47,11 @@ protected:
 	std::list<std::pair<VarIterator, VarList>> toInsert;
 	bool finished;
 
-	LSystem();
-	~LSystem();
+	BuildingLot *lot;
+	QRect constructionArea;
+
+	int currentLOD;
+	int desiredLOD;
 
 private:
 	void replaceVariables();

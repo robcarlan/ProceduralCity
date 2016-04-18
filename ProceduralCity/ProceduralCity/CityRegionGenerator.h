@@ -30,12 +30,16 @@ class CityRegionGenerator {
 	std::list<Point> toRegion(std::list<roadPtr> &roadList, std::list<bool> &travelDirection, std::list<bool> &side, std::list<float>& angles);
 	buildingStyle getBuildingStyle(Point& pos);
 	float getPopDensity(Point &pos);
+	float getHeight(Point &pos);
+	float getHeightValue(float factor);
 	float getRoadWidth(const roadType &road);
 
 	//Region data
 	QImage *densitySampler;
 	QImage *buildingTypeSampler;
+	QImage *heightSampler;
 
+	float minHeight, heightScale;
 	float mainRoadWidth, streetWidth;
 	float minBuildArea, maxBuildArea, randOffset;
 	float minLotDim, maxLotDim;
@@ -53,9 +57,9 @@ public:
 	BuildingLot createLot(std::list<Point> bounds, BuildingRegion& owner);
 
 	void setMaxEdges(int max);
-	void setImageData(QImage& density, QImage& buildingType);
+	void setImageData(QImage& density, QImage& buildingType, QImage& height);
 	void setParams(float minBuildArea, float maxBuildArea, float randomOffset, float minLotDim, float maxLotDim,
-		float mainRoadWidth, float streetWidth, bool allowLotMerge, int seed);
+		float mainRoadWidth, float streetWidth, bool allowLotMerge, float minHeight, float heightScale, int seed);
 
 	CityRegionGenerator();
 	~CityRegionGenerator();

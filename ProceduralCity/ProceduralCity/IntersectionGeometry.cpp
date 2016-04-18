@@ -52,14 +52,22 @@ Point IntersectionGeometry::getIntersectionPoint() {
 	return intersectionPoint;
 }
 
-void IntersectionGeometry::connectRoad(roadPtr toAdd) {
+bool IntersectionGeometry::connectRoad(roadPtr toAdd) {
+
+	bool connectedToStart = toAdd->getStart()->intersectionPoint.getDistanceSq(intersectionPoint) < 0.1f;
+	float angleToAdd = connectedToStart ? toAdd->getAngleToEnd() : toAdd->getAngleToStart();
+
+	for (auto aItr = angles.begin(); aItr != angles.end(); aItr++) {
+		if (*aItr == angleToAdd) return false;
+	}
+
 	//Add road, then add angle
 	connected.push_back(toAdd);
 	numIntersections++;
-	bool connectedToStart = toAdd->getStart()->intersectionPoint.getDistanceSq(intersectionPoint) < 0.1f;
-	angles.push_back(connectedToStart ? toAdd->getAngleToEnd() : toAdd->getAngleToStart());
+	angles.push_back(angleToAdd);
 
 	if (numIntersections >= 2) valid = true;
+	return true;
 }
 
 void IntersectionGeometry::removeRoad(RoadGeometry *toRemove) {

@@ -1,5 +1,6 @@
 #include "LSystem.h"
 
+
 LSystem::LSystem() {
 	finished = false;
 }
@@ -8,6 +9,7 @@ LSystem::LSystem() {
 LSystem::~LSystem() {
 }
 
+
 void LSystem::Run() {
 	//Iteration generates highways before streets
 	while (!finished) {
@@ -15,13 +17,14 @@ void LSystem::Run() {
 	}
 }
 
+
 void LSystem::nextIteration() {
 	if (!finishedIteration) return;
 	finishedIteration = false;
 
 	assert(toInsert.empty());
 
-	printProductions();
+	printOutput();
 
 	bool changed = false;
 
@@ -67,6 +70,7 @@ void LSystem::nextIteration() {
 	finishedIteration = true;
 }
 
+
 void LSystem::initialiseLSystem() {
 	current.clear();
 	toInsert.clear();
@@ -76,28 +80,35 @@ void LSystem::initialiseLSystem() {
 	finished = false;
 }
 
+
 bool LSystem::applyRule(VarIterator currentVar, VarList * productions) {
 	return false;
 }
+
 
 LSystem::VarList LSystem::getInitialProduction() {
 	return VarList();
 }
 
+
 bool LSystem::isLSystemFinished(bool changed) {
 	return !changed;
 }
 
+
 void LSystem::LSystemBeforeIterationBegin() {
 }
+
 
 void LSystem::LSystemAfterIteration(bool changed) {
 }
 
-void LSystem::printProductions() {
+
+void LSystem::printOutput() {
 }
 
 //Splice new variables into position, then remove all empty variables
+
 void LSystem::replaceVariables() {
 	//Only replace if toInsert isn't empty
 	//if (toInsert.size() == 0) return;

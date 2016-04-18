@@ -185,23 +185,14 @@ std::list<Point>::const_iterator BuildingRegion::getConcave(const std::list<Poin
 
 		if (antiClockwise) {
 			if (co < 0.0f) {
-				if (bounds.size() == 4)
-					qDebug() << "Concave";
 				vert = itr;
 				break;
 			}
 		}
 		else if (co > 0.0f) {
-			if (bounds.size() == 4)
-				qDebug() << "Concave";
 			vert = itr;
 			break;
 		}
-
-		//if (next == bounds.begin()) {
-		//	finished = true;
-		//	break;
-		//} 
 
 		//Iterator updates
 		prev = itr;

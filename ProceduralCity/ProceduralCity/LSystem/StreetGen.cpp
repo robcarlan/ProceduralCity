@@ -43,6 +43,7 @@ void StreetGen::setDefaultValues() {
 	popDensityRadiusSearch = 500.0f;
 	streetLength = 25;
 	highwaylength = 50.0f;
+	randomLengthVariation = 5.0f;
 
 	//Global constraints
 	maxAngleSearch = 0.2f;
@@ -67,12 +68,39 @@ void StreetGen::setDefaultValues() {
 	minDistanceSq = extendRadius * extendRadius;
 	minLength = 10.0f;
 	useWeightedVals = true;
+
+	start = Point(900, 800);
+	end = Point(800, 800);
+}
+
+bool StreetGen::isFinishedGrowing(ruleAttr & rules, roadAttr & road) {
+	if (road.connected) {
+		return true;
+
+		if (road.targetRoad->rType == roadType::MAINROAD && road.rtype == roadType::MAINROAD) {
+			//Main road to main road -> stop.
+			return true;
+		}
+
+		if (road.rtype == roadType::STREET)
+			return true;
+
+		//Compare max intersections
+		if (road.target->connected.size() >= 4)
+			return true;
+	}
+
+	std::vector<RoadIntersection*> out = std::vector<RoadIntersection*>();
+	streets.getNearbyVertices(road.end, 25.0f, out);
+
+	if (out.size() > 5) return true;
+
+	return false;
 }
 
 StreetGen::VarList* StreetGen::applyGlobalConstraints(ruleAttr rules, roadAttr roads) {
 	//Create 3 sets of new variables
-	if (roads.connected) {
-		//Parent street has connected to an intersection -> stops growing.
+	if (isFinishedGrowing(rules, roads)) {
 		VarList *result = new VarList();
 		result->push_back(RoadVariable(variableType::ROAD, -1));
 		return result;
@@ -82,6 +110,7 @@ StreetGen::VarList* StreetGen::applyGlobalConstraints(ruleAttr rules, roadAttr r
 	ruleAttr nrules[3];
 	roadAttr nroads[3];
 	int delay[3];
+	
 	boost::random::uniform_real_distribution<float> uniform = boost::random::uniform_real_distribution<float>();
 
 	QPointF distance = roads.end - roads.start;
@@ -140,8 +169,8 @@ StreetGen::VarList* StreetGen::applyGlobalConstraints(ruleAttr rules, roadAttr r
 	delay[ROAD] = 1;
 
 	//Set all roads to have some new length
-	nroads[BRANCH1].length = streetLength;// +uniform(rng) * 20.0f;
-	nroads[BRANCH2].length = streetLength;//  +uniform(rng) * 20.0f;
+	nroads[BRANCH1].length = streetLength + (uniform(rng) * randomLengthVariation - randomLengthVariation / 2);
+	nroads[BRANCH2].length = streetLength + (uniform(rng) * randomLengthVariation - randomLengthVariation / 2);
 	nroads[ROAD].length = highwaylength;
 
 	//Calculate new end positions
@@ -266,7 +295,7 @@ void StreetGen::applyLocalConstraints(RoadVariable *toCheck) {
 		assert(toCheck->road.start.x() - toCheck->road.parentRoad->getEnd().x() < 0.01f
 			&& toCheck->road.start.y() - toCheck->road.parentRoad->getEnd().y() < 0.01f);
 
-	if (abs(toCheck->road.start.x() - 79.0f) < 1.0f && abs(toCheck->road.start.y() - 1030.0f) < 1.0f)
+	if (abs(toCheck->road.start.x() - 1482.0f) < 1.0f && abs(toCheck->road.start.y() - 422.0f) < 1.0f)
 		qDebug() << "A";
 	if (abs(toCheck->road.end.x() - 79.0f) < 1.0f && abs(toCheck->road.end.y() - 1030.0f) < 1.0f)
 		qDebug() << "A";
@@ -296,6 +325,7 @@ void StreetGen::applyLocalConstraints(RoadVariable *toCheck) {
 		toCheck->state = solutionState::FAILED;
 		return;
 	}
+
 	//Stop growing street
 	if (connectedToIntersection) 
 		toCheck->road.connected = true;
@@ -445,7 +475,7 @@ bool StreetGen::overlapsConnected(RoadVariable * toCheck, Road * tempRoad) {
 	//For roads at each intersection, test for angle / weird
 	if (toCheck->road.parentRoad == nullptr) return false;
 	//test dot produce of connected roads
-	const float dotThreshold = 0.2f;
+	const float dotThreshold = 0.9f;
 	if (toCheck->road.target != nullptr) {
 		BOOST_FOREACH(Road *cRoad, toCheck->road.target->connected) {
 			float angleVal = cRoad->angleTo(*tempRoad);
@@ -453,17 +483,19 @@ bool StreetGen::overlapsConnected(RoadVariable * toCheck, Road * tempRoad) {
 			//float dot = tempRoad->getDot(*cRoad);
 			//dot /= tempRoad->length();
 			//dot /= cRoad->length();
-			//if (dot >= dotThreshold) return true;
+			//if (abs(dot) >= dotThreshold) return true;
 		}
 	}
 
 	BOOST_FOREACH(Road *cRoad, toCheck->road.parentRoad->roadEndIntersection->connected) {
+		if (cRoad == tempRoad) continue;
+
 		float angleVal = cRoad->angleTo(*tempRoad);
 		if (abs(angleVal - 180.0f) < 5.0f) return true;
 		//float dot = tempRoad->getDot(*cRoad);
 		//dot /= tempRoad->length();
 		//dot /= cRoad->length();
-		//if (dot >= dotThreshold) return true;
+		//if (abs(dot) >= dotThreshold) return true;
 	}
 	return false;
 }
@@ -605,11 +637,6 @@ void StreetGen::addRoadToSystem(roadAttr &roads) {
 	//Create first intersection if necessary
 	std::vector<RoadIntersection*> nearby;
 
-	if (roads.end.x() == 2045.0f && roads.end.y() == 1074.0f)
-		qDebug() << "A";
-	if (roads.end.x() == 2041.0f && roads.end.y() == 1050.0f)
-		qDebug() << "B";
-
 	//Case for initial road. We have to manually attach the start intersection before creating the road.
 	if (roads.parentRoad == nullptr) {
 		//First road was generated, so branch this road
@@ -628,7 +655,7 @@ void StreetGen::addRoadToSystem(roadAttr &roads) {
 	//Otherwise, we can get the intersection from the parent road
 	RoadIntersection *start = roads.parentRoad->roadEndIntersection;
 
-	assert(roads.start.getDistance(start->location) < 1.0f);
+	assert(roads.start.getManhattanDist(start->location) <= 2.0f);
 
 	Road *road = new Road(roads.start, roads.end, start, roads.parentRoad, roads.rtype);
 	roads.generated = road;
@@ -638,6 +665,7 @@ void StreetGen::addRoadToSystem(roadAttr &roads) {
 		//Check to see if we need to connect to an intersection / use old
 		streets.connectToRoad(start, road, roads.targetRoad);
 		roads.connected = true;
+		if (roads.target == nullptr) roads.target = road->roadEndIntersection;
 	}
 	else {
 		//Create the new empty crossing
@@ -672,9 +700,9 @@ ruleAttr StreetGen::getInitialRuleAttr() {
 roadAttr StreetGen::getInitialRoadAttr() {
 	//eventually pass these as paramters
 	roadAttr road;
-	road.angle = 0.0f;
-	road.start = Point(800, 800);
-	road.end = Point(900, 800);
+	road.angle = atan2f(end.x() - start.x(), end.y() - start.y());
+	road.start = start;
+	road.end = end;
 	road.length = math::sqrt(road.start.getDistanceSq(road.end));
 	road.rtype = roadType::MAINROAD;
 	road.connected = false;
@@ -990,32 +1018,6 @@ bool StreetGen::pointToTarget(roadAttr * road, ruleAttr * rules) {
 
 	return false;//for now, delete this
 }
-
-void StreetGen::filterStreets() {
-	if (haveStreetsBeenFiltered) return;
-	
-	BOOST_FOREACH(RoadIntersection *intersect, streets.getIntersections()) {
-		assert(intersect->connected.size() > 0);
-	}
-
-	//Do some filtering
-
-	//Intersections with one incident road?
-
-	//Small Roads that don't go anywhere. We don't need ya
-	//For region generation, we need to remove all dead end streets.
-
-	//Q: Do we need to split roads so that one road for every two intersections? I.e. joining to a road splits that road in two?
-
-	//A: Yes -> easy to create the geometry, then each road only has to track left and right. Easy to pad roads left.	
-	//Connect.size() == 2 -> already simple
-	//Otherwise, split every road into new ones simple roads, attach each intersection along
-
-	//Assert all streets >= connected size 2
-
-	haveStreetsBeenFiltered = true;
-}
-
 // L - System
 
 void StreetGen::LSystemBeforeIterationBegin() {
@@ -1043,6 +1045,8 @@ bool StreetGen::isLSystemFinished(bool changed) {
 
 void StreetGen::printProductions() {
 
+	if (!printOutput) return;
+
 	std::string varString;
 
 	qDebug() << "Iteration: " << iterationCount << ", nodes: " << current.size();
@@ -1068,8 +1072,7 @@ void StreetGen::initialise() {
 	genStreets = false;
 	ready = true;
 	finished = false;
-	haveStreetsBeenFiltered = false;
-
+	printOutput = false;
 	initialiseLSystem();
 
 	//Set growth score
@@ -1156,6 +1159,15 @@ void StreetGen::setHighwayGrowthFactor(float factor) {
 
 void StreetGen::setStreetGrowthFactor(float factor) {
 	minStreetGrowthFactor = factor;
+}
+
+void StreetGen::setStreetVariation(float variation) {
+	this->randomLengthVariation = variation;
+}
+
+void StreetGen::setStartParams(Point start, Point end) {
+	this->start = start;
+	this->end = end;
 }
 
 void StreetGen::setHeightMap(QImage & hMap, bool use) {

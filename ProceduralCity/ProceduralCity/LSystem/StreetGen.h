@@ -34,6 +34,7 @@ protected:
 	float roadBranchProb;
 	float streetLength;
 	float highwaylength;
+	float randomLengthVariation;
 	//Global constraint constans
 	float maxAngleSearch;
 	float popDensityRadiusSearch;
@@ -78,6 +79,7 @@ protected:
 	bool overlapsConnected(RoadVariable *toCheck, Road *tempRoad);
 	//Tries to alter the road such that it connects to existing intersections.
 	bool tryConnectToExisting(RoadVariable *toCheck, Road *tempRoad, bool &connectedToIntersection, bool &connectedToNewIntersection);
+	bool isFinishedGrowing(ruleAttr &rules, roadAttr &road);
 
 	VarList* applyGlobalConstraints(ruleAttr rules, roadAttr roads);
 
@@ -98,11 +100,11 @@ protected:
 
 	//World space of the drawing area
 	Point size;
+	Point start, end;
 
 	bool ready, genStreets, delayChanged, finished;
 	bool useHeight, useGeog, usePop, usePattern;
-
-	bool haveStreetsBeenFiltered;
+	bool printOutput;
 
 	//Store a local copy of each image, that we can sample. QImage provides suitable behaviour
 	QImage hMap, gMap, pMap, sMap;
@@ -158,8 +160,6 @@ public:
 	void LSystemBeforeIterationBegin();
 	void LSystemAfterIteration(bool changed);
 	bool isFinished();
-	//Post street gen functions.
-	void filterStreets();
 	void printProductions();
 
 	//Set parameters
@@ -198,6 +198,8 @@ public:
 	void setPopRadiusSearch(float val);
 	void setHighwayGrowthFactor(float factor);
 	void setStreetGrowthFactor(float factor);
+	void setStreetVariation(float variation);
+	void setStartParams(Point start, Point end);
 
 	StreetGen(CityView2D *view, Point size);
 	StreetGen();
