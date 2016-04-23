@@ -5,6 +5,7 @@
 #include "Enums.h"
 
 #include <QRect>
+#include <QLineF>
 #include <random>
 
 class BuildingLot;

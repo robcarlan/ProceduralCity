@@ -152,7 +152,7 @@ private:
 	GLuint roadPosBuffer;
 	GLuint roadScaleBuffer;
 
-	GLuint cubeInstanceCamUpID;
+	GLuint cubeInstanceCamID;
 	GLuint cubeInstanceCamRightID;
 	GLuint cubeInstanceViewProjMatID;
 

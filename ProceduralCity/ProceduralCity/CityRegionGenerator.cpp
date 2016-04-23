@@ -5,7 +5,8 @@ std::vector<BuildingRegion> CityRegionGenerator::createRegions(std::list<roadPtr
 	//Loop left and right over every intersection. (Over every road. Follow a left / right path). Loop identified by (intersection, index). 
 	// -> we can store where there aren't loops -> we can check these later?
 	//Keep looping until max_edges, if we loop mark that as a loop and continue.
-
+	QElapsedTimer timer;
+	timer.start();
 
 	anticlockwiseVisited = std::map<roadPtr, bool>();
 	clockwiseVisited = std::map<roadPtr, bool>();
@@ -88,14 +89,15 @@ std::vector<BuildingRegion> CityRegionGenerator::createRegions(std::list<roadPtr
 				if (found) flagRoads(traversing, side, found);
 				if (found) {
 					numRegions++;
-					//Todo :: Check if the region passes over invalid territory
-
-					
+										
 					//Turn into a region
 					auto bounds = toRegion(traversing, direction, side, angles);
 					BuildingRegion tmp = BuildingRegion(bounds, angles);
 
-					if (abs(BuildingRegion::getPolyArea(bounds)) < minBuildArea) {
+					if (coversIllegalTerritory(bounds)) {
+						tmp.flagInvalid();
+						numCulled++;
+					} else if (abs(BuildingRegion::getPolyArea(bounds)) < minBuildArea) {
 						tmp.flagInvalid();
 						numCulled++;
 					}
@@ -144,7 +146,8 @@ std::vector<BuildingRegion> CityRegionGenerator::createRegions(std::list<roadPtr
 	}
 
 	qDebug() << "Created : " << numRegions << " regions";
-	qDebug() << "Culle : " << numCulled << " regions";
+	qDebug() << "Culled : " << numCulled << " regions";
+	qDebug() << "Elapsed : " << timer.elapsed() / 1000.0f << " seconds";
 
 	//We have to remove the longest item, as this iterates over the outside
 	auto itr = out.begin();
@@ -172,6 +175,25 @@ bool CityRegionGenerator::isValidRegion(bool side, bool forwards, roadPtr traver
 	assert(hasVisited(side, forwards, traversing));
 	if ((side && forwards) || (!side && !forwards)) return clockwiseVisited[traversing];
 	else return anticlockwiseVisited[traversing];
+}
+
+bool CityRegionGenerator::coversIllegalTerritory(std::list<Point>& bounds) {
+	//Simple test - see if centroid covers illegal
+	if (getHeightValue(getHeight(BuildingRegion::getCentroid(bounds))) < 0.0f) return true;
+	return false;
+
+	//Else sample every point in the bounding rectangle - expensive
+
+	QRect & toCheck = smallestEnclosingRectangle(bounds);
+
+	for (int x = toCheck.left(); x < toCheck.right(); x++) {
+		for (int y = toCheck.top(); y < toCheck.bottom(); y++) {
+			if (sampleGeog(x, y, *geogSampler) == geogType::PARK || sampleGeog(x, y, *geogSampler) == geogType::WATER)
+				return true;
+		}
+	}
+
+	return false;
 }
 
 void CityRegionGenerator::flagRoads(std::list<roadPtr> traversing, std::list<bool> side, bool flagFound) {
@@ -333,12 +355,33 @@ void CityRegionGenerator::subdivideRegions(std::vector<BuildingRegion>& const bu
 			BuildingRegion::splitConvex(regionItr.getPoints(), convexLots);
 
 			BOOST_FOREACH(std::list<Point> convexPoly, convexLots) {
-				createLotsFromConvexPoly(regionItr, convexPoly, resultLots);
+				std::list<Point> toTest = convexPoly;
+
+				//Add more points if necessary
+				if (shouldSplitBoundsFurther(convexPoly))
+					toTest = subdivideBounds(convexPoly);
+
+				std::list<bool> roadAccess = std::list<bool>();
+				for (int i = 0; i < toTest.size(); i++)
+					roadAccess.push_back(true);
+
+				createLotsFromConvexPoly(regionItr, toTest, roadAccess, resultLots);
 			}
 		}
 		else {
+
 			//Already convex
-			createLotsFromConvexPoly(regionItr, regionItr.getPoints(), resultLots);	
+			std::list<Point> toTest = regionItr.getPoints();
+
+			//Add more points if necessary
+			if (shouldSplitBoundsFurther(regionItr.getPoints()))
+				toTest = subdivideBounds(regionItr.getPoints());
+
+			std::list<bool> roadAccess = std::list<bool>();
+			for (int i = 0; i < toTest.size(); i++)
+				roadAccess.push_back(true);
+
+			createLotsFromConvexPoly(regionItr, toTest, roadAccess, resultLots);
 		}
 		//Add to region
 		regionItr.setLots(*resultLots);
@@ -346,20 +389,31 @@ void CityRegionGenerator::subdivideRegions(std::vector<BuildingRegion>& const bu
 }
 
 //Recursive approach - split along edge w
-void CityRegionGenerator::createLotsFromConvexPoly(BuildingRegion& owner, std::list<Point>& bounds, std::unique_ptr<std::vector<BuildingLot>>& out) {
+
+//Todo :: track road access, prioritise those roads in the split. Can cull lots with no road access here.
+void CityRegionGenerator::createLotsFromConvexPoly(BuildingRegion& owner, std::list<Point>& bounds, std::list<bool>& roadAccess, std::unique_ptr<std::vector<BuildingLot>>& out) {
 	auto result = std::vector<BuildingLot>();
 
 	float area = abs(BuildingRegion::getPolyArea(bounds));
 
+	bool hasRoadAccess = false;
+
+	for (auto it = roadAccess.begin(); it != roadAccess.end(); it++) {
+		if (*it) hasRoadAccess = true;
+	}
+
+	if (!hasRoadAccess) return;
+	
 	if (area < minBuildArea)
 		return;
 	if (area < maxBuildArea) {
+		//Still has road access, so this lot is next to a road! Great!
 		out->push_back(createLot(bounds, owner));
 		return;
 	}
 		
 	//O.w. need to break down further. Find two edges to subdivide
-	auto splitEdges = getLongestEdgePair(bounds);
+	auto splitEdges = getLongestEdgePair(bounds, roadAccess); //return longest w/ road access, longest w/o.
 	auto longestp1 = splitEdges.first.first;
 	auto longestp2 = splitEdges.first.second;
 	auto secondlongestp1 = splitEdges.second.first;
@@ -380,48 +434,125 @@ void CityRegionGenerator::createLotsFromConvexPoly(BuildingRegion& owner, std::l
 
 	//Construct p1, p2
 	auto polygon1 = std::list<Point>();
+	auto roadAccess1 = std::list<bool>();
+
 	polygon1.push_back(midLongest);
+	auto rItr = roadAccess.begin();
 
 	auto pItr = bounds.begin();
 	while (*pItr != longestp2) {
 		pItr++;
+		rItr++;
 	}
+
+	//pItr == longestp2
+	bool before;
 
 	//Keep adding to new polygon
 	while (*pItr != secondlongestp2) {
 		polygon1.push_back(*pItr);
+		roadAccess1.push_back(*rItr);
 
+		before = *rItr;
 		pItr++;
+		rItr++;
+		if (rItr == roadAccess.end())
+			rItr = roadAccess.begin();
 		if (pItr == bounds.end())
 			pItr = bounds.begin();
 	}
 
+	//pItr == secondLongestp2
 	polygon1.push_back(midSecondLongest);
 	
 	auto polygon2 = std::list<Point>();
+	auto roadAccess2 = std::list<bool>();
 	polygon2.push_back(midSecondLongest);
 
 	if (pItr == bounds.end())
 		pItr = bounds.begin();
+	if (rItr == roadAccess.end())
+		rItr = roadAccess.begin();
+
+	//roadAccess2.push_back(*rItr);
+	//roadAccess1.push_back(*rItr);
+	roadAccess1.push_back(false);
+	roadAccess2.push_back(before);
 
 	//pItr starts at secondLongestp2
 	while (*pItr != longestp2) {
 		polygon2.push_back(*pItr);
+		roadAccess2.push_back(*rItr);
+
+		before = *rItr;
 		pItr++;
+		rItr++;
 
 		if (pItr == bounds.end())
 			pItr = bounds.begin();
+		if (rItr == roadAccess.end())
+			rItr = roadAccess.begin();
 	}
 
+	if (rItr == roadAccess.end())
+		rItr = roadAccess.begin();
+	//roadAccess2.push_back(*rItr);
+	roadAccess1.push_front(before);
 	polygon2.push_back(midLongest);
+	roadAccess2.push_back(false);
+
+	assert(roadAccess2.size() == polygon2.size());
+	assert(roadAccess1.size() == polygon1.size());
 
 	//Recursively construct lots inside these polygons
-	createLotsFromConvexPoly(owner, polygon1, out);
-	createLotsFromConvexPoly(owner, polygon2, out);
+	createLotsFromConvexPoly(owner, polygon1, roadAccess1, out);
+	createLotsFromConvexPoly(owner, polygon2, roadAccess2, out);
+}
+
+std::list<Point> CityRegionGenerator::subdivideBounds(std::list<Point>& bounds) {
+	std::list<Point> out;
+
+	int numIterations = bounds.size();
+	int i = 0;
+
+	auto pItr = bounds.begin();
+	pItr++;
+	auto before = bounds.begin();
+
+	while (i < numIterations) {
+		out.push_back(*before);
+
+		if (pItr->getDistanceSq(*before) > 40 * 40) {
+			//Create more points along this line
+			QLineF toSubdivide = QLineF(*before, *pItr);
+			float length = toSubdivide.length();
+			toSubdivide = toSubdivide.unitVector();
+
+			int numDivisions = length / 10.0f; // Every 10
+			numDivisions = 2;
+
+			for (int i = 1; i < numDivisions; i++ ) {
+				toSubdivide.setLength(i * 10.0f);
+				out.push_back(toSubdivide.p2());
+			}
+		}
+
+		i++;
+		before = pItr;
+		pItr++;
+		if (pItr == bounds.end()) pItr = bounds.begin();
+	}
+
+	return out;
+}
+
+bool CityRegionGenerator::shouldSplitBoundsFurther(std::list<Point>& bounds) {
+	return false;
 }
 
 
-std::pair<std::pair<Point, Point>, std::pair<Point, Point>> CityRegionGenerator::getLongestEdgePair(const std::list<Point>& bounds) {
+std::pair<std::pair<Point, Point>, std::pair<Point, Point>> CityRegionGenerator::getLongestEdgePair(const std::list<Point>& bounds,
+	const std::list<bool>& hasRoadAccess) {
 	//Iterate through, keeping track of two max roads
 	Point p1 = bounds.front();
 	Point p1Prev = bounds.back();
@@ -432,10 +563,11 @@ std::pair<std::pair<Point, Point>, std::pair<Point, Point>> CityRegionGenerator:
 
 	auto pPrev = bounds.back();
 	auto pItr = bounds.begin();
+	auto rItr = hasRoadAccess.begin();
 	while (pItr != bounds.end()) {
 		float dist = pItr->getDistance(pPrev);
 
-		if (dist > d1) {
+		if (dist > d1 && *rItr) {
 			//Update best distances found
 			p1 = *pItr;
 			p1Prev = pPrev;
@@ -448,6 +580,7 @@ std::pair<std::pair<Point, Point>, std::pair<Point, Point>> CityRegionGenerator:
 		//Update 
 		pPrev = *pItr;
 		pItr++;
+		rItr++;
 	}
 
 	//Direction vector of first line
@@ -523,10 +656,11 @@ void CityRegionGenerator::setMaxEdges(int max) {
 	maxEdgeTraversal = max;
 }
 
-void CityRegionGenerator::setImageData(QImage & density, QImage & buildingType, QImage &height) {
+void CityRegionGenerator::setImageData(QImage & density, QImage & buildingType, QImage &height, QImage &geog) {
 	densitySampler = &density;
 	buildingTypeSampler = &buildingType;
 	heightSampler = &height;
+	geogSampler = &height;
 }
 
 void CityRegionGenerator::setParams(float minBuildArea, float maxBuildArea, float randomOffset, float minLotDim, float maxLotDim, 

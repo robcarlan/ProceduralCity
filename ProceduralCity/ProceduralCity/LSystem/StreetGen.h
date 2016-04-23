@@ -43,6 +43,8 @@ protected:
 	float minHighwayGrowthFactor;
 	float minStreetGrowthScore;
 	float minHighwayGrowthScore;
+	int streetDelay;
+	int followPeakForDefault;
 
 	float manhattanBlockWidth;
 	float manhattanBlockHeight;
@@ -108,15 +110,9 @@ protected:
 
 	//Store a local copy of each image, that we can sample. QImage provides suitable behaviour
 	QImage hMap, gMap, pMap, sMap;
-	QRgb parkCol;
-	QRgb landCol;
-	QRgb waterCol;
 
 	//Image functions
 	float sampleHeight(int x, int y);
-	//QColor sampleGeog(int x, int y);
-	geogType sampleGeog(int x, int y);
-	float samplePop(int x, int y);
 	QColor sampleStreet(int x, int y);
 	//Returns weighting for each pattern between 0 and 1
 	void getPatternWeightings(int x, int y, float weights[]);
@@ -199,6 +195,8 @@ public:
 	void setHighwayGrowthFactor(float factor);
 	void setStreetGrowthFactor(float factor);
 	void setStreetVariation(float variation);
+	void setMainroadFollowLength(int length);
+	void setStreetDelay(int delay);
 	void setStartParams(Point start, Point end);
 
 	StreetGen(CityView2D *view, Point size);

@@ -19,10 +19,10 @@ const float CityView3D::fastMoveSpeed = defaultMoveSpeed * 20.0f;
 const float CityView3D::rotSpeed = 0.2f;
 
 static const GLfloat quadVertexBufferData[] = {
-	-0.5f, 0.0f, -0.5f,
-	0.5f, 0.0f, -0.5f,
 	0.5f,  0.0f, 0.5f,
 	-0.5f,  0.0f, 0.5f,
+	-0.5f, 0.0f, -0.5f,
+	0.5f, 0.0f, -0.5f,
 };
 
 static const GLfloat cubeVertexBufferData[] = {
@@ -88,12 +88,14 @@ static const GLfloat cubeVertexBufferData[] = {
 //};
 
 static const GLfloat cubeNormalsData[] =
-{0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 1,             // v0-v1-v2-v3
-1, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0,              // v0-v3-v4-v5
-0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0,              // v0-v5-v6-v1
--1, 0, 0, -1, 0, 0, -1, 0, 0, -1, 0, 0,          // v1-v6-v7-v2
-0, -1, 0, 0, -1, 0, 0, -1, 0, 0, -1, 0,         // v7-v4-v3-v2
-0, 0, -1, 0, 0, -1, 0, 0, -1, 0, 0, -1};        // v4-v7-v6-v5
+{
+	0, 0, 1,	 0, 0, 1,	0, 0, 1,	0, 0, 1,				// v0-v1-v2-v3 
+	1, 0, 0,	1, 0, 0,	1, 0, 0,	1, 0, 0,				// v0-v3-v4-v5
+	0, 1, 0,	0, 1, 0,	0, 1, 0,	0, 1, 0,				// v0-v5-v6-v1
+	-1, 0, 0,	-1, 0, 0,	-1, 0, 0,	-1, 0, 0,				// v1-v6-v7-v2
+	0, -1, 0,	0, -1, 0,	0, -1, 0,	0, -1, 0,				// v7-v4-v3-v2
+	0, 0, -1,	0, 0, -1,	0, 0, -1,	0, 0, -1			// v4-v7-v6-v5
+};
 
 static const char *roadVertexShader =
 "#version 330\n"
@@ -121,7 +123,7 @@ static const char *roadVertexShader =
 "	vec3 lightVector = normalize(lightVec - wsp.xyz);\n"
 "	float diffuse = 0.5f;\n"
 "   normalOut = vec4(1.0, 0.0, 0.0, 1.0);\n"
-"	color = vec4(1.0, 0.0, 0.0, 1.0);"
+"	color = vec4(0.3, 0.3, 0.3, 1.0);"
 "}\n";
 
 static const char *hMapVertexShaderSource =
@@ -158,24 +160,29 @@ static const char *hMapVertexShaderSource =
 
 static const char *vertexShaderSource =
 "#version 330\n"
+"#define M_PI 3.1415926535897932384626433832795\n"
 "layout(location = 0) in vec3 verts;\n"
 "layout(location = 1) in vec3 norm;\n"
 "layout(location = 2) in vec4 pos;\n"
 "layout(location = 3) in vec3 scale;\n"
-"flat out vec4 normalOut;\n"
-"flat out vec4 color;\n"
+"out vec4 normalOut;\n"
+"out vec4 color;\n"
 "uniform vec3 lightVec;\n"
 "uniform vec3 CameraRight_worldspace;\n"
-"uniform vec3 CameraUp_worldspace;\n"
+"uniform vec3 Camera_worldspace;\n"
 "uniform mat4 VP;\n"
 "void main() {\n"
-"   vec3 tmp = pos.xyz / 2048.0f;\n"
-"	vec3 wsp = pos.xyz + (verts * scale);\n"
+"   vec3 scaled = verts * scale;\n"
+"	float theta = (pos.w + M_PI / 2.0f);\n"
+"	vec3 rotatedVerts = vec3(scaled.x * cos(theta) + scaled.z * sin(theta), scaled.y, scaled.z * cos(theta) - scaled.x * sin(theta)); \n"
+"	vec3 rotatedNorm = vec3(norm.x * cos(theta) + norm.z * sin(theta), norm.y, norm.z * cos(theta) - norm.x * sin(theta)); \n"
+"	vec3 wsp = pos.xyz + rotatedVerts;\n"
 "	gl_Position = VP * vec4(wsp, 1.0f);\n"
-"	vec3 lightVector = normalize(lightVec - wsp.xyz);\n"
-"	float diffuse = min(0.8, max(dot(norm, lightVector), 0.2));\n"
+"	vec3 lightVector = normalize(vec3(0.577f, 0.577f, 0.577f) - wsp.xyz);\n"
+"	vec3 lookVec = normalize(Camera_worldspace - wsp.xyz);\n"
+"	float diffuse = max(0.0f, abs(dot(norm, lightVector)));\n"
 "   normalOut = vec4(diffuse, diffuse, diffuse, 1.0);\n"
-"	color = vec4(0.8, 0.8, 0.8, 1.0);"
+"	color = vec4(0.4, 0.4, 0.4, 1.0);"
 "}\n";
 
 static const char *texturedQuadVertShader =
@@ -184,8 +191,8 @@ static const char *texturedQuadVertShader =
 "layout(location = 1) in vec3 norm;\n"
 "layout(location = 2) in vec4 pos;\n"
 "layout(location = 3) in vec3 scale;\n"
-"flat out vec4 normalOut;\n"
-"flat out vec4 color;\n"
+"out vec4 normalOut;\n"
+"out vec4 color;\n"
 "uniform vec3 lightVec;\n"
 "uniform vec3 CameraRight_worldspace;\n"
 "uniform vec3 CameraUp_worldspace;\n"
@@ -195,7 +202,7 @@ static const char *texturedQuadVertShader =
 "	vec3 wsp = pos.xyz + (verts * scale);\n"
 "	gl_Position = VP * vec4(wsp, 1.0f);\n"
 "	vec3 lightVector = normalize(lightVec - wsp.xyz);\n"
-"	float diffuse = min(0.8, max(dot(norm, lightVector), 0.2));\n"
+"	float diffuse = max(dot(norm, lightVector), 0.2);\n"
 "   normalOut = vec4(diffuse, diffuse, diffuse, 1.0);\n"
 "	color = vec4(0.5, 0.5, 0.8, 0.7);"
 "}\n";
@@ -204,7 +211,7 @@ static const char *fragmentShaderSource =
 "flat in lowp vec4 normalOut;\n"
 "flat in lowp vec4 color;\n"
 "void main() {\n"
-"   gl_FragColor = vec4(0.2, 0.2, 0.2, 1.0) + (vec4(1) - normalOut) * color;\n"
+"   gl_FragColor = vec4(0.1, 0.1, 0.1, 1.0) + abs(dot(normalOut, vec4(1))) * color;\n"
 "}\n";
 
 static const char *fragmentShaderSourceHMap =
@@ -264,7 +271,7 @@ void CityView3D::initialize() {
 	m_InstancedBuildingProg->addShaderFromSourceCode(QOpenGLShader::Fragment, fragmentShaderSource);
 	m_InstancedBuildingProg->link();
 
-	cubeInstanceCamUpID = funcs->glGetUniformLocation(m_InstancedBuildingProg->programId(), "CameraUp_worldspace");
+	cubeInstanceCamID = funcs->glGetUniformLocation(m_InstancedBuildingProg->programId(), "Camera_worldspace");
 	cubeInstanceCamRightID = funcs->glGetUniformLocation(m_InstancedBuildingProg->programId(), "CameraRight_worldspace");
 	cubeInstanceViewProjMatID = funcs->glGetUniformLocation(m_InstancedBuildingProg->programId(), "VP");
 	cubeLightVecID = funcs->glGetUniformLocation(m_InstancedBuildingProg->programId(), "lightVec");
@@ -407,13 +414,13 @@ void CityView3D::renderTerrain() {
 		0.0f, 1.0f, 0.0f
 	};
 
-	glVertexAttribPointer(m_posAttr, 3, GL_FLOAT, GL_FALSE, 0, vertices);
+	glVertexAttribPointer(m_posAttr, sizeof(quadVertexBufferData), GL_FLOAT, GL_FALSE, 0, quadVertexBufferData);
 	glVertexAttribPointer(m_colAttr, 3, GL_FLOAT, GL_FALSE, 0, colors);
 
 	glEnableVertexAttribArray(0);
 	glEnableVertexAttribArray(1);
 
-	glDrawArrays(GL_TRIANGLES, 0, 3);
+	glDrawArrays(GL_QUADS, 0, 4);
 	
 	glDisableVertexAttribArray(1);
 	glDisableVertexAttribArray(0);
@@ -533,7 +540,7 @@ void CityView3D::renderBuildings() {
 
 	glUniform3f(cubeLightVecID, lightPos.x(), lightPos.y(), lightPos.z());
 	glUniform3f(cubeInstanceCamRightID, fstRow.x(), fstRow.y(), fstRow.z());
-	glUniform3f(cubeInstanceCamUpID, sndRow.x(), sndRow.y(), sndRow.z());
+	glUniform3f(cubeInstanceCamID, position.x(), position.y(), position.z());
 	glUniformMatrix4fv(cubeInstanceViewProjMatID, 1, GL_FALSE, VP.constData());
 
 	//Bind instance variables
@@ -842,8 +849,8 @@ void CityView3D::updateRoadInstances() {
 			int dist = std::min((*rItr)->getEnd()->getIntersectionPoint().getDistanceSq(pos2d),
 				(*rItr)->getStart()->getIntersectionPoint().getDistanceSq(pos2d));
 			int numSubdivide = 1;
-//			if (dist < 500 *500) numSubdivide = 2;
-//			if (dist < 100 * 100) numSubdivide = 5;
+			if (dist < 500 *500) numSubdivide = 2;
+			if (dist < 100 * 100) numSubdivide = 5;
 
 			RoadGeometry *road = (rItr->operator->());
 			float splitLength = road->getLength() / numSubdivide;
@@ -871,10 +878,16 @@ void CityView3D::updateRoadInstances() {
 
 				float sampleX = xCenter - incrX / 2.0f;
 				float sampleY = yCenter - incrY / 2.0f;
-				road_positions[basePosPos + 2] = getHeightValue(getHeightSample(sampleX, sampleY)); // Z Pos begin
+
+				assert(sampleX <= 2048);
+				assert(sampleX >= 0);
+				assert(sampleY <= 2048);
+				assert(sampleY >= 0);
+				//Idk why these y values are flipped 
+				road_positions[basePosPos + 2] = getHeightValue(getHeightSample(sampleX, 2048 - sampleY)); // Z Pos begin
 				sampleX += incrX;
 				sampleY += incrY;
-				road_positions[basePosPos + 3] = getHeightValue(getHeightSample(sampleX, sampleY)); // Z Pos end
+				road_positions[basePosPos + 3] = getHeightValue(getHeightSample(sampleX, 2048 - sampleY)); // Z Pos end
 
 				numRoadPieceRender++;
 
@@ -908,7 +921,7 @@ void CityView3D::render() {
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
 	glEnable(GL_DEPTH_TEST);
 	glEnable(GL_MULTISAMPLE);
-	//glEnable(GL_CULL_FACE);
+	glDisable(GL_CULL_FACE);
 	glDepthFunc(GL_LESS);
 	glDepthMask(GL_TRUE);
 
@@ -922,10 +935,12 @@ void CityView3D::render() {
 	glClear(GL_DEPTH_BUFFER_BIT); // As terrain under all over items to be rendered!
 
 	//Set building program, render buildings
+	glEnable(GL_CULL_FACE);
 	renderBuildings();
 
 
 	//Set road program, render roads
+	glDisable(GL_CULL_FACE);
 	renderRoads();
 
 	++m_frame;

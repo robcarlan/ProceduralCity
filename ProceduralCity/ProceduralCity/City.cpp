@@ -33,8 +33,8 @@ void City::getGeometry(std::pair<std::list<roadPtr>, std::list<intersectionPtr>>
 	hasGeometry = true;
 }
 
-void City::setImageData(QImage & density, QImage & buildingType, QImage &height) {
-	regionCreator.setImageData(density, buildingType, height);
+void City::setImageData(QImage & density, QImage & buildingType, QImage &height, QImage &geog) {
+	regionCreator.setImageData(density, buildingType, height, geog);
 }
 
 CityRegionGenerator & City::getRegionGenerator() {

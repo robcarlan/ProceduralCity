@@ -116,6 +116,9 @@
     <ClCompile Include="LSystem\StreetGen.cpp">
       <Filter>Generated Files</Filter>
     </ClCompile>
+    <ClCompile Include="Shapes\Cube.cpp">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
     <ClCompile Include="BuildingVariable\BaseVariable.cpp">
       <Filter>Generated Files</Filter>
     </ClCompile>
@@ -146,7 +149,7 @@
     <ClCompile Include="BuildingVariable\UrbanHouse.cpp">
       <Filter>Generated Files</Filter>
     </ClCompile>
-    <ClCompile Include="Shapes\Cube.cpp">
+    <ClCompile Include="Enums.cpp">
       <Filter>Generated Files</Filter>
     </ClCompile>
   </ItemGroup>
@@ -223,6 +226,9 @@
     <ClInclude Include="LSystem\StreetGen.h">
       <Filter>Generated Files</Filter>
     </ClInclude>
+    <ClInclude Include="Shapes\Cube.h">
+      <Filter>Generated Files</Filter>
+    </ClInclude>
     <ClInclude Include="BuildingVariable\BaseVariable.h">
       <Filter>Generated Files</Filter>
     </ClInclude>
@@ -248,9 +254,6 @@
       <Filter>Generated Files</Filter>
     </ClInclude>
     <ClInclude Include="BuildingVariable\TowerVariable.h">
-      <Filter>Generated Files</Filter>
-    </ClInclude>
-    <ClInclude Include="Shapes\Cube.h">
       <Filter>Generated Files</Filter>
     </ClInclude>
   </ItemGroup>

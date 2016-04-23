@@ -26,10 +26,6 @@ StreetGen::StreetGen(CityView2D *view, Point size) {
 	ready = finished = false;
 	setSize(size);
 
-	parkCol = qRgb(100, 170, 100);
-	landCol = qRgb(200, 200, 200);
-	waterCol = qRgb(140, 140, 220);
-
 	setDefaultValues();
 
 	streets = StreetManager::StreetManager(size, view);
@@ -53,7 +49,8 @@ void StreetGen::setDefaultValues() {
 	minHighwayGrowthFactor = 0.5f;
 	minStreetGrowthFactor = 0.25f;
 	minHighwayGrowthScore = 10.0f;
-	minStreetGrowthScore = 10.0f;
+	minStreetGrowthScore = 0.0f;
+	streetDelay = 3;
 
 	//Geography Fitting
 	maxRoadRotate = 0.7f;
@@ -93,7 +90,7 @@ bool StreetGen::isFinishedGrowing(ruleAttr & rules, roadAttr & road) {
 	std::vector<RoadIntersection*> out = std::vector<RoadIntersection*>();
 	streets.getNearbyVertices(road.end, 25.0f, out);
 
-	if (out.size() > 5) return true;
+	//if (out.size() > 5) return true;
 
 	return false;
 }
@@ -147,10 +144,10 @@ StreetGen::VarList* StreetGen::applyGlobalConstraints(ruleAttr rules, roadAttr r
 		float branchProb1 = uniform(rng);
 		float branchProb2 = uniform(rng);
 
-		if (branchProb1 < roadBranchProb)
+		if (branchProb1 < roadBranchProb && rules.followPeakFor == 0)
 			nroads[BRANCH1].rtype = roadType::MAINROAD;
 		else nroads[BRANCH1].rtype = roadType::STREET;
-		if (branchProb2 < roadBranchProb)
+		if (branchProb2 < roadBranchProb && rules.followPeakFor == 0)
 			nroads[BRANCH2].rtype = roadType::MAINROAD;
 		else nroads[BRANCH2].rtype = roadType::STREET;
 	}
@@ -163,19 +160,17 @@ StreetGen::VarList* StreetGen::applyGlobalConstraints(ruleAttr rules, roadAttr r
 	//Set branches to point at right angle
 	nroads[BRANCH1].angle += math::half_pi<float>();
 	nroads[BRANCH2].angle -= math::half_pi<float>();
-	//Arbritrary delay at the moment - shouldn't have too much of an effect if it is much bigger
-	delay[BRANCH1] = 10;
-	delay[BRANCH2] = 10;
-	delay[ROAD] = 1;
-
-	//Set all roads to have some new length
-	nroads[BRANCH1].length = streetLength + (uniform(rng) * randomLengthVariation - randomLengthVariation / 2);
-	nroads[BRANCH2].length = streetLength + (uniform(rng) * randomLengthVariation - randomLengthVariation / 2);
-	nroads[ROAD].length = highwaylength;
 
 	//Calculate new end positions
 	for (int i = 0; i < 3; i++) {
-		if (nroads[i].rtype == roadType::MAINROAD) nroads[i].length = highwaylength;
+		if (nroads[i].rtype == roadType::MAINROAD) {
+			nroads[i].length = highwaylength;
+			delay[i] = 1;
+		}
+		else {
+			nroads[i].length = streetLength + (uniform(rng) * randomLengthVariation - randomLengthVariation / 2);
+			delay[i] = streetDelay;
+		}
 
 		//Create unit vector in direction
 		//if (nroads[i].angle < 0.0f) nroads[i].angle += math::two_pi<float>();
@@ -285,6 +280,7 @@ StreetGen::VarList* StreetGen::applyGlobalConstraints(ruleAttr rules, roadAttr r
 
 void StreetGen::applyLocalConstraints(RoadVariable *toCheck) {
 	Road temp = Road(toCheck->road.start, toCheck->road.end);
+	float lengthBefore = temp.length();
 
 	bool connectedToIntersection = false;
 	bool connectedToNewIntersection = false;
@@ -317,14 +313,19 @@ void StreetGen::applyLocalConstraints(RoadVariable *toCheck) {
 	//If we are connecting to an intersection that already exists
 	if (!connectedToNewIntersection && connectedToIntersection) isUniqueRoad = isUnique(toCheck, &temp);
 
-	bool legalAngle = !overlapsConnected(toCheck, &temp);
+	bool legalAngle = true; // !overlapsConnected(toCheck, &temp);
 	bool legalLength =  toCheck->road.length * toCheck->road.length > minLength;
 	legalLength = temp.length() * temp.length() > minLength;
+
 	if (legalPlacement && legalIntersection && legalAngle && legalLength && isUniqueRoad) toCheck->state = solutionState::SUCCEED;
 	else {
 		toCheck->state = solutionState::FAILED;
 		return;
 	}
+
+	float lengthAfter = temp.length();
+
+	//if (lengthAfter < lengthBefore / 1.5) toCheck->road.rtype = roadType::STREET;
 
 	//Stop growing street
 	if (connectedToIntersection) 
@@ -360,7 +361,7 @@ bool StreetGen::tryMakeLegal(RoadVariable * toCheck, Road * tempRoad) {
 
 	withinBounds = tempRoad->isInBounds(size.x(), size.y());
 	if (!withinBounds) endsLegal = false;
-	else endsLegal = (sampleGeog(newEnd.x(), newEnd.y()) == geogType::LAND);
+	else endsLegal = (sampleGeog(newEnd.x(), newEnd.y(), gMap) == geogType::LAND);
 
 	getIllegalSegment(*tempRoad, legalSegment);
 	
@@ -394,7 +395,7 @@ bool StreetGen::tryMakeLegal(RoadVariable * toCheck, Road * tempRoad) {
 		//recalculate booleans
 		withinBounds = tempRoad->isInBounds(size.x(), size.y());
 		if (!withinBounds) endsLegal = false;
-		else endsLegal = (sampleGeog(newEnd.x(), newEnd.y()) == geogType::LAND);
+		else endsLegal = (sampleGeog(newEnd.x(), newEnd.y(), gMap) == geogType::LAND);
 
 		getIllegalSegment(segment, legalSegment);
 
@@ -445,7 +446,7 @@ void StreetGen::getIllegalSegment(Road segment, bool &legal) {
 		for (int i = 0; i < numSamples; i++) {
 			curPos.setX(curPos.x() + xInc);
 			curPos.setY(curPos.y() + yInc);
-			geogType geog = sampleGeog(curPos.x(), curPos.y());
+			geogType geog = sampleGeog(curPos.x(), curPos.y(), gMap);
 
 			if (geog != geogType::LAND) {
 				//Illegal, update boundaries
@@ -479,11 +480,11 @@ bool StreetGen::overlapsConnected(RoadVariable * toCheck, Road * tempRoad) {
 	if (toCheck->road.target != nullptr) {
 		BOOST_FOREACH(Road *cRoad, toCheck->road.target->connected) {
 			float angleVal = cRoad->angleTo(*tempRoad);
-			if (abs(angleVal - 180.0f) < 5.0f) return true;
-			//float dot = tempRoad->getDot(*cRoad);
-			//dot /= tempRoad->length();
-			//dot /= cRoad->length();
-			//if (abs(dot) >= dotThreshold) return true;
+			//if (abs(angleVal - 180.0f) < 5.0f) return true;
+			float dot = tempRoad->getDot(*cRoad);
+			dot /= tempRoad->length();
+			dot /= cRoad->length();
+			if (abs(dot) >= dotThreshold) return true;
 		}
 	}
 
@@ -491,11 +492,11 @@ bool StreetGen::overlapsConnected(RoadVariable * toCheck, Road * tempRoad) {
 		if (cRoad == tempRoad) continue;
 
 		float angleVal = cRoad->angleTo(*tempRoad);
-		if (abs(angleVal - 180.0f) < 5.0f) return true;
-		//float dot = tempRoad->getDot(*cRoad);
-		//dot /= tempRoad->length();
-		//dot /= cRoad->length();
-		//if (abs(dot) >= dotThreshold) return true;
+		//if (abs(angleVal - 180.0f) < 5.0f) return true;
+		float dot = tempRoad->getDot(*cRoad);
+		dot /= tempRoad->length();
+		dot /= cRoad->length();
+		if (abs(dot) >= dotThreshold) return true;
 	}
 	return false;
 }
@@ -681,9 +682,9 @@ void StreetGen::insertProduction(VarIterator before, VarList after) {
 
 StreetGen::VarList StreetGen::getInitialProduction() {
 	VarList initial;
-	ruleAttr emptyRule;
+	ruleAttr initRule;
 	roadAttr emptyRoad;
-	initial.push_front(RoadVariable(variableType::INSERTION, 0, emptyRule, getInitialRoadAttr()));
+	initial.push_front(RoadVariable(variableType::INSERTION, 0, initRule, getInitialRoadAttr()));
 	initial.push_front(RoadVariable(variableType::ROAD, 0, getInitialRuleAttr(), emptyRoad));
 
 	return initial;
@@ -693,6 +694,7 @@ ruleAttr StreetGen::getInitialRuleAttr() {
 	//eventually pass these as parameters
 	ruleAttr rules;
 	rules.depth = 0;
+	rules.followPeakFor = 0;
 
 	return rules;
 }
@@ -797,21 +799,6 @@ float StreetGen::sampleHeight(int x, int y) {
 	return (val.red() % 256) / 256.0f;
 }
 
-geogType StreetGen::sampleGeog(int x, int y) {
-	QRgb val = gMap.pixel(x, y);
-	if (val == landCol) return geogType::LAND;
-	else if (val == waterCol) return geogType::WATER;
-	else if (val == parkCol) return geogType::PARK;
-	else return geogType::LAND; 
-}
-
-float StreetGen::samplePop(int x, int y) {
-	QRgb lol = pMap.pixel(x, y);
-	return lol % 256;
-	QColor val = QColor(pMap.pixel(x, y));
-	return (val.red() % 256) / 256.0f;
-}
-
 QColor StreetGen::sampleStreet(int x, int y) {
 	return QColor(sMap.pixel(x, y));
 }
@@ -849,7 +836,8 @@ float StreetGen::maxPopDensity(float startAngle, Point &start, Point &end, QPoin
 
 	//Keep track of sector searched so we don't deal with wrap around issues.
 	while (sectorSearched <= maxAngleSearch) {
-		QLineF temp = QLineF::fromPolar(length, curAngle * r2dFactor);
+		//QLineF temp = QLineF::fromPolar(length, curAngle * r2dFactor);
+		QLineF temp = QLineF(0.0f, 0.0f, cosf(curAngle) * length, sinf(curAngle) * length);
 		temp.translate(start);
 		
 		float sampleQuant = roadSampleInterval / length;
@@ -861,14 +849,17 @@ float StreetGen::maxPopDensity(float startAngle, Point &start, Point &end, QPoin
 		int xPos = temp.p1().x() + xIncr;
 		int yPos = temp.p2().y() + yIncr;
 		float cumulativeVal = 0;
+		int numSamples = 1.0f / sampleInterval;
 
 		//Sum along the ray , sampling every roadSampleInterval untis
 		while (sampleInterval < 1.0f) {
-			if (xPos < 0 || xPos > size.x() || yPos < 0 || yPos > size.y()) 
+			if (xPos < 0 || xPos >= size.x() || yPos < 0 || yPos >= size.y()) 
 				break;
 
 			//Score += inverse distance * pop sample
-			cumulativeVal += samplePop(xPos, yPos) / (float)(roadSampleInterval);
+			if (sampleGeog(xPos, yPos, gMap) == geogType::WATER)
+				cumulativeVal += 1.0f / (float)(roadSampleInterval); // Prefer going over water?
+			else cumulativeVal += samplePop(xPos, yPos, pMap) * (float)(roadSampleInterval);
 			xPos += xIncr;
 			yPos += yIncr;
 			sampleLength += sampleInterval;
@@ -946,14 +937,23 @@ bool StreetGen::useBlockHeight(float blockAngle, float curAngle) {
 	return (dif < math::pi<float>() / 2.0f);
 }
 
-Point StreetGen::naturalRule(roadAttr* road, ruleAttr* rules ) {
+Point StreetGen::naturalRule(roadAttr* road, ruleAttr* rules) {
 	//Set path to point to maximum density 
 	Point start = road->start;
 	Point end = road->end;
 	float angle = road->angle;
 	QPointF peak;
 	float score = maxPopDensity(angle, start, end, &peak);
-	rules->peakTarget = peak;
+
+	if (rules->followPeakFor == 0) {
+		rules->peakTarget = peak;
+		rules->followPeakFor = followPeakForDefault;
+	}
+	else {
+		rules->followPeakFor--;
+		end = road->end;
+	}
+	
 
 	if (road->rtype == roadType::STREET) {
 		if (score < minStreetGrowthScore) road->flagFail();
@@ -1077,7 +1077,7 @@ void StreetGen::initialise() {
 
 	//Set growth score
 	minHighwayGrowthScore = popDensityRadiusSearch * minHighwayGrowthFactor;
-	minStreetGrowthFactor = popDensityRadiusSearch * minStreetGrowthFactor;
+	minStreetGrowthScore = popDensityRadiusSearch * minStreetGrowthFactor;
 }
 
 bool StreetGen::isReady() {
@@ -1163,6 +1163,14 @@ void StreetGen::setStreetGrowthFactor(float factor) {
 
 void StreetGen::setStreetVariation(float variation) {
 	this->randomLengthVariation = variation;
+}
+
+void StreetGen::setMainroadFollowLength(int length) {
+	this->followPeakForDefault = length;
+}
+
+void StreetGen::setStreetDelay(int delay) {
+	this->streetDelay = delay;
 }
 
 void StreetGen::setStartParams(Point start, Point end) {

@@ -10,7 +10,7 @@ std::pair<roadPtr, float> IntersectionGeometry::getBest(float angle, bool search
 	roadPtr bestRoad;
 
 	while (angleItr != angles.end()) {
-		if (abs(angle - *angleItr) < 0.001f) {
+		if ((angle == *angleItr)) {
 			angleItr++;
 			roadItr++;
 			continue; //Iterating over ourself!
@@ -58,7 +58,7 @@ bool IntersectionGeometry::connectRoad(roadPtr toAdd) {
 	float angleToAdd = connectedToStart ? toAdd->getAngleToEnd() : toAdd->getAngleToStart();
 
 	for (auto aItr = angles.begin(); aItr != angles.end(); aItr++) {
-		if (*aItr == angleToAdd) return false;
+		if (abs(*aItr - angleToAdd) < -0.01f) return false;
 	}
 
 	//Add road, then add angle

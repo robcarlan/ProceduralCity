@@ -6,6 +6,7 @@
 struct ruleAttr {
 	//Do we end at a crossing? Did this crossing exist before or did we create it
 	int depth;
+	int followPeakFor;
 	float *roadPatternVals;
 
 	//Something to control direction

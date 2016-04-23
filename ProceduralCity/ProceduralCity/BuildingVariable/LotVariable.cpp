@@ -16,12 +16,15 @@ bool LotVariable::getNextProductions(std::list<BuildingVariable> &out) {
 	{
 	case COMMERCIAL: {
 		createCommercial(out);
+		break;
 	}
 	case INDUSTRIAL: {
 		createIndustrial(out);
+		break;
 	}
 	case RESIDENTIAL: {
 		createResidential(out);
+		break;
 	}
 
 	default: {
@@ -154,7 +157,7 @@ void LotVariable::createCommercial(std::list<BuildingVariable>& out) {
 	if (useBase) {
 		BuildingVariable base = BuildingVariable(BuildingVariableType::BASE);
 		BaseVariable * baseVar = new BaseVariable(buildingBottomHeight, wspBaseEnd, origin, Point(bounds.x(), bounds.y()),
-			bounds.width(), bounds.height(), 0.0f);
+			bounds.width(), bounds.height(), rot);
 		base.setVariableData(dynamic_cast<GeometryVariable*>(baseVar));
 		baseVar->setSeed(seed);
 
@@ -215,6 +218,7 @@ LotVariable::LotVariable(BuildingLot * base) : GeometryVariable() {
 	float depth = 6.0f;
 	float rot = 0.0f;
 	auto points = base->getPoints();
+	bool found = false;
 
 	if (base->getIsQuad()) {
 		//Four points to check
@@ -235,7 +239,6 @@ LotVariable::LotVariable(BuildingLot * base) : GeometryVariable() {
 
 		if (abs(xDif1) < 1.0f) {
 			//First line is vertical
-
 			if (abs(vDif2) < 1.0f && abs(xDif3) < 1.0f && abs(vDif4) < 1.0f) {
 				//Lines are relatively straight
 
@@ -244,27 +247,122 @@ LotVariable::LotVariable(BuildingLot * base) : GeometryVariable() {
 					rot = 0.0f;
 					width = abs(xDif2);
 					depth = abs(vDif1);
+					//found = true;
 				}
 			}
 		}
 		else if (abs(vDif1) < 1.0f) {
 			//First line is horizontal
-
 			if (abs(xDif2) < 1.0f && abs(vDif3) < 1.0f && abs(xDif4) < 1.0f) {
 				//Lines are relatively straight
 
 				if (abs(xDif1 + xDif3) < 1.0f && abs(vDif1 + vDif3) < 1.0f) {
 					//Lines are relatively same length
 					rot = 0.0f;
-					width = abs(xDif1);
-					depth = abs(vDif2);
+					width = abs(vDif1);
+					depth = abs(xDif2);
+					//found = true;
 				}
 			}
 		}
-		else {
-			//More work necessary
-			width = 8.0f;
-			depth = 6.0f;
+
+
+		if (!found) {
+			//More work necessary (4 points - brute forceable for sure fam)
+			float l1 = p1.getDistance(p2);
+			float l2 = p2.getDistance(p3);
+			float l3 = p3.getDistance(p4);
+			float l4 = p4.getDistance(p1);
+
+			if (abs(l1 - l3) < 1.0f && abs(l2 - l4) < 1.0f) {
+				//We have a rotated cube
+				rot = atan2f(p2.x() - p1.x(), p2.y() - p1.y());
+				width = l1;
+				depth = l2;
+				found = true;
+			}
+			else {
+				//Pick minimum of thses, form a tight fitting rotated cube.
+				Point a, b;
+				if (l1 < l3) {
+					width = l1;
+					a = p1;
+				}
+				else {
+					width = l3;
+					a = p3;
+				}
+
+				//Pick height
+				if (l1 < l3) {
+					height = l2;
+					b = p2;
+				}
+				else {
+					height = l4;
+					b = p4;
+				}
+
+				rot = atan2f(p2.x() - p1.x(), p2.y() - p1.y());
+				found = true;
+			}
+		}
+	}
+	else if (base->getIsTriangle()) {
+		auto pItr = points.begin();
+		auto p1 = *(pItr++);
+		auto p2 = *(pItr++);
+		auto p3 = *(pItr++);
+
+		QLineF first = QLineF(p1, p2);
+		QLineF second = QLineF(p2, p3);
+		QLineF third  = QLineF(p3, p1);
+		 
+		QLineF toMid = first.unitVector();
+		toMid.setLength(first.length() / 2);
+		//Calc mid of p1, p2
+		Point midFirst = toMid.p2();
+
+		toMid = second.unitVector();
+		toMid.setLength(second.length() / 2);
+		//Calc mid of p2, p3
+		Point midSecond = toMid.p2();
+
+		//Now we have mid of l1, and l2. Calculate rectangle by getting the intersection with l3's normal vector.
+		QLineF thirdNormal = third.normalVector();
+		QLineF firstNormal = QLineF(
+			midFirst.x(), midFirst.y(), midFirst.x() + thirdNormal.dx(), midFirst.y() + thirdNormal.dy());
+		QLineF secondNormal = QLineF(
+			midSecond.x(), midSecond.y(), midSecond.x() + thirdNormal.dx(), midSecond.y() + thirdNormal.dy());
+
+		Point intersectBL;
+		firstNormal.intersect(third, &intersectBL);
+		Point intersectBR;
+		secondNormal.intersect(third, &intersectBR);
+
+		//Now we have a rotated quad, we can get rotation by angle of normal vector.
+		//Rot is in degrees
+		rot = thirdNormal.angle();
+
+		//Depth is the length of intersectBL to midFirst. This should be the same as dist (intersectBR, midSecond)
+		depth = midFirst.getDistance(intersectBL);
+		//Width is the length from intersectBL to intersectBR
+		width = intersectBL.getDistance(intersectBR);
+	}
+
+	//Heuristic - grow a rectangle along the longest edge?
+	//Accept first rectangle within a threshold area, growing from each edge.
+
+	if (!found) {
+		QPolygon fit;
+
+		for (auto itr = base->getPoints().begin(); itr != base->getPoints().end(); itr++) {
+			fit.append(QPoint(itr->x(), itr->y()));
+		}
+
+		//Get longest edge?
+		for (int degItr = 0; degItr < 360; degItr += 30) {
+			
 		}
 	}
 
@@ -280,4 +378,6 @@ LotVariable::LotVariable(BuildingLot * base) : GeometryVariable() {
 
 	this->width = width;
 	this->depth = depth;
+	this->rot = rot; // -1 * rot + 90;
 }
+

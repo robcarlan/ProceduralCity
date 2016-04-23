@@ -1,46 +1,53 @@
 #pragma once
 #include <QColor>
+#include <QImage>
+#include <QRect>
+#include "Point.h"
 
 static QColor SKYSCRAPER_COL = QColor(90, 194, 255);
 static QColor RESIDENTIAL_COL = QColor(255, 73, 63);
-static QColor INDUSTRIAL_COL = QColor(45, 94, 93);
+static QColor INDUSTRIAL_COL = QColor(45, 94, 39);
 static QColor COMMERCIAL_COL = QColor(45, 94, 255);
 static QColor NONE_COL = QColor(255, 255, 255);
+
+static QRgb parkCol = qRgb(100, 170, 100);
+static QRgb landCol = qRgb(200, 200, 200);
+static QRgb waterCol = qRgb(140, 140, 220);
 
 static float defaultRoadWidth = 5.0f;
 
 //BuildingVariables
-static float minBaseHeight = 5.0f;
-static float maxBaseheight = 10.0f;
-static float minRoofHeight = 2.0f;
-static float maxRoofHeight = 5.0f;
-static float minRoofSizeFactor = 0.5f;
-static float minTowerHeight = 10.0f;
-static float maxTowerHeight = 25.0f;
-static float minCommercialHeight = 10.0f;
-static float maxCommercialHeight = 20.0f;
-static float skyscraperHeightAddition = 20.0f;
+extern float minBaseHeight;
+extern float maxBaseheight;
+extern float minRoofHeight;
+extern float maxRoofHeight;
+extern float minRoofSizeFactor;
+extern float minTowerHeight;
+extern float maxTowerHeight;
+extern float minCommercialHeight;
+extern float maxCommercialHeight;
+extern float skyscraperHeightAddition;
 
-static float minExtrusionDepth = 4.0f;
+extern float minExtrusionDepth;
 
-static float doubleTowerPossibility = 0.10f;
-static float createBaseProb = 0.8f;
-static float createRoofProb = 0.5f;
-static float createTowerProb = 0.5f;
-static float minTowerSizeReduceFactor = 0.7f; //Min amount to reduce size by
+extern float doubleTowerPossibility;
+extern float createBaseProb;
+extern float createRoofProb;
+extern float createTowerProb;
+extern float minTowerSizeReduceFactor; //Min amount to reduce size by
 
 //House variables
-static float suburbanHouseHeight = 7.0f;
-static float minHousePieceSize = 5.0f;
-static float urbanHouseHeightMin = 10.0f;
-static float urbanHouseHeightMax = 30.0f;
-static float urbanHouseMinPopDensity = 0.3f;
+extern float suburbanHouseHeight;
+extern float minHousePieceSize;
+extern float urbanHouseHeightMin;
+extern float urbanHouseHeightMax;
+extern float urbanHouseMinPopDensity;
 
 //Industrial Variables
-static float industrialMinHeight = 10.0f;
-static float industrialMaxHeight = 40.0f;
-static float chimneyMinHeight = 1.0f;
-static float chimneyMaxHeight = 4.0f;
+extern float industrialMinHeight;
+extern float industrialMaxHeight;
+extern float chimneyMinHeight;
+extern float chimneyMaxHeight;
 
 static float getBetween(int random, float min, float max) {
 	return min + (max - min) * (static_cast<float>(random) / static_cast<float>(RAND_MAX));
@@ -91,4 +98,37 @@ static QColor getLotColour(buildingStyle style) {
 	default:
 		return NONE_COL;
 	}
+}
+
+static QRect smallestEnclosingRectangle(const std::list<Point> &bounds) {
+	float minX, minY, maxX, maxY;
+	minX = minY = 1000000;
+	maxX = maxY = 0;
+	auto pItr = bounds.begin();
+
+	while (pItr != bounds.end()) {
+		if (pItr->x() < minX) minX = pItr->x();
+		if (pItr->y() < minY) minY = pItr->y();
+		if (pItr->x() > maxX) maxX = pItr->x();
+		if (pItr->y() > maxY) maxY = pItr->y();
+
+		pItr++;
+	}
+
+	return QRect(minX, minY, maxX - minX, maxY - minY);
+}
+
+static geogType sampleGeog(int x, int y, QImage &geog) {
+	QRgb val = geog.pixel(x, y);
+	if (val == landCol) return geogType::LAND;
+	else if (val == waterCol) return geogType::WATER;
+	else if (val == parkCol) return geogType::PARK;
+	else return geogType::LAND;
+}
+
+static float samplePop(int x, int y, QImage &pop) {
+	QRgb lol = pop.pixel(x, y);
+	return 1.0f - (lol % 256) / 256.0f;
+	QColor val = QColor(pop.pixel(x, y));
+	return (val.red() % 256) / 256.0f;
 }

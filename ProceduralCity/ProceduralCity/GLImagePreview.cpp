@@ -38,8 +38,6 @@ QImage* GLImagePreview::getImage() {
 
 void GLImagePreview::paintEvent(QPaintEvent * e) {
 	//No image to paint
-
-
 	QPainter painter;
 	painter.begin(this);
 	painter.setRenderHint(QPainter::Antialiasing);

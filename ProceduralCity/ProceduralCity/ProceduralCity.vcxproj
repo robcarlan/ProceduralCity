@@ -152,6 +152,7 @@
     <ClCompile Include="City.cpp" />
     <ClCompile Include="CityRegionGenerator.cpp" />
     <ClCompile Include="CityView2D.cpp" />
+    <ClCompile Include="Enums.cpp" />
     <ClCompile Include="GLImagePreview.cpp" />
     <ClCompile Include="IntersectionGeometry.cpp" />
     <ClCompile Include="LSystem\BuildingLSystem.cpp" />

@@ -126,7 +126,11 @@ float Road::getAngle() const {
 }
 
 float Road::getDot(Road &other) const {
-	return dx() * other.dx() + dy() * other.dy();
+
+	if (other.start == this->start)
+		return dx() * other.dx() + dy() * other.dy();
+	else
+		return -dx() * other.dx() + dy() * other.dy();
 }
 
 bool Road::isInBounds(int sizeX, int sizeY) const {

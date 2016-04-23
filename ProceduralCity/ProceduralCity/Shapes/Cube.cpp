@@ -26,6 +26,7 @@ Cube::Cube(const QVector3D & base, const QVector3D & scale, float rot) :
 	baseOrigin(base), scale(scale), rot(rot) {
 	centre = baseOrigin;
 	centre.setZ(baseOrigin.z() + scale.z() / 2);
+	this->rot = rot;
 }
 
 Cube::Cube() {

@@ -4,6 +4,7 @@
 #include <QtWidgets/QMainWindow>
 #include "ui_streetgenerator.h"
 
+#include <QElapsedTimer>
 #include <QMainWindow>
 #include <QWidget>
 #include <QMessageBox>
@@ -61,6 +62,7 @@ private slots:
 	void on_radNoneClicked();
 
 private:
+
 	Ui::StreetGenerator ui;
 	CityView2D view;
 	StreetGen generator;
@@ -76,7 +78,8 @@ private:
 
 	void initialiseSystem();
 	QString getFileChoice();
-	void setParameters();
+	void setStreetParameters();
+	void setBuildingParameters();
 
 	bool streetsGenerated, streetsFiltered, regionsGenerated, lotsGenerated;
 

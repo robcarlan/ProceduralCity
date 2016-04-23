@@ -1,7 +1,41 @@
+#pragma once
 #include "streetgenerator.h"
+#include "Enums.h"
 
 const int StreetGenerator::DEFAULT_SIZE_X = 2048;
 const int StreetGenerator::DEFAULT_SIZE_Y = 2048;
+
+extern float minBaseHeight;
+extern float maxBaseheight;
+extern float minRoofHeight;
+extern float maxRoofHeight;
+extern float minRoofSizeFactor;
+extern float minTowerHeight;
+extern float maxTowerHeight;
+extern float minCommercialHeight;
+extern float maxCommercialHeight;
+extern float skyscraperHeightAddition;
+
+extern float minExtrusionDepth;
+
+extern float doubleTowerPossibility;
+extern float createBaseProb;
+extern float createRoofProb;
+extern float createTowerProb;
+extern float minTowerSizeReduceFactor; //Min amount to reduce size by
+
+									   //House variables
+extern float suburbanHouseHeight;
+extern float minHousePieceSize;
+extern float urbanHouseHeightMin;
+extern float urbanHouseHeightMax;
+extern float urbanHouseMinPopDensity;
+
+//Industrial Variables
+extern float industrialMinHeight;
+extern float industrialMaxHeight;
+extern float chimneyMinHeight;
+extern float chimneyMaxHeight;
 
 StreetGenerator::StreetGenerator(QWidget *parent)
 	: QMainWindow(parent)
@@ -17,6 +51,7 @@ StreetGenerator::StreetGenerator(QWidget *parent)
 	//Initially bind Street Renderer to the street gen object
 	ui.streetRender->initialiseRenderer(&view);
 	dir.setFileMode(QFileDialog::DirectoryOnly);
+
 }
 
 StreetGenerator::~StreetGenerator()
@@ -33,7 +68,7 @@ void StreetGenerator::onClickStep() {
 		generator.nextIteration();
 
 	if (generator.isFinished())
-		ui.cmdGenerateRegions->setEnabled(true);
+		ui.cmdFilterRoads->setEnabled(true);
 
 }
 
@@ -81,13 +116,21 @@ void StreetGenerator::onClickCreateLots() {
 		ui.chkTimeSeed->isChecked() ? time(NULL) : ui.intSeedValue->value()
 		);
 
-	cityView.setImageData(pop, bType, height);
+	QElapsedTimer lotTimer;
+	lotTimer.start();
+
 	cityView.createLots();
+
+	qDebug() << cityView.getLots().size() << " lots created.";
+	qDebug() << "Lots created in: " << lotTimer.elapsed() / 1000.0f << " seconds.";
+
 	view.addLots(cityView.getLots());
 	view.setDrawLots(true);
 	view.setDrawRegions(false);
 	
+	ui.chkShowRegions->setChecked(false);
 	ui.chkShowLots->setEnabled(true);
+	ui.chkShowLots->setChecked(true);
 	lotsGenerated = true;
 
 	//Enable 3d view
@@ -111,6 +154,8 @@ void StreetGenerator::onClickCreateRegions() {
 		ui.spnHeightScale->value(),
 		ui.chkTimeSeed->isChecked() ? time(NULL) : ui.intSeedValue->value()
 		);
+	cityView.setImageData(pop, bType, height, geog);
+
 	cityView.createRegions();
 
 	//Now indicate this to 2D view
@@ -118,6 +163,7 @@ void StreetGenerator::onClickCreateRegions() {
 	view.setDrawRegions(true);
 
 	ui.chkShowRegions->setEnabled(true);
+	ui.chkShowRegions->setChecked(true);
 	ui.cmdCreateBuildingLots->setEnabled(true);
 	regionsGenerated = true;
 }
@@ -128,6 +174,8 @@ void StreetGenerator::onClickShowRendered() {
 	//Prepare new form, pass geometry
 	//Build geometry, show as progres dialog
 	//Open view
+	setBuildingParameters();
+
 	BOOST_FOREACH(BuildingLot* lot, cityView.getLots()) {
 		int seed = rand();
 		lot->setSeed(seed);
@@ -162,6 +210,9 @@ void StreetGenerator::onClickRenderVerts(bool render) {
 }
 
 void StreetGenerator::onClickGenerate() {
+	QElapsedTimer genTime;
+	genTime.start();
+
 	if (!generator.isReady())
 		initialiseSystem();
 	//generate the stuff
@@ -169,6 +220,8 @@ void StreetGenerator::onClickGenerate() {
 
 	ui.cmdFilterRoads->setEnabled(true);
 	streetsGenerated = true;
+
+	qDebug() << "Streets generated in: " << genTime.elapsed() / 1000.0f << " seconds.";
 }
 
 void StreetGenerator::on_comboBox_activated(const QString &arg1) {
@@ -346,7 +399,7 @@ void StreetGenerator::initialiseSystem() {
 		QImage(ui.patternMapRender->getImage()->scaled(size.x(), size.y())) : white;
 	bType = buildingSet ?
 		QImage(ui.buildingTypeRender->getImage()->scaled(size.x(), size.y())) : white;
-	setParameters();
+	setStreetParameters();
 	generator.initialise();
 	generator.setGeogMap(geog, geogSet);
 	qDebug() << "Geog: " << ui.geogMapRender->isSet() << "\n";
@@ -375,7 +428,7 @@ QString StreetGenerator::getFileChoice() {
 	return fName;
 }
 
-void StreetGenerator::setParameters() {
+void StreetGenerator::setStreetParameters() {
 	generator.setExtendRadius(ui.spinRoadExtendLength->value());
 	generator.setRoadSnap(math::sqr(ui.spinRoadSnapRadius->value()));
 	generator.setMinLength(ui.spinMinRoadLength->value());
@@ -394,9 +447,51 @@ void StreetGenerator::setParameters() {
 	generator.setPopRadiusSearch(ui.sliderPopSearchRadius->value());
 	generator.setHighwayGrowthFactor(ui.highwayGrowthFactor->value());
 	generator.setStreetGrowthFactor(ui.streetGrowthFactor->value());
+	generator.setStreetDelay(ui.spnStreetDelay->value());
+	generator.setMainroadFollowLength(ui.spnMainroadFollowLength->value());
 	generator.setStartParams(
 		Point(ui.spnStartX->value(), ui.spnStartY->value()),
 		Point(ui.spnEndX->value(), ui.spnEndY->value()));
 }
 
+void StreetGenerator::setBuildingParameters() {
+	float skyscraperHeight = ui.spnSkyscraperHeight->value();
+	float commercialHeight = ui.spnCommercialHeight->value();
+	float residentialHeight = ui.spnCommercialHeight->value();
+	float industrialHeight = ui.spnIndustrialHeight->value();
+	float highriseHeight = ui.spnHighriseHeight->value();
+
+	minBaseHeight = 5.0f;
+	maxBaseheight = 10.0f;
+	minRoofHeight = 2.0f;
+	maxRoofHeight = 5.0f;
+	minRoofSizeFactor = 0.5f;
+	minTowerHeight = commercialHeight - minBaseHeight;
+	maxTowerHeight = commercialHeight - minBaseHeight;
+	minCommercialHeight = commercialHeight * 0.7f;
+	maxCommercialHeight = commercialHeight * 1.3f;
+	skyscraperHeightAddition = skyscraperHeight - commercialHeight;
+
+	minExtrusionDepth = 4.0f;
+
+	doubleTowerPossibility = 0.10f;
+	createBaseProb = 0.8f;
+	createRoofProb = 0.5f;
+	createTowerProb = 0.5f;
+	minTowerSizeReduceFactor = 1.0f; //Min amount to reduce size by
+
+	//House variables
+	suburbanHouseHeight = residentialHeight;
+	minHousePieceSize = 5.0f;
+	urbanHouseHeightMin = highriseHeight * 0.7f;
+	urbanHouseHeightMax = highriseHeight * 1.3f;
+	urbanHouseMinPopDensity = 0.3f;
+
+	//Industrial Variables
+	industrialMinHeight = industrialHeight * 0.7f;
+	industrialMaxHeight = industrialHeight * 1.3f;
+	chimneyMinHeight = 1.0f;
+	chimneyMaxHeight = 4.0f;
+
+}
 

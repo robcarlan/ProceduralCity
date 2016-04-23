@@ -6,6 +6,7 @@
 
 #include <vector>
 #include <qdebug.h>
+#include <QElapsedTimer>
 
 #include "BuildingRegion.h"
 #include "BuildingLot.h"
@@ -21,6 +22,7 @@ class CityRegionGenerator {
 
 	bool hasVisited(bool side, bool forwards, const roadPtr traversing);
 	bool isValidRegion(bool side, bool forwards, const roadPtr traversing);
+	bool coversIllegalTerritory(std::list<Point> &bounds);
 	//Checks size of region to see if valid.
 	bool isValidRegion(BuildingRegion& test);
 	void flagRoads(std::list<roadPtr> traversing, std::list<bool> side, bool flagFound);
@@ -38,6 +40,7 @@ class CityRegionGenerator {
 	QImage *densitySampler;
 	QImage *buildingTypeSampler;
 	QImage *heightSampler;
+	QImage *geogSampler;
 
 	float minHeight, heightScale;
 	float mainRoadWidth, streetWidth;
@@ -51,13 +54,17 @@ public:
 	std::vector<BuildingRegion> createRegions(std::list<roadPtr> const roads, std::list<intersectionPtr> const intersections);
 	//Takes valid regions, builds into lots.
 	void subdivideRegions(std::vector<BuildingRegion>& const buildings);
-	void createLotsFromConvexPoly(BuildingRegion& owner, std::list<Point>& bounds, std::unique_ptr<std::vector<BuildingLot>>& out);
+	void createLotsFromConvexPoly(BuildingRegion& owner, std::list<Point>& bounds, std::list<bool>& roadAccess, std::unique_ptr<std::vector<BuildingLot>>& out);
+
+	std::list<Point> subdivideBounds(std::list<Point> &bounds);
+	bool shouldSplitBoundsFurther(std::list<Point> &bounds);
+
 	//Returns longest edge and roughly parallel other edge
-	std::pair<std::pair<Point, Point>, std::pair<Point, Point>> getLongestEdgePair(const std::list<Point> &bounds);
+	std::pair<std::pair<Point, Point>, std::pair<Point, Point>> getLongestEdgePair(const std::list<Point> &bounds, const std::list<bool>& hasRoadAccess);
 	BuildingLot createLot(std::list<Point> bounds, BuildingRegion& owner);
 
 	void setMaxEdges(int max);
-	void setImageData(QImage& density, QImage& buildingType, QImage& height);
+	void setImageData(QImage& density, QImage& buildingType, QImage& height, QImage& geog);
 	void setParams(float minBuildArea, float maxBuildArea, float randomOffset, float minLotDim, float maxLotDim,
 		float mainRoadWidth, float streetWidth, bool allowLotMerge, float minHeight, float heightScale, int seed);
 
