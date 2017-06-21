@@ -10,7 +10,7 @@ std::pair<roadPtr, float> IntersectionGeometry::getBest(float angle, bool search
 	roadPtr bestRoad;
 
 	while (angleItr != angles.end()) {
-		if ((angle == *angleItr)) {
+		if ((abs(angle - *angleItr) == 0.00f)) {
 			angleItr++;
 			roadItr++;
 			continue; //Iterating over ourself!

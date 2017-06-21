@@ -164,7 +164,7 @@ StreetGen::VarList* StreetGen::applyGlobalConstraints(ruleAttr rules, roadAttr r
 	//Calculate new end positions
 	for (int i = 0; i < 3; i++) {
 		if (nroads[i].rtype == roadType::MAINROAD) {
-			nroads[i].length = highwaylength;
+			nroads[i].length = highwaylength + (uniform(rng) * randomLengthVariation - randomLengthVariation / 2);
 			delay[i] = 1;
 		}
 		else {
@@ -349,6 +349,7 @@ void StreetGen::applyLocalConstraints(RoadVariable *toCheck) {
 bool StreetGen::tryMakeLegal(RoadVariable * toCheck, Road * tempRoad) {
 	//BUG angle change
 	bool isLegal = false;
+	bool isBridge;
 	bool withinBounds;
 	bool legalSegment;
 	bool endsLegal;
@@ -363,7 +364,9 @@ bool StreetGen::tryMakeLegal(RoadVariable * toCheck, Road * tempRoad) {
 	if (!withinBounds) endsLegal = false;
 	else endsLegal = (sampleGeog(newEnd.x(), newEnd.y(), gMap) == geogType::LAND);
 
-	getIllegalSegment(*tempRoad, legalSegment);
+	//TODO :: Update this to allow bridges. If we end in water we extend the road by maxbridgelength and see if that brings us out. 
+
+	getIllegalSegment(*tempRoad, legalSegment, isBridge);
 	
 	isLegal = endsLegal && withinBounds && legalSegment;
 
@@ -397,7 +400,7 @@ bool StreetGen::tryMakeLegal(RoadVariable * toCheck, Road * tempRoad) {
 		if (!withinBounds) endsLegal = false;
 		else endsLegal = (sampleGeog(newEnd.x(), newEnd.y(), gMap) == geogType::LAND);
 
-		getIllegalSegment(segment, legalSegment);
+		getIllegalSegment(segment, legalSegment, isBridge);
 
 		isLegal = endsLegal && withinBounds && legalSegment;
 	}
@@ -424,7 +427,10 @@ bool StreetGen::isUnique(RoadVariable * toCheck, Road * tempRoad) {
 	return true;
 }
 
-void StreetGen::getIllegalSegment(Road segment, bool &legal) {
+void StreetGen::getIllegalSegment(Road segment, bool &legal, bool &isBridge) {
+		//TODO allow extending for bridges. I know you can do this bobby
+		//Could update to allow crossing water / parks for certain roads.
+
 		//Linearly interpolate between start and end, sample for invalid positions
 		float rLength = segment.length();
 
@@ -442,13 +448,14 @@ void StreetGen::getIllegalSegment(Road segment, bool &legal) {
 		}
 
 		Point curPos = segment.getStart();
+		geogType geog;
 
 		for (int i = 0; i < numSamples; i++) {
 			curPos.setX(curPos.x() + xInc);
 			curPos.setY(curPos.y() + yInc);
-			geogType geog = sampleGeog(curPos.x(), curPos.y(), gMap);
+			geog = sampleGeog(curPos.x(), curPos.y(), gMap);
 
-			if (geog != geogType::LAND) {
+			if (geog == geogType::WATER) {
 				//Illegal, update boundaries
 				if (begin == -1) {
 					begin = i;
@@ -465,6 +472,10 @@ void StreetGen::getIllegalSegment(Road segment, bool &legal) {
 				legal = false;
 				return;
 			}
+		}
+
+		if (geog == geogType::WATER) {
+			//Currently over water. See if we can extend road up to bridge length and reach some more land.
 		}
 
 		legal = true;
@@ -858,7 +869,7 @@ float StreetGen::maxPopDensity(float startAngle, Point &start, Point &end, QPoin
 
 			//Score += inverse distance * pop sample
 			if (sampleGeog(xPos, yPos, gMap) == geogType::WATER)
-				cumulativeVal += 1.0f / (float)(roadSampleInterval); // Prefer going over water?
+				cumulativeVal += 0.2f / (float)(roadSampleInterval); // Prefer going over water?
 			else cumulativeVal += samplePop(xPos, yPos, pMap) * (float)(roadSampleInterval);
 			xPos += xIncr;
 			yPos += yIncr;
@@ -927,6 +938,8 @@ Point StreetGen::manhattanRule(const roadAttr* road) {
 	float lineLength = useHeight ? manhattanBlockHeight : manhattanBlockWidth;
 	float xPos = road->start.x() + cosf(road->angle) * lineLength;
 	float yPos = road->start.y() + sinf(road->angle) * lineLength;
+	//xPos = road->start.x() + manhattanBlockWidth;
+	//yPos = road->start.y() + manhattanBlockHeight;
 
 	return Point(xPos, yPos);
 }

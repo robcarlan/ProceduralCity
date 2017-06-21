@@ -156,6 +156,7 @@ static const char *hMapVertexShaderSource =
 "	float diffuse = min(0.8, max(dot(norm, lightVector), 0.2));\n"
 "   normalOut = vec4(norm, 1.0);\n"
 "	color = vec4(0.4f, 1.0f, 0.4f, 1.0f);"
+"   if (pos.y < 0) color = vec4(0.2f, 0.20f, 1.0f, 1.0f);"
 "}\n";
 
 static const char *vertexShaderSource =
@@ -180,7 +181,7 @@ static const char *vertexShaderSource =
 "	gl_Position = VP * vec4(wsp, 1.0f);\n"
 "	vec3 lightVector = normalize(vec3(0.577f, 0.577f, 0.577f) - wsp.xyz);\n"
 "	vec3 lookVec = normalize(Camera_worldspace - wsp.xyz);\n"
-"	float diffuse = max(0.0f, abs(dot(norm, lightVector)));\n"
+"	float diffuse = max(0.0f, abs(dot(rotatedNorm, lightVector)));\n"
 "   normalOut = vec4(diffuse, diffuse, diffuse, 1.0);\n"
 "	color = vec4(0.4, 0.4, 0.4, 1.0);"
 "}\n";

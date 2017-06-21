@@ -181,7 +181,7 @@ void StreetGenerator::onClickShowRendered() {
 		lot->setSeed(seed);
 
 		if (lot->getPopDensity() > 0.0f) {
-			if (getBetween(rand(), 0.0f, 1.0f) > ui.spnSkyscraperPlacementChance->value()) 
+			if (getBetween(rand(), 0.0f, 1.0f) < ui.spnSkyscraperPlacementChance->value()) 
 				lot->setSkyscraper(true);
 		}
 
@@ -449,6 +449,7 @@ void StreetGenerator::setStreetParameters() {
 	generator.setStreetGrowthFactor(ui.streetGrowthFactor->value());
 	generator.setStreetDelay(ui.spnStreetDelay->value());
 	generator.setMainroadFollowLength(ui.spnMainroadFollowLength->value());
+	generator.setStreetVariation(ui.spnLengthVariation->value());
 	generator.setStartParams(
 		Point(ui.spnStartX->value(), ui.spnStartY->value()),
 		Point(ui.spnEndX->value(), ui.spnEndY->value()));
@@ -461,10 +462,10 @@ void StreetGenerator::setBuildingParameters() {
 	float industrialHeight = ui.spnIndustrialHeight->value();
 	float highriseHeight = ui.spnHighriseHeight->value();
 
-	minBaseHeight = 5.0f;
-	maxBaseheight = 10.0f;
-	minRoofHeight = 2.0f;
-	maxRoofHeight = 5.0f;
+	minBaseHeight = 4.0f;
+	maxBaseheight = 6.0f;
+	minRoofHeight = 1.0f;
+	maxRoofHeight = 3.0f;
 	minRoofSizeFactor = 0.5f;
 	minTowerHeight = commercialHeight - minBaseHeight;
 	maxTowerHeight = commercialHeight - minBaseHeight;

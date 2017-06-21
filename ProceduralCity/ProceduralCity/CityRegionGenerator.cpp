@@ -44,7 +44,8 @@ std::vector<BuildingRegion> CityRegionGenerator::createRegions(std::list<roadPtr
 					followingRoadForwards = next.second;
 					float angleHeading = !followingRoadForwards ? currentRoad->getAngleToEnd() : currentRoad->getAngleToStart();
 
-					if (hasVisited(clockwise, followingRoadForwards, currentRoad)) {
+					if (false) {
+					//if (hasVisited(clockwise, followingRoadForwards, currentRoad)) {
 						//assert(isValidRegion(clockwise, followingRoadForwards, currentRoad) == false);
 						
 						//Mark all connected as should not be searched

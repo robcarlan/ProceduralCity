@@ -23,6 +23,7 @@ Road::Road(Point start, Point end, RoadIntersection * intersection, Road * paren
 	bounds = boundsFromPointPair(start, end);
 	calcAngle();
 	isBranch = false;
+	isBridge = false;
 }
 
 Road::Road(Point start, Point end, Road *parent, roadType rType) : QGraphicsItem(), QLineF(start, end) {
@@ -37,6 +38,7 @@ Road::Road(Point start, Point end, Road *parent, roadType rType) : QGraphicsItem
 	bounds = boundsFromPointPair(start, end);
 	calcAngle();
 	isBranch = false;
+	isBridge = false;
 }
 
 Road::Road(const Road &road) : QLineF(road) {
@@ -47,6 +49,7 @@ Road::Road(const Road &road) : QLineF(road) {
 	this->parent = parent;
 	angle = road.getAngle();
 	isBranch = false;
+	isBridge = false;
 }
 
 QRectF Road::boundingRect() const {
@@ -55,6 +58,10 @@ QRectF Road::boundingRect() const {
 
 void Road::setIsBranch(bool isBranch) {
 	this->isBranch = isBranch;
+}
+
+void Road::setIsBridge(bool isBridge) {
+	this->isBridge = isBridge;
 }
 
 void Road::paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget) {

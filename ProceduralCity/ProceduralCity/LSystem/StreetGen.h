@@ -76,7 +76,7 @@ protected:
 	bool tryMakeLegal(RoadVariable *toCheck, Road *tempRoad);
 	//To ensure we haven't made a road on top of another
 	bool isUnique(RoadVariable *toCheck, Road *tempRoad);
-	void getIllegalSegment(Road segment, bool &legal);
+	void getIllegalSegment(Road segment, bool &legal, bool &isBridge);
 	//Returns true if this road is along the same angle as existing roads. 
 	bool overlapsConnected(RoadVariable *toCheck, Road *tempRoad);
 	//Tries to alter the road such that it connects to existing intersections.

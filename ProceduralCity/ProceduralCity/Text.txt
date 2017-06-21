@@ -1,7 +1,0 @@
-TODO :: 
-Major / Minor Roads
-Splining roads together
-
-Image sampling
-
-Structure to manage delay iteration more efficiently. Priority Queue?

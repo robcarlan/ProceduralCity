@@ -116,7 +116,7 @@ void LotVariable::createCommercial(std::list<BuildingVariable>& out) {
 	bool createTower = (rand() % 100 < createTowerProb * 100.0f);
 
 	float baseHeight = useBase ? getBetween(rand(), minBaseHeight, maxBaseheight) : 0.0f;
-	float towerHeight = getBetween(rand(), minTowerHeight, maxTowerHeight);
+	float towerHeight = getBetween(rand(), minCommercialHeight, maxCommercialHeight);
 
 	float towerWidth = bounds.width();
 	float towerBreadth = bounds.height();
@@ -210,9 +210,8 @@ LotVariable::LotVariable(BuildingLot * base) : GeometryVariable() {
 	height = 4.0f * base->getPopDensity() + 1.0f;
 	popDensity = base->getPopDensity();
 
-	if (base->getIsSkyscraper()) {
-		isSkyscraper = true;
-	}
+	isSkyscraper = base->getIsSkyscraper();
+
 
 	float width = 8.0f;
 	float depth = 6.0f;

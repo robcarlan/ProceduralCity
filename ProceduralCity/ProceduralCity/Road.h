@@ -40,7 +40,9 @@ public:
 	QRectF bounds;
 	roadType rType;
 	Road *parent;
+
 	bool isBranch;
+	bool isBridge;
 
 	std::string printRoad();
 
@@ -56,6 +58,7 @@ public:
 	bool operator== (const Road compare);
 	QRectF boundingRect() const;
 	void setIsBranch(bool isBranch);
+	void setIsBridge(bool isBridge);
 
 protected:
 
