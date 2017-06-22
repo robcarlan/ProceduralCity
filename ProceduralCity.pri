@@ -3,6 +3,12 @@
 # ------------------------------------------------------
 
 HEADERS += ./*.h
+HEADERS += ./BuildingVariable/*.h
+HEADERS += ./LSystem/*.h
+HEADERS += ./Shapes/*.h
 SOURCES += ./*.cpp
+SOURCES += ./BuildingVariable/*.cpp
+SOURCES += ./LSystem/*.cpp
+SOURCES += ./Shapes/*.cpp
 FORMS += ./streetgenerator.ui 
 RESOURCES += streetgenerator.qrc
