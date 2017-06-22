@@ -5,6 +5,7 @@
 GeneratedFiles/
 *.vcxproj
 *.vcxproj.filters
+*.db
 
 # User-specific files
 *.suo
