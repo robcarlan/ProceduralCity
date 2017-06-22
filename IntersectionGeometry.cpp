@@ -7,9 +7,12 @@ std::pair<roadPtr, float> IntersectionGeometry::getBest(float angle, bool search
 
 	float best = boost::math::float_constants::two_pi;
 	float bestAngle = 0.0f;
-	roadPtr bestRoad;
+	roadPtr bestRoad = nullptr;
 
 	while (angleItr != angles.end()) {
+		// BUG :: 
+		//	Sometimes we have distinct roads all with the same angle, so no road is chosen as the best. These raods should be checked to make sure the andles are correct
+
 		if ((abs(angle - *angleItr) == 0.00f)) {
 			angleItr++;
 			roadItr++;
@@ -31,9 +34,14 @@ std::pair<roadPtr, float> IntersectionGeometry::getBest(float angle, bool search
 			bestRoad = *roadItr;
 		}
 
+		assert(dif < boost::math::float_constants::two_pi);
+		assert(dif >= 0);
+
 		angleItr++;
 		roadItr++;
 	}
+
+	assert(bestRoad != nullptr);
 
 	return std::make_pair(bestRoad, bestAngle);
 }
@@ -58,7 +66,7 @@ bool IntersectionGeometry::connectRoad(roadPtr toAdd) {
 	float angleToAdd = connectedToStart ? toAdd->getAngleToEnd() : toAdd->getAngleToStart();
 
 	for (auto aItr = angles.begin(); aItr != angles.end(); aItr++) {
-		if (abs(*aItr - angleToAdd) < -0.01f) return false;
+		if (abs(*aItr - angleToAdd) < 0.01f) return false;
 	}
 
 	//Add road, then add angle

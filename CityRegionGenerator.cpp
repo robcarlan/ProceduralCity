@@ -1,9 +1,8 @@
 #include "CityRegionGenerator.h"
 
+//This function creates all of the city regions by walking through each road, and marking each side of each road as visited or not. The algorithm finishes once all sides of all roads are visited.
 std::vector<BuildingRegion> CityRegionGenerator::createRegions(std::list<roadPtr> const roads, std::list<intersectionPtr> const intersections) {
-	//do some crazy algrothim
 	//Loop left and right over every intersection. (Over every road. Follow a left / right path). Loop identified by (intersection, index). 
-	// -> we can store where there aren't loops -> we can check these later?
 	//Keep looping until max_edges, if we loop mark that as a loop and continue.
 	QElapsedTimer timer;
 	timer.start();
@@ -63,10 +62,8 @@ std::vector<BuildingRegion> CityRegionGenerator::createRegions(std::list<roadPtr
 
 							found = true;
 							break;
-						}
-						else {
-							//Keep searching, find the next road at the intersection
-							//Take the OPPOSITE ANGLE OMG
+						} else {
+							//Keep following, find the next road at the intersection
 							auto next = (clockwise ? nextIntersection->getClockwise(angleHeading, clockwise)
 								: nextIntersection->getAntiClockwise(angleHeading, clockwise));
 							traversing.push_back(currentRoad);
