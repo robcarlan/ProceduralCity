@@ -40,6 +40,8 @@ private:
 	std::list<Road*> roadList;
 	std::list<RoadIntersection*> intersectionsList;
 
+
+	//TODO :: StreetManager is coupled to the view of the city. This isn't great practise (methods which use view should be propogated outside StreetManager
 	CityView2D *view;
 	Point bounds;
 
