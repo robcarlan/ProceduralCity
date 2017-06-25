@@ -6,7 +6,7 @@
 #include <qdebug.h>
 
 #ifndef Q_MOC_RUN 
-#include <boost\foreach.hpp>
+#include <boost/foreach.hpp>
 #endif
 
 class SimpleStreetGeometryCreator {

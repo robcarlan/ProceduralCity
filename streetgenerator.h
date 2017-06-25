@@ -11,7 +11,7 @@
 #include <QFileDialog>
 #include <QFile>
 
-#include "LSystem\StreetGen.h"
+#include "LSystem/StreetGen.h"
 #include "City.h"
 #include "SimpleStreetGeometryCreator.h"
 #include "CityView2D.h"

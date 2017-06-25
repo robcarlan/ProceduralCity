@@ -7,11 +7,11 @@
 #include "CityView2D.h"
 
 #ifndef Q_MOC_RUN 
-#include <boost\geometry\index\rtree.hpp>
-#include <boost\geometry.hpp>
-#include <boost\foreach.hpp>
-#include <boost\function_output_iterator.hpp>
-#include <boost\geometry\geometries\point_xy.hpp>
+#include <boost/geometry/index/rtree.hpp>
+#include <boost/geometry.hpp>
+#include <boost/foreach.hpp>
+#include <boost/function_output_iterator.hpp>
+#include <boost/geometry/geometries/point_xy.hpp>
 #endif
 
 using namespace boost::geometry;

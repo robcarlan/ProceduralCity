@@ -1,7 +1,7 @@
 #pragma once
 
 #ifndef Q_MOC_RUN 
-#include <boost\foreach.hpp>
+#include <boost/foreach.hpp>
 #endif
 
 #include <vector>
@@ -52,8 +52,7 @@ class CityRegionGenerator {
 public:
 	//Builds regions
 	std::vector<BuildingRegion> createRegions(std::list<roadPtr> const roads, std::list<intersectionPtr> const intersections);
-	//Takes valid regions, builds into lots.
-	void subdivideRegions(std::vector<BuildingRegion>& const buildings);
+	void subdivideRegions(std::vector<BuildingRegion>& buildings);
 	void createLotsFromConvexPoly(BuildingRegion& owner, std::list<Point>& bounds, std::list<bool>& roadAccess, std::unique_ptr<std::vector<BuildingLot>>& out);
 
 	std::list<Point> subdivideBounds(std::list<Point> &bounds);
