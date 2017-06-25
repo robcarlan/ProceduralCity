@@ -1583,12 +1583,12 @@
   <customwidget>
    <class>GLImagePreview</class>
    <extends>QOpenGLWidget</extends>
-   <header>glimagepreview.h</header>
+   <header>GLImagePreview.h</header>
   </customwidget>
   <customwidget>
    <class>QStreetRenderWidget</class>
    <extends>QFrame</extends>
-   <header>qstreetrenderwidget.h</header>
+   <header>QStreetRenderWidget.h</header>
    <container>1</container>
    <slots>
     <slot>setDrawVertices(bool)</slot>

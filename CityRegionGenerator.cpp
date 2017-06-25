@@ -177,12 +177,13 @@ bool CityRegionGenerator::isValidRegion(bool side, bool forwards, roadPtr traver
 
 bool CityRegionGenerator::coversIllegalTerritory(std::list<Point>& bounds) {
 	//Simple test - see if centroid covers illegal
-	if (getHeightValue(getHeight(BuildingRegion::getCentroid(bounds))) < 0.0f) return true;
+	auto p_centroid = BuildingRegion::getCentroid(bounds);
+	if (getHeightValue(getHeight(p_centroid)) < 0.0f) return true;
 	return false;
 
 	//Else sample every point in the bounding rectangle - expensive
 
-	QRect & toCheck = smallestEnclosingRectangle(bounds);
+	QRect toCheck = smallestEnclosingRectangle(bounds);
 
 	for (int x = toCheck.left(); x < toCheck.right(); x++) {
 		for (int y = toCheck.top(); y < toCheck.bottom(); y++) {
@@ -338,7 +339,7 @@ float CityRegionGenerator::getRoadWidth(const roadType &road) {
 		return defaultRoadWidth;
 	}
 }
-void CityRegionGenerator::subdivideRegions(std::vector<BuildingRegion>& const buildings) {
+void CityRegionGenerator::subdivideRegions(std::vector<BuildingRegion>& buildings) {
 	srand(0);
 
 	BOOST_FOREACH(BuildingRegion &regionItr, buildings) {

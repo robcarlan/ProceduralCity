@@ -119,7 +119,7 @@ protected:
 
 	float getGradient(QImage *map);
 	//Used to find direction with largest pop density (summed)
-	float maxPopDensity(float startAngle, Point &start, Point &end, QPointF *peak);
+	float maxPopDensity(float startAngle, Point &start, Point &end, QPointF &peak);
 	//Used to get direction with smallest gradient. Returns minimum angle.
 	float getLowestGradient(float startAngle, Point start, float length);
 	

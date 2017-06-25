@@ -1,11 +1,11 @@
 #include "RoadGeometry.h"
 
 void RoadGeometry::calcAngles() {
-	angle = std::atan2f(end.x() - start.x(), end.y() - start.y());
+	angle = atan2f(end.x() - start.x(), end.y() - start.y());
 	angle += boost::math::float_constants::two_pi;
 	float pi = boost::math::float_constants::pi;
-	angle = std::fmodf(angle, boost::math::float_constants::two_pi);
-	angleAway = std::fmodf(angle + pi, boost::math::float_constants::two_pi);
+	angle = fmodf(angle, boost::math::float_constants::two_pi);
+	angleAway = fmodf(angle + pi, boost::math::float_constants::two_pi);
 }
 
 roadType RoadGeometry::getRoadType() {

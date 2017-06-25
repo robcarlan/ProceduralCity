@@ -158,8 +158,8 @@ StreetGen::VarList* StreetGen::applyGlobalConstraints(ruleAttr rules, roadAttr r
 	}
 
 	//Set branches to point at right angle
-	nroads[BRANCH1].angle += math::half_pi<float>();
-	nroads[BRANCH2].angle -= math::half_pi<float>();
+	nroads[BRANCH1].angle += std::static_cast<float>(math::half_pi());
+	nroads[BRANCH2].angle -= std::static_cast<float>(math::half_pi());
 
 	//Calculate new end positions
 	for (int i = 0; i < 3; i++) {
@@ -174,7 +174,7 @@ StreetGen::VarList* StreetGen::applyGlobalConstraints(ruleAttr rules, roadAttr r
 
 		//Create unit vector in direction
 		//if (nroads[i].angle < 0.0f) nroads[i].angle += math::two_pi<float>();
-		nroads[i].angle = math::mod<float>(nroads[i].angle, math::two_pi<float>());
+		nroads[i].angle = math::mod<float>(nroads[i].angle, std::static_cast<float>(math::two_pi);
 		Point unit = Point(cosf(nroads[i].angle), sinf(nroads[i].angle));
 		unit *= nroads[i].length;
 		nroads[i].end = nroads[i].start + unit;
@@ -827,21 +827,21 @@ void StreetGen::getPatternWeightings(int x, int y, float weights[]) {
 	return;
 }
 
-float StreetGen::maxPopDensity(float startAngle, Point &start, Point &end, QPointF *peak) {
+float StreetGen::maxPopDensity(float startAngle, Point &start, Point &end, QPointF &peak) {
 	//Sum weight of rays along center, return max sum
 	int maxXVal = end.x();
 	int maxYVal = end.y();
 	float maxSum = 0.0f;
 	
 	float curAngle = startAngle - maxAngleSearch;
-	curAngle = fmodf(curAngle, math::two_pi<float>());
+	curAngle = fmodf(curAngle, (float)math::two_pi);
 	float endAngle = startAngle + maxAngleSearch;
-	endAngle = fmodf(endAngle, math::two_pi<float>());
+	endAngle = fmodf(endAngle, (float)math::two_pi);
 	float sectorSearched = 0;
 	float roadLength = start.getDistance(end);
 	float length = popDensityRadiusSearch;
 
-	peak = &Point(maxXVal, maxYVal);
+	peak = Point(maxXVal, maxYVal);
 
 	Point curPoint = start;
 
@@ -885,7 +885,7 @@ float StreetGen::maxPopDensity(float startAngle, Point &start, Point &end, QPoin
 		//Update current max
 		//TODO :: Peak might be lower than length of road
 		if (cumulativeVal > maxSum) {
-			peak = &temp.p2();
+			peak = temp.p2();
 			temp.setLength(roadLength);
 			maxXVal = temp.x2();
 			maxYVal = temp.y2();
@@ -903,9 +903,9 @@ float StreetGen::maxPopDensity(float startAngle, Point &start, Point &end, QPoin
 
 float StreetGen::getLowestGradient(float startAngle, Point start, float length) {
 	float curAngle = startAngle - maxAngleSearch;
-	curAngle = fmodf(curAngle, math::two_pi<float>());
+	curAngle = fmodf(curAngle, static_cast<float>(math::two_pi()));
 	float endAngle = startAngle + maxAngleSearch;
-	endAngle = fmodf(endAngle, math::two_pi<float>());
+	endAngle = fmodf(endAngle, static_cast<float>(math::two_pi()));
 
 	float minAngle = startAngle;
 	float minDensity = 100000.0f;
@@ -956,7 +956,7 @@ Point StreetGen::naturalRule(roadAttr* road, ruleAttr* rules) {
 	Point end = road->end;
 	float angle = road->angle;
 	QPointF peak;
-	float score = maxPopDensity(angle, start, end, &peak);
+	float score = maxPopDensity(angle, start, end, peak);
 
 	if (rules->followPeakFor == 0) {
 		rules->peakTarget = peak;

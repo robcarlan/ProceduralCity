@@ -7,7 +7,7 @@ TARGET = ProceduralCity
 win32:DESTDIR = ../Build
 unix:DESTDIR = ../Build
 QT += core opengl widgets gui
-CONFIG += debug
+CONFIG += debug c++14
 
 if(win32) {
  DEFINES += WIN64
@@ -23,7 +23,7 @@ INCLUDEPATH += ./GeneratedFiles \
     ./GeneratedFiles/Debug
 # "Include boost libraries" 
 win32:INCLUDEPATH += F:\boost_1_59_0
-unix:INCLUDEPATH += /home/rob/boost_1_59_0
+unix:INCLUDEPATH += /usr/local/include/
 
 LIBS += -lopengl32 \
     -lglu32
