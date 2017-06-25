@@ -28,7 +28,7 @@ StreetGen::StreetGen(CityView2D *view, Point size) {
 
 	setDefaultValues();
 
-	streets = StreetManager::StreetManager(size, view);
+	streets = StreetManager(size, view);
 }
 
 StreetGen::StreetGen() {
@@ -158,8 +158,8 @@ StreetGen::VarList* StreetGen::applyGlobalConstraints(ruleAttr rules, roadAttr r
 	}
 
 	//Set branches to point at right angle
-	nroads[BRANCH1].angle += std::static_cast<float>(math::half_pi());
-	nroads[BRANCH2].angle -= std::static_cast<float>(math::half_pi());
+	nroads[BRANCH1].angle += math::pi<float>() / 2.0f;
+	nroads[BRANCH2].angle -= math::pi<float>() / 2.0f;
 
 	//Calculate new end positions
 	for (int i = 0; i < 3; i++) {
@@ -174,7 +174,7 @@ StreetGen::VarList* StreetGen::applyGlobalConstraints(ruleAttr rules, roadAttr r
 
 		//Create unit vector in direction
 		//if (nroads[i].angle < 0.0f) nroads[i].angle += math::two_pi<float>();
-		nroads[i].angle = math::mod<float>(nroads[i].angle, std::static_cast<float>(math::two_pi);
+		nroads[i].angle = fmodf(nroads[i].angle, math::pi<float>() * 2.0f);
 		Point unit = Point(cosf(nroads[i].angle), sinf(nroads[i].angle));
 		unit *= nroads[i].length;
 		nroads[i].end = nroads[i].start + unit;
@@ -834,9 +834,9 @@ float StreetGen::maxPopDensity(float startAngle, Point &start, Point &end, QPoin
 	float maxSum = 0.0f;
 	
 	float curAngle = startAngle - maxAngleSearch;
-	curAngle = fmodf(curAngle, (float)math::two_pi);
+	curAngle = fmodf(curAngle, math::pi<float>() * 2.0f);
 	float endAngle = startAngle + maxAngleSearch;
-	endAngle = fmodf(endAngle, (float)math::two_pi);
+	endAngle = fmodf(endAngle, math::pi<float>() * 2.0f);
 	float sectorSearched = 0;
 	float roadLength = start.getDistance(end);
 	float length = popDensityRadiusSearch;
@@ -903,9 +903,9 @@ float StreetGen::maxPopDensity(float startAngle, Point &start, Point &end, QPoin
 
 float StreetGen::getLowestGradient(float startAngle, Point start, float length) {
 	float curAngle = startAngle - maxAngleSearch;
-	curAngle = fmodf(curAngle, static_cast<float>(math::two_pi()));
+	curAngle = fmodf(curAngle, math::pi<float>() * 2.0f);
 	float endAngle = startAngle + maxAngleSearch;
-	endAngle = fmodf(endAngle, static_cast<float>(math::two_pi()));
+	endAngle = fmodf(endAngle, math::pi<float>() * 2.0f);
 
 	float minAngle = startAngle;
 	float minDensity = 100000.0f;
@@ -945,7 +945,7 @@ Point StreetGen::manhattanRule(const roadAttr* road) {
 }
 
 bool StreetGen::useBlockHeight(float blockAngle, float curAngle) {
-	float dif = fmodf(abs(curAngle - blockAngle), math::two_pi<float>());
+	float dif = fmodf(abs(curAngle - blockAngle), math::pi<float>() * 2.0f);
 	//Return true if angle is close to block angle
 	return (dif < math::pi<float>() / 2.0f);
 }
