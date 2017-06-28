@@ -158,8 +158,8 @@ StreetGen::VarList* StreetGen::applyGlobalConstraints(ruleAttr rules, roadAttr r
 	}
 
 	//Set branches to point at right angle
-	nroads[BRANCH1].angle += std::static_cast<float>(math::half_pi());
-	nroads[BRANCH2].angle -= std::static_cast<float>(math::half_pi());
+	nroads[BRANCH1].angle += math::half_pi<float>();
+	nroads[BRANCH2].angle -= math::half_pi<float>();
 
 	//Calculate new end positions
 	for (int i = 0; i < 3; i++) {
@@ -174,7 +174,7 @@ StreetGen::VarList* StreetGen::applyGlobalConstraints(ruleAttr rules, roadAttr r
 
 		//Create unit vector in direction
 		//if (nroads[i].angle < 0.0f) nroads[i].angle += math::two_pi<float>();
-		nroads[i].angle = math::mod<float>(nroads[i].angle, std::static_cast<float>(math::two_pi);
+		nroads[i].angle = math::mod<float>(nroads[i].angle, math::two_pi<float>());
 		Point unit = Point(cosf(nroads[i].angle), sinf(nroads[i].angle));
 		unit *= nroads[i].length;
 		nroads[i].end = nroads[i].start + unit;
@@ -287,29 +287,12 @@ void StreetGen::applyLocalConstraints(RoadVariable *toCheck) {
 	bool legalPlacement = tryMakeLegal(toCheck, &temp);
 	Point before = Point(toCheck->road.end);
 
-	if (toCheck->road.parentRoad != nullptr)
-		assert(toCheck->road.start.x() - toCheck->road.parentRoad->getEnd().x() < 0.01f
-			&& toCheck->road.start.y() - toCheck->road.parentRoad->getEnd().y() < 0.01f);
-
-	if (abs(toCheck->road.start.x() - 1482.0f) < 1.0f && abs(toCheck->road.start.y() - 422.0f) < 1.0f)
-		qDebug() << "A";
-	if (abs(toCheck->road.end.x() - 79.0f) < 1.0f && abs(toCheck->road.end.y() - 1030.0f) < 1.0f)
-		qDebug() << "A";
-	if (toCheck->road.end.x() == 598.0f && toCheck->road.end.y() == 950.0f)
-		qDebug() << "A";
-	if (toCheck->road.end.x() == 1290.0f && toCheck->road.end.y() == 615.0f)
-		qDebug() << "A";
-
 	bool legalIntersection = tryConnectToExisting(toCheck, &temp, connectedToIntersection, connectedToNewIntersection);
-
-	if (toCheck->road.end.x() == 2045.0f && toCheck->road.end.y() == 1074.0f)
-		qDebug() << "A";
-	if (toCheck->road.end.x() == 2041.0f && toCheck->road.end.y() == 1050.0f)
-		qDebug() << "A";
 
 	//Check close to intersection here?
 	//Ensure unique ness here please
 	bool isUniqueRoad = true;
+
 	//If we are connecting to an intersection that already exists
 	if (!connectedToNewIntersection && connectedToIntersection) isUniqueRoad = isUnique(toCheck, &temp);
 
@@ -317,7 +300,8 @@ void StreetGen::applyLocalConstraints(RoadVariable *toCheck) {
 	bool legalLength =  toCheck->road.length * toCheck->road.length > minLength;
 	legalLength = temp.length() * temp.length() > minLength;
 
-	if (legalPlacement && legalIntersection && legalAngle && legalLength && isUniqueRoad) toCheck->state = solutionState::SUCCEED;
+	if (legalPlacement && legalIntersection && legalAngle && legalLength && isUniqueRoad) 
+		toCheck->state = solutionState::SUCCEED;
 	else {
 		toCheck->state = solutionState::FAILED;
 		return;
@@ -333,6 +317,7 @@ void StreetGen::applyLocalConstraints(RoadVariable *toCheck) {
 
 	std::vector<RoadIntersection *> possibleExistingIntersections;
 	streets.getNearbyVertices(toCheck->road.end, 2.0f, possibleExistingIntersections);
+
 	if (possibleExistingIntersections.size() > 0) {
 		//assert(connectedToNewIntersection == false);
 		//Possibly merge these intersections?
@@ -834,9 +819,9 @@ float StreetGen::maxPopDensity(float startAngle, Point &start, Point &end, QPoin
 	float maxSum = 0.0f;
 	
 	float curAngle = startAngle - maxAngleSearch;
-	curAngle = fmodf(curAngle, (float)math::two_pi);
+	curAngle = fmodf(curAngle, math::two_pi<float>());
 	float endAngle = startAngle + maxAngleSearch;
-	endAngle = fmodf(endAngle, (float)math::two_pi);
+	endAngle = fmodf(endAngle, math::two_pi<float>());
 	float sectorSearched = 0;
 	float roadLength = start.getDistance(end);
 	float length = popDensityRadiusSearch;
@@ -903,9 +888,9 @@ float StreetGen::maxPopDensity(float startAngle, Point &start, Point &end, QPoin
 
 float StreetGen::getLowestGradient(float startAngle, Point start, float length) {
 	float curAngle = startAngle - maxAngleSearch;
-	curAngle = fmodf(curAngle, static_cast<float>(math::two_pi()));
+	curAngle = fmodf(curAngle, math::two_pi<float>());
 	float endAngle = startAngle + maxAngleSearch;
-	endAngle = fmodf(endAngle, static_cast<float>(math::two_pi()));
+	endAngle = fmodf(endAngle, math::two_pi<float>());
 
 	float minAngle = startAngle;
 	float minDensity = 100000.0f;

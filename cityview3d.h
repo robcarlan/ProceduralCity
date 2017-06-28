@@ -110,6 +110,13 @@ private:
 	GLuint m_colAttr;
 	GLuint m_matrixUniform;
 
+	std::string roadVertexShader;
+	std::string hMapVertexShaderSource;
+	std::string vertexShaderSource;
+	std::string texturedQuadVertShader;
+	std::string fragmentShaderSource;
+	std::string fragmentShaderSourceHMap;
+
 	QOpenGLShaderProgram *m_InstancedBuildingProg;
 	QOpenGLShaderProgram *m_hMapRenderProg;
 	QOpenGLShaderProgram *m_roadRenderProg;
@@ -222,7 +229,9 @@ private:
 	static const float defaultMoveSpeed, fastMoveSpeed, slowMoveSpeed;
 	static const float rotSpeed;
 
-	std::string readFile(char* fname);
+	std::string readFile(const char* fname);
+	std::string readShader(const char *fname);
+
 	QImage loadTexture(QString fname);
 	void bindTexture(QImage &tex, GLuint texID);
 
