@@ -89,6 +89,7 @@ private:
 	bool m_update_pending;
 	bool m_animating;
 	bool initialised;
+	bool shaders_set;
 
 	bool roadsNeedUpdateVertexData;
 	bool needUpdateRoads;
@@ -105,6 +106,7 @@ private:
 	QSurfaceFormat format;
 
 	GLuint loadShader(GLenum type, const char *source);
+	void loadAllShaders();
 
 	GLuint m_posAttr;
 	GLuint m_colAttr;
@@ -224,6 +226,7 @@ private:
 	static const int renderViewDownKey;
 	static const int renderNumUpKey;
 	static const int renderNumDownKey;
+	static const int reloadShaderKey;
 	bool isLeftHeld, isRightHeld, isBackHeld, isForwardHeld;
 
 	static const float defaultMoveSpeed, fastMoveSpeed, slowMoveSpeed;

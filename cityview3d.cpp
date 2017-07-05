@@ -14,6 +14,7 @@ const int CityView3D::renderNumUpKey = Qt::Key::Key_1;
 const int CityView3D::renderNumDownKey = Qt::Key::Key_2;
 const int CityView3D::renderViewUpKey = Qt::Key::Key_3;
 const int CityView3D::renderViewDownKey = Qt::Key::Key_4;
+const int CityView3D::reloadShaderKey = Qt::Key::Key_F1;
 
 const float CityView3D::defaultMoveSpeed = 0.1f;
 const float CityView3D::slowMoveSpeed = defaultMoveSpeed * 4.0f;
@@ -107,6 +108,7 @@ CityView3D::CityView3D(QWindow *parent) :
 	, m_device(0)
 	, initialised(false)
 	, hasCity(false)
+	, shaders_set(false)
 {
 	setSurfaceType(QWindow::OpenGLSurface);
 	this->setCursor(Qt::BlankCursor);
@@ -142,74 +144,13 @@ CityView3D::~CityView3D() {
 
 void CityView3D::initialize() {
 
-	// Read shader source
-	roadVertexShader = readShader("../roadVertexShader.glsl");
-	hMapVertexShaderSource = readShader("../hMapVertexShaderSource.glsl");
-	vertexShaderSource = readShader("../vertexShaderSource.glsl");
-	texturedQuadVertShader = readShader("../texturedQuadVertShader.glsl");
-	fragmentShaderSource = readShader("../fragmentShaderSource.glsl");
-	fragmentShaderSourceHMap = readShader("../fragmentShaderSourceHMap.glsl");
-
-	//Simple catch for if running program in the source directory - instead load file from current directory.
-	if (roadVertexShader == "") {
-		roadVertexShader = readShader("roadVertexShader.glsl");
-		hMapVertexShaderSource = readShader("hMapVertexShaderSource.glsl");
-		vertexShaderSource = readShader("vertexShaderSource.glsl");
-		texturedQuadVertShader = readShader("texturedQuadVertShader.glsl");
-		fragmentShaderSource = readShader("fragmentShaderSource.glsl");
-		fragmentShaderSourceHMap = readShader("fragmentShaderSourceHMap.glsl");
-	}
-
-	//Set instanced rendering program
+	//Create shaders, then load
+	m_TexturedQuadProg = new QOpenGLShaderProgram(this);
+	m_roadRenderProg = new QOpenGLShaderProgram(this);
 	m_InstancedBuildingProg = new QOpenGLShaderProgram(this);
-
-	m_InstancedBuildingProg->addShaderFromSourceCode(QOpenGLShader::Vertex, vertexShaderSource.c_str());
-	m_InstancedBuildingProg->addShaderFromSourceCode(QOpenGLShader::Fragment, fragmentShaderSource.c_str());
-	m_InstancedBuildingProg->link();
-
-	cubeInstanceCamID = funcs->glGetUniformLocation(m_InstancedBuildingProg->programId(), "Camera_worldspace");
-	cubeInstanceCamRightID = funcs->glGetUniformLocation(m_InstancedBuildingProg->programId(), "CameraRight_worldspace");
-	cubeInstanceViewProjMatID = funcs->glGetUniformLocation(m_InstancedBuildingProg->programId(), "VP");
-	cubeLightVecID = funcs->glGetUniformLocation(m_InstancedBuildingProg->programId(), "lightVec");
-
-	//Set hMap render program
 	m_hMapRenderProg = new QOpenGLShaderProgram(this);
 
-	m_hMapRenderProg->addShaderFromSourceCode(QOpenGLShader::Vertex, hMapVertexShaderSource.c_str());
-	m_hMapRenderProg->addShaderFromSourceCode(QOpenGLShader::Fragment, fragmentShaderSourceHMap.c_str());
-	m_hMapRenderProg->link();
-
-	hMapInstanceCamUpID = funcs->glGetUniformLocation(m_hMapRenderProg->programId(), "CameraUp_worldspace");
-	hMapInstanceCamRightID = funcs->glGetUniformLocation(m_hMapRenderProg->programId(), "CameraRight_worldspace");
-	hMapInstanceViewProjMatID = funcs->glGetUniformLocation(m_hMapRenderProg->programId(), "VP");
-	hMapInstanceDimID = funcs->glGetUniformLocation(m_hMapRenderProg->programId(), "quadScale");
-	hMapInstanceGridDimID = funcs->glGetUniformLocation(m_hMapRenderProg->programId(), "gridSize");
-	heightLightVecID = funcs->glGetUniformLocation(m_hMapRenderProg->programId(), "lightVec");
-
-	//Set road render program
-	m_roadRenderProg = new QOpenGLShaderProgram(this);
-
-	m_roadRenderProg->addShaderFromSourceCode(QOpenGLShader::Vertex, roadVertexShader.c_str());
-	m_roadRenderProg->addShaderFromSourceCode(QOpenGLShader::Fragment, fragmentShaderSource.c_str());
-	m_roadRenderProg->link();
-
-	roadsInstanceCamUpID = funcs->glGetUniformLocation(m_roadRenderProg->programId(), "CameraUp_worldspace");
-	roadsInstanceCamRightID = funcs->glGetUniformLocation(m_roadRenderProg->programId(), "CameraRight_worldspace");
-	roadsInstanceViewProjMatID = funcs->glGetUniformLocation(m_roadRenderProg->programId(), "VP");
-	roadLightVecID = funcs->glGetUniformLocation(m_roadRenderProg->programId(), "lightVec");
-	roadsCamPosID = funcs->glGetUniformLocation(m_roadRenderProg->programId(), "camPos");
-
-	//Set tex quad prog
-	m_TexturedQuadProg = new QOpenGLShaderProgram(this);
-
-	m_TexturedQuadProg->addShaderFromSourceCode(QOpenGLShader::Vertex, texturedQuadVertShader.c_str());
-	m_TexturedQuadProg->addShaderFromSourceCode(QOpenGLShader::Fragment, fragmentShaderSource.c_str());
-	m_TexturedQuadProg->link();
-
-	quadTexCamUpID = funcs->glGetUniformLocation(m_roadRenderProg->programId(), "CameraUp_worldspace");
-	quadTexCamRightID = funcs->glGetUniformLocation(m_roadRenderProg->programId(), "CameraRight_worldspace");
-	quadTexViewProjMatID = funcs->glGetUniformLocation(m_roadRenderProg->programId(), "VP");
-	quadTexQuadColourID = funcs->glGetUniformLocation(m_roadRenderProg->programId(), "quadColor");
+	loadAllShaders();
 
 	//Create data arrays
 	cube_positions = new GLfloat[4 * numCubeRenderMax];
@@ -278,6 +219,78 @@ void CityView3D::initialize() {
 
 	updateRoadInstances();
 	updateBuildingInstances();
+}
+
+void CityView3D::loadAllShaders() {
+	// Read shader source
+	roadVertexShader = readShader("../roadVertexShader.glsl");
+	hMapVertexShaderSource = readShader("../hMapVertexShaderSource.glsl");
+	vertexShaderSource = readShader("../vertexShaderSource.glsl");
+	texturedQuadVertShader = readShader("../texturedQuadVertShader.glsl");
+	fragmentShaderSource = readShader("../fragmentShaderSource.glsl");
+	fragmentShaderSourceHMap = readShader("../fragmentShaderSourceHMap.glsl");
+
+	//Simple catch for if running program in the source directory - instead load file from current directory.
+	if (roadVertexShader == "") {
+		roadVertexShader = readShader("roadVertexShader.glsl");
+		hMapVertexShaderSource = readShader("hMapVertexShaderSource.glsl");
+		vertexShaderSource = readShader("vertexShaderSource.glsl");
+		texturedQuadVertShader = readShader("texturedQuadVertShader.glsl");
+		fragmentShaderSource = readShader("fragmentShaderSource.glsl");
+		fragmentShaderSourceHMap = readShader("fragmentShaderSourceHMap.glsl");
+	}
+
+	if (shaders_set) {
+		m_InstancedBuildingProg->removeAllShaders();
+		m_hMapRenderProg->removeAllShaders();
+		m_roadRenderProg->removeAllShaders();
+		m_TexturedQuadProg->removeAllShaders();
+	}
+
+	//Set instanced rendering program
+	m_InstancedBuildingProg->addShaderFromSourceCode(QOpenGLShader::Vertex, vertexShaderSource.c_str());
+	m_InstancedBuildingProg->addShaderFromSourceCode(QOpenGLShader::Fragment, fragmentShaderSource.c_str());
+	m_InstancedBuildingProg->link();
+
+	cubeInstanceCamID = funcs->glGetUniformLocation(m_InstancedBuildingProg->programId(), "Camera_worldspace");
+	cubeInstanceCamRightID = funcs->glGetUniformLocation(m_InstancedBuildingProg->programId(), "CameraRight_worldspace");
+	cubeInstanceViewProjMatID = funcs->glGetUniformLocation(m_InstancedBuildingProg->programId(), "VP");
+	cubeLightVecID = funcs->glGetUniformLocation(m_InstancedBuildingProg->programId(), "lightVec");
+
+	//Set hMap render program
+	m_hMapRenderProg->addShaderFromSourceCode(QOpenGLShader::Vertex, hMapVertexShaderSource.c_str());
+	m_hMapRenderProg->addShaderFromSourceCode(QOpenGLShader::Fragment, fragmentShaderSourceHMap.c_str());
+	m_hMapRenderProg->link();
+
+	hMapInstanceCamUpID = funcs->glGetUniformLocation(m_hMapRenderProg->programId(), "CameraUp_worldspace");
+	hMapInstanceCamRightID = funcs->glGetUniformLocation(m_hMapRenderProg->programId(), "CameraRight_worldspace");
+	hMapInstanceViewProjMatID = funcs->glGetUniformLocation(m_hMapRenderProg->programId(), "VP");
+	hMapInstanceDimID = funcs->glGetUniformLocation(m_hMapRenderProg->programId(), "quadScale");
+	hMapInstanceGridDimID = funcs->glGetUniformLocation(m_hMapRenderProg->programId(), "gridSize");
+	heightLightVecID = funcs->glGetUniformLocation(m_hMapRenderProg->programId(), "lightVec");
+
+	//Set road render program
+	m_roadRenderProg->addShaderFromSourceCode(QOpenGLShader::Vertex, roadVertexShader.c_str());
+	m_roadRenderProg->addShaderFromSourceCode(QOpenGLShader::Fragment, fragmentShaderSource.c_str());
+	m_roadRenderProg->link();
+
+	roadsInstanceCamUpID = funcs->glGetUniformLocation(m_roadRenderProg->programId(), "CameraUp_worldspace");
+	roadsInstanceCamRightID = funcs->glGetUniformLocation(m_roadRenderProg->programId(), "CameraRight_worldspace");
+	roadsInstanceViewProjMatID = funcs->glGetUniformLocation(m_roadRenderProg->programId(), "VP");
+	roadLightVecID = funcs->glGetUniformLocation(m_roadRenderProg->programId(), "lightVec");
+	roadsCamPosID = funcs->glGetUniformLocation(m_roadRenderProg->programId(), "camPos");
+
+	//Set tex quad prog
+	m_TexturedQuadProg->addShaderFromSourceCode(QOpenGLShader::Vertex, texturedQuadVertShader.c_str());
+	m_TexturedQuadProg->addShaderFromSourceCode(QOpenGLShader::Fragment, fragmentShaderSource.c_str());
+	m_TexturedQuadProg->link();
+
+	quadTexCamUpID = funcs->glGetUniformLocation(m_roadRenderProg->programId(), "CameraUp_worldspace");
+	quadTexCamRightID = funcs->glGetUniformLocation(m_roadRenderProg->programId(), "CameraRight_worldspace");
+	quadTexViewProjMatID = funcs->glGetUniformLocation(m_roadRenderProg->programId(), "VP");
+	quadTexQuadColourID = funcs->glGetUniformLocation(m_roadRenderProg->programId(), "quadColor");
+
+	shaders_set = true;
 }
 
 void CityView3D::renderTerrain() {
@@ -945,6 +958,9 @@ void CityView3D::keyReleaseEvent(QKeyEvent * event) {
 		break;
 	case speedUpKey:
 		moveSpeed = defaultMoveSpeed;
+		break;
+	case reloadShaderKey:
+		loadAllShaders();
 		break;
 	default:
 		accepted = false;
