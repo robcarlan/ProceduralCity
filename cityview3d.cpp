@@ -28,75 +28,36 @@ static const GLfloat quadVertexBufferData[] = {
 	0.5f, 0.0f, -0.5f,
 };
 
+//Let +z be the front
 static const GLfloat cubeVertexBufferData[] = {
+	//Front face
 	0.5, 1, 0.5,	-0.5, 1, 0.5,	-0.5, 0, 0.5,	0.5, 0, 0.5,        // v0-v1-v2-v3
+	//Right face
 	0.5, 1, 0.5,	0.5, 0, 0.5,	0.5, 0, -0.5,	0.5, 1, -0.5,        // v0-v3-v4-v5
+	//Top
 	0.5, 1, 0.5,	0.5, 1, -0.5,	-0.5, 1, -0.5,	-0.5, 1, 0.5,        // v0-v5-v6-v1
+	//Left
 	-0.5, 1, 0.5,	-0.5, 1, -0.5,	-0.5, 0, -0.5,		-0.5, 0, 0.5,    // v1-v6-v7-v2
+	//Bottom
 	-0.5, 0, -0.5,	0.5, 0, -0.5,	0.5, 0, 0.5,	-0.5, 0, 0.5,    // v7-v4-v3-v2
-	0.5, 0, -0.5,	-0.5, 0, -0.5,	-0.5, 1, -0.5,	0.5, 1, -0.5};   // v4-v7-v6-v5
+	//Back
+	0.5, 0, -0.5,	-0.5, 0, -0.5,	-0.5, 1, -0.5,	0.5, 1, -0.5
+};   // v4-v7-v6-v5
 
-/*static const GLfloat cubeNormalsData[] = {
-	0.0f,0.0f,1.0f,  0.0f,0.0f,1.0f,   0.0f,0.0f,1.0f,
-	0.0f,0.0f,1.0f,	 0.0f,0.0f,-1.0f,  0.0f,0.0f,-1.0f,
-	0.0f,0.0f,-1.0f, 0.0f,0.0f,-1.0f, -1.0f,0.0f,0.0f,
-	-1.0f,0.0f,0.0f, -1.0f,0.0f,0.0f, -1.0f,0.0f,0.0f,
-	1.0f,0.0f,0.0f,  1.0f,0.0f,0.0f,   1.0f,0.0f,0.0f,
-	1.0f,0.0f,0.0f,	 0.0f,-1.0f,0.0f,  0.0f,-1.0f,0.0f,
-	0.0f,-1.0f,0.0f, 0.0f,-1.0f,0.0f,  0.0f,1.0f,0.0f,
-	0.0f,1.0f,0.0f,  0.0f,1.0f,0.0f,   0.0f,1.0f,0.0f,
-	1.0f,0.0f,0.0f,  1.0f,0.0f,0.0f,   1.0f,0.0f,0.0f,
-	1.0f,0.0f,0.0f,	 0.0f,-1.0f,0.0f,  0.0f,-1.0f,0.0f,
-	0.0f,-1.0f,0.0f, 0.0f,-1.0f,0.0f,  0.0f,1.0f,0.0f,
-	0.0f,1.0f,0.0f,  0.0f,1.0f,0.0f,   0.0f,1.0f,0.0f
-};*/
-
-//static const GLfloat cubeVertexBufferData[] = {
-//	-1.0f,0.0f,-1.0f, // triangle 1 : begin
-//	-1.0f,0.0f, 1.0f,
-//	-1.0f, 1.0f, 1.0f, // triangle 1 : end
-//	1.0f, 1.0f,-1.0f, // triangle 2 : begin
-//	-1.0f,0.0f,-1.0f,
-//	-1.0f, 1.0f,-1.0f, // triangle 2 : end
-//	1.0f,0.0f, 1.0f, //3
-//	-1.0f,0.0f,-1.0f,
-//	1.0f,0.0f,-1.0f, // 3
-//	1.0f, 1.0f,-1.0f, //4
-//	1.0f,0.0f,-1.0f,
-//	-1.0f,0.0f,-1.0f, //4 
-//	-1.0f,0.0f,-1.0f, //5
-//	-1.0f, 1.0f, 1.0f,
-//	-1.0f, 1.0f,-1.0f, //5
-//	1.0f,0.0f, 1.0f, //6 
-//	-1.0f,0.0f, 1.0f,
-//	-1.0f,0.0f,-1.0f, //6
-//	-1.0f, 1.0f, 1.0f, //7
-//	-1.0f,0.0f, 1.0f,
-//	1.0f,0.0f, 1.0f, //7
-//	1.0f, 1.0f, 1.0f, //8
-//	1.0f,0.0f,-1.0f,
-//	1.0f, 1.0f,-1.0f, //8
-//	1.0f,0.0f,-1.0f, //9
-//	1.0f, 1.0f, 1.0f,
-//	1.0f,0.0f, 1.0f, //9
-//	1.0f, 1.0f, 1.0f, //10
-//	1.0f, 1.0f,-1.0f, 
-//	-1.0f, 1.0f,-1.0f, //10 
-//	1.0f, 1.0f, 1.0f,  //11
-//	-1.0f, 1.0f,-1.0f,
-//	-1.0f, 1.0f, 1.0f, //11
-//	1.0f, 1.0f, 1.0f, //12
-//	-1.0f, 1.0f, 1.0f,
-//	1.0f,0.0f, 1.0f //12
-//};
 
 static const GLfloat cubeNormalsData[] =
 {
+	//Front
 	0, 0, 1,	 0, 0, 1,	0, 0, 1,	0, 0, 1,				// v0-v1-v2-v3 
+	//Right
 	1, 0, 0,	1, 0, 0,	1, 0, 0,	1, 0, 0,				// v0-v3-v4-v5
+	//Top
 	0, 1, 0,	0, 1, 0,	0, 1, 0,	0, 1, 0,				// v0-v5-v6-v1
+	//Left
 	-1, 0, 0,	-1, 0, 0,	-1, 0, 0,	-1, 0, 0,				// v1-v6-v7-v2
+	//Bottom
 	0, -1, 0,	0, -1, 0,	0, -1, 0,	0, -1, 0,				// v7-v4-v3-v2
+	//Back
 	0, 0, -1,	0, 0, -1,	0, 0, -1,	0, 0, -1			// v4-v7-v6-v5
 };
 
@@ -120,7 +81,6 @@ CityView3D::CityView3D(QWindow *parent) :
 	numRoadPieceRenderMax = 100000;
 	numTerrainQuadRenderMax = 512 * 512;
 }
-
 
 CityView3D::~CityView3D() {
 	delete m_device;
@@ -174,7 +134,7 @@ void CityView3D::initialize() {
 	//Cube normals
 	glGenBuffers(1, &cubeNormBuffer);
 	glBindBuffer(GL_ARRAY_BUFFER, cubeNormBuffer);
-	glBufferData(GL_ARRAY_BUFFER, sizeof(cubeVertexBufferData), cubeVertexBufferData, GL_STREAM_DRAW);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(cubeNormalsData), cubeNormalsData, GL_STREAM_DRAW);
 
 	//Cube positions
 	glGenBuffers(1, &cubePosBuffer);
@@ -638,7 +598,7 @@ void CityView3D::updateCamera() {
 }
 
 void CityView3D::updateBuildingInstances() {
-	//
+
 	numCubeRender = 0;
 	int numRegionRender = 0;
 
