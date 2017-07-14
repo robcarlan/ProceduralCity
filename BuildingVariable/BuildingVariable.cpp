@@ -1,4 +1,5 @@
 #include "BuildingVariable.h"
+#include "BuildingLot.h"
 
 void BuildingVariable::getGeometry(std::vector<Cube>& out) {
 	variable->getGeometry(out);

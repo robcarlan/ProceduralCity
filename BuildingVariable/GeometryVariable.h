@@ -1,10 +1,13 @@
 #pragma once
-#include "Enums.h"
-#include "Shapes/Cube.h"
+#include "Point.h"
 
-#include <QRect>
+#include <vector>
+#include <list>
 
+class Cube;
 class BuildingVariable;
+
+enum buildingStyle;
 
 class GeometryVariable {
 protected:

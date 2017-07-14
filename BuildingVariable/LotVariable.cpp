@@ -1,9 +1,13 @@
 #include "LotVariable.h"
+#include "BuildingLot.h"
 #include "BuildingVariable.h"
 #include "HouseVariable.h"
 #include "UrbanHouse.h"
 #include "CubeVariable.h"
 #include "IndustrialVariable.h"
+
+#include "Parameters.h"
+#include "Enums.cpp"
 
 LotVariable::LotVariable() {
 }

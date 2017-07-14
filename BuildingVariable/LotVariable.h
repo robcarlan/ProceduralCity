@@ -1,8 +1,8 @@
 #pragma once
 
+#include "Shapes\Cube.h"
 #include "GeometryVariable.h"
-#include "BuildingLot.h"
-#include "Enums.h"
+#include "Enums.cpp"
 
 #include <QRect>
 #include <QLineF>

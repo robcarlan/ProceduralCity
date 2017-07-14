@@ -2,9 +2,10 @@
 #include "CubeVariable.h"
 #include "BuildingVariable.h"
 
+#include "Parameters.h"
+
 HouseVariable::HouseVariable() {
 }
-
 
 HouseVariable::HouseVariable(float heightStart, float heightEnd, Point origin, float width, float depth, float rot) {
 	LOD = 1;

@@ -25,7 +25,7 @@ std::pair<roadPtr, float> IntersectionGeometry::getBest(float angle, bool search
 		//else if (!scanRight && !isAngleAbove) searchClockwise = true;
 		float dif = getAngleBetween(angle, *angleItr, searchClockwise);
 		//float value = scanLeft ? *angleItr - angle : angle - *angleItr;
-		//float dif = fmodf(value, boost::math::float_constants::two_pi);
+		//float dif = fmodf(value, boost::math::float_Parameters.:two_pi);
 		//Wrap to +ve value
 		if (dif < 0.0f) dif += boost::math::float_constants::two_pi;
 		if (dif < best) {
@@ -128,8 +128,8 @@ bool IntersectionGeometry::getNextSide(float startAngle, float endAngle, bool is
 
 	return !isClockwise;
 
-	//assert(startAngle >= 0 && startAngle < boost::math::float_constants::two_pi);
-	//assert(endAngle >= 0 && endAngle < boost::math::float_constants::two_pi);
+	//assert(startAngle >= 0 && startAngle < boost::math::float_Parameters.:two_pi);
+	//assert(endAngle >= 0 && endAngle < boost::math::float_Parameters.:two_pi);
 	//bool inBottomHalfStart = isBelow(startAngle);
 	//bool inBottomHalfEnd = isBelow(endAngle);
 

@@ -1,4 +1,7 @@
 #include "GeometryVariable.h"
+#include "Shapes\Cube.h"
+
+#include <qvector3d.h>
 
 GeometryVariable::GeometryVariable() {
 	cubes = std::vector<Cube>();

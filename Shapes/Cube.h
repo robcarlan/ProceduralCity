@@ -1,7 +1,5 @@
 #pragma once
 #include <QVector3D>
-#include "Point.h"
-#include "Enums.h"
 
 class Cube {
 

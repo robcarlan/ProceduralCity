@@ -1,7 +1,7 @@
 #pragma once
 #include "BuildingVariable/GeometryVariable.h"
 #include "Point.h"
-#include "Enums.h"
+#include "Enums.cpp"
 
 #include <list>
 

@@ -1,5 +1,6 @@
 #pragma once
 
+#include "Enums.cpp"
 #include "Point.h"
 #include "RoadIntersection.h"
 
@@ -8,7 +9,6 @@
 #include <qline.h>
 #include <qgraphicsitem.h>
 
-#include "Enums.h"
 
 //typedef boost::geometry::model::d2::point_xy<float> Point;
 class RoadIntersection;

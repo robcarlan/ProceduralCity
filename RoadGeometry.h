@@ -7,7 +7,7 @@
 #include "IntersectionGeometry.h"
 #include "Road.h"
 #include "Point.h"
-#include "Enums.h"
+#include "Enums.cpp"
 
 class IntersectionGeometry;
 typedef std::shared_ptr<IntersectionGeometry> intersectionPtr;

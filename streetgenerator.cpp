@@ -1,6 +1,6 @@
 #pragma once
 #include "streetgenerator.h"
-#include "Enums.h"
+#include "Enums.cpp"
 
 const int StreetGenerator::DEFAULT_SIZE_X = 2048;
 const int StreetGenerator::DEFAULT_SIZE_Y = 2048;

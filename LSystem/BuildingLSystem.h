@@ -4,7 +4,7 @@
 #include <QRect>
 
 #include "BuildingVariable/BuildingVariable.h"
-#include "Enums.h"
+#include "Enums.cpp"
 
 class BuildingLot;
 

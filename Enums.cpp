@@ -1,36 +1,101 @@
-#include "Enums.h"
+#pragma once
+#include <QColor>
+#include <QImage>
+#include <QRect>
+#include "Point.h"
 
-// TODO :: These could be placed into a config file, i.e. a Boost property tree
+static QColor SKYSCRAPER_COL = QColor(90, 194, 255);
+static QColor RESIDENTIAL_COL = QColor(255, 73, 63);
+static QColor INDUSTRIAL_COL = QColor(45, 94, 39);
+static QColor COMMERCIAL_COL = QColor(45, 94, 255);
+static QColor NONE_COL = QColor(255, 255, 255);
 
-//BuildingVariables
-float minBaseHeight = 5.0f;
-float maxBaseheight = 10.0f;
-float minRoofHeight = 2.0f;
-float maxRoofHeight = 5.0f;
-float minRoofSizeFactor = 0.5f;
-float minTowerHeight = 10.0f;
-float maxTowerHeight = 25.0f;
-float minCommercialHeight = 10.0f;
-float maxCommercialHeight = 20.0f;
-float skyscraperHeightAddition = 20.0f;
+static QRgb parkCol = qRgb(100, 170, 100);
+static QRgb landCol = qRgb(200, 200, 200);
+static QRgb waterCol = qRgb(140, 140, 220);
 
-float minExtrusionDepth = 4.0f;
+static float defaultRoadWidth = 5.0f;
 
-float doubleTowerPossibility = 0.10f;
-float createBaseProb = 0.8f;
-float createRoofProb = 0.5f;
-float createTowerProb = 0.5f;
-float minTowerSizeReduceFactor = 1.0f; //Min amount to reduce size by
+static float getBetween(int random, float min, float max) {
+	return min + (max - min) * (static_cast<float>(random) / static_cast<float>(RAND_MAX));
+}
 
-									   //House variables
-float suburbanHouseHeight = 7.0f;
-float minHousePieceSize = 5.0f;
-float urbanHouseHeightMin = 10.0f;
-float urbanHouseHeightMax = 30.0f;
-float urbanHouseMinPopDensity = 0.3f;
+enum class LOD {
+	LOD_MIN,
+	LOD_MEDIUM,
+	LOD_DETAILED,
+	LOD_MAX
+};
 
-//Industrial Variables
-float industrialMinHeight = 10.0f;
-float industrialMaxHeight = 40.0f;
-float chimneyMinHeight = 1.0f;
-float chimneyMaxHeight = 4.0f;
+enum class geogType {
+	LAND,
+	WATER,
+	PARK
+};
+
+enum class roadType {
+	STREET,
+	MAINROAD
+};
+
+enum class roadPattern {
+	NOPATTERN,
+	MANHATTAN,
+	RADIAL,
+	SANFRAN
+};
+
+enum buildingStyle {
+	RESIDENTIAL,
+	COMMERCIAL,
+	INDUSTRIAL,
+	NONE
+};
+
+static QColor getLotColour(buildingStyle style) {
+	switch (style) {
+	case COMMERCIAL:
+		return COMMERCIAL_COL;
+	case INDUSTRIAL:
+		return INDUSTRIAL_COL;
+	case RESIDENTIAL:
+		return RESIDENTIAL_COL;
+	case NONE:
+		return NONE_COL;
+	default:
+		return NONE_COL;
+	}
+}
+
+static QRect smallestEnclosingRectangle(const std::list<Point> &bounds) {
+	float minX, minY, maxX, maxY;
+	minX = minY = 1000000;
+	maxX = maxY = 0;
+	auto pItr = bounds.begin();
+
+	while (pItr != bounds.end()) {
+		if (pItr->x() < minX) minX = pItr->x();
+		if (pItr->y() < minY) minY = pItr->y();
+		if (pItr->x() > maxX) maxX = pItr->x();
+		if (pItr->y() > maxY) maxY = pItr->y();
+
+		pItr++;
+	}
+
+	return QRect(minX, minY, maxX - minX, maxY - minY);
+}
+
+static geogType sampleGeog(int x, int y, QImage &geog) {
+	QRgb val = geog.pixel(x, y);
+	if (val == landCol) return geogType::LAND;
+	else if (val == waterCol) return geogType::WATER;
+	else if (val == parkCol) return geogType::PARK;
+	else return geogType::LAND;
+}
+
+static float samplePop(int x, int y, QImage &pop) {
+	QRgb lol = pop.pixel(x, y);
+	return 1.0f - (lol % 256) / 256.0f;
+	QColor val = QColor(pop.pixel(x, y));
+	return (val.red() % 256) / 256.0f;
+}
