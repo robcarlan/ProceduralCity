@@ -4,8 +4,8 @@
 
 TEMPLATE = app
 TARGET = ProceduralCity
-win32:DESTDIR = ../Build
-unix:DESTDIR = ../Build
+win32:DESTDIR = bin
+unix:DESTDIR = bin
 QT += core opengl widgets gui
 CONFIG += debug c++14
 

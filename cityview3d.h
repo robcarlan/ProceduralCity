@@ -89,6 +89,7 @@ private:
 	bool m_update_pending;
 	bool m_animating;
 	bool initialised;
+	bool shaders_set;
 
 	bool roadsNeedUpdateVertexData;
 	bool needUpdateRoads;
@@ -105,10 +106,18 @@ private:
 	QSurfaceFormat format;
 
 	GLuint loadShader(GLenum type, const char *source);
+	void loadAllShaders();
 
 	GLuint m_posAttr;
 	GLuint m_colAttr;
 	GLuint m_matrixUniform;
+
+	std::string roadVertexShader;
+	std::string hMapVertexShaderSource;
+	std::string vertexShaderSource;
+	std::string texturedQuadVertShader;
+	std::string fragmentShaderSource;
+	std::string fragmentShaderSourceHMap;
 
 	QOpenGLShaderProgram *m_InstancedBuildingProg;
 	QOpenGLShaderProgram *m_hMapRenderProg;
@@ -217,12 +226,15 @@ private:
 	static const int renderViewDownKey;
 	static const int renderNumUpKey;
 	static const int renderNumDownKey;
+	static const int reloadShaderKey;
 	bool isLeftHeld, isRightHeld, isBackHeld, isForwardHeld;
 
 	static const float defaultMoveSpeed, fastMoveSpeed, slowMoveSpeed;
 	static const float rotSpeed;
 
-	std::string readFile(char* fname);
+	std::string readFile(const char* fname);
+	std::string readShader(const char *fname);
+
 	QImage loadTexture(QString fname);
 	void bindTexture(QImage &tex, GLuint texID);
 

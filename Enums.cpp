@@ -1,5 +1,7 @@
 #include "Enums.h"
 
+// TODO :: These could be placed into a config file, i.e. a Boost property tree
+
 //BuildingVariables
 float minBaseHeight = 5.0f;
 float maxBaseheight = 10.0f;

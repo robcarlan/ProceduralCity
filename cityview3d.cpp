@@ -1,5 +1,7 @@
 #include "cityview3d.h"
 
+#include <cstring>
+
 const int CityView3D::moveLeftKey = Qt::Key::Key_A;
 const int CityView3D::moveRightKey = Qt::Key::Key_D;
 const int CityView3D::moveForwardKey = Qt::Key::Key_W;
@@ -12,6 +14,7 @@ const int CityView3D::renderNumUpKey = Qt::Key::Key_1;
 const int CityView3D::renderNumDownKey = Qt::Key::Key_2;
 const int CityView3D::renderViewUpKey = Qt::Key::Key_3;
 const int CityView3D::renderViewDownKey = Qt::Key::Key_4;
+const int CityView3D::reloadShaderKey = Qt::Key::Key_F1;
 
 const float CityView3D::defaultMoveSpeed = 0.1f;
 const float CityView3D::slowMoveSpeed = defaultMoveSpeed * 4.0f;
@@ -25,202 +28,38 @@ static const GLfloat quadVertexBufferData[] = {
 	0.5f, 0.0f, -0.5f,
 };
 
+//Let +z be the front
 static const GLfloat cubeVertexBufferData[] = {
+	//Front face
 	0.5, 1, 0.5,	-0.5, 1, 0.5,	-0.5, 0, 0.5,	0.5, 0, 0.5,        // v0-v1-v2-v3
+	//Right face
 	0.5, 1, 0.5,	0.5, 0, 0.5,	0.5, 0, -0.5,	0.5, 1, -0.5,        // v0-v3-v4-v5
+	//Top
 	0.5, 1, 0.5,	0.5, 1, -0.5,	-0.5, 1, -0.5,	-0.5, 1, 0.5,        // v0-v5-v6-v1
+	//Left
 	-0.5, 1, 0.5,	-0.5, 1, -0.5,	-0.5, 0, -0.5,		-0.5, 0, 0.5,    // v1-v6-v7-v2
+	//Bottom
 	-0.5, 0, -0.5,	0.5, 0, -0.5,	0.5, 0, 0.5,	-0.5, 0, 0.5,    // v7-v4-v3-v2
-	0.5, 0, -0.5,	-0.5, 0, -0.5,	-0.5, 1, -0.5,	0.5, 1, -0.5};   // v4-v7-v6-v5
+	//Back
+	0.5, 0, -0.5,	-0.5, 0, -0.5,	-0.5, 1, -0.5,	0.5, 1, -0.5
+};   // v4-v7-v6-v5
 
-/*static const GLfloat cubeNormalsData[] = {
-	0.0f,0.0f,1.0f,  0.0f,0.0f,1.0f,   0.0f,0.0f,1.0f,
-	0.0f,0.0f,1.0f,	 0.0f,0.0f,-1.0f,  0.0f,0.0f,-1.0f,
-	0.0f,0.0f,-1.0f, 0.0f,0.0f,-1.0f, -1.0f,0.0f,0.0f,
-	-1.0f,0.0f,0.0f, -1.0f,0.0f,0.0f, -1.0f,0.0f,0.0f,
-	1.0f,0.0f,0.0f,  1.0f,0.0f,0.0f,   1.0f,0.0f,0.0f,
-	1.0f,0.0f,0.0f,	 0.0f,-1.0f,0.0f,  0.0f,-1.0f,0.0f,
-	0.0f,-1.0f,0.0f, 0.0f,-1.0f,0.0f,  0.0f,1.0f,0.0f,
-	0.0f,1.0f,0.0f,  0.0f,1.0f,0.0f,   0.0f,1.0f,0.0f,
-	1.0f,0.0f,0.0f,  1.0f,0.0f,0.0f,   1.0f,0.0f,0.0f,
-	1.0f,0.0f,0.0f,	 0.0f,-1.0f,0.0f,  0.0f,-1.0f,0.0f,
-	0.0f,-1.0f,0.0f, 0.0f,-1.0f,0.0f,  0.0f,1.0f,0.0f,
-	0.0f,1.0f,0.0f,  0.0f,1.0f,0.0f,   0.0f,1.0f,0.0f
-};*/
-
-//static const GLfloat cubeVertexBufferData[] = {
-//	-1.0f,0.0f,-1.0f, // triangle 1 : begin
-//	-1.0f,0.0f, 1.0f,
-//	-1.0f, 1.0f, 1.0f, // triangle 1 : end
-//	1.0f, 1.0f,-1.0f, // triangle 2 : begin
-//	-1.0f,0.0f,-1.0f,
-//	-1.0f, 1.0f,-1.0f, // triangle 2 : end
-//	1.0f,0.0f, 1.0f, //3
-//	-1.0f,0.0f,-1.0f,
-//	1.0f,0.0f,-1.0f, // 3
-//	1.0f, 1.0f,-1.0f, //4
-//	1.0f,0.0f,-1.0f,
-//	-1.0f,0.0f,-1.0f, //4 
-//	-1.0f,0.0f,-1.0f, //5
-//	-1.0f, 1.0f, 1.0f,
-//	-1.0f, 1.0f,-1.0f, //5
-//	1.0f,0.0f, 1.0f, //6 
-//	-1.0f,0.0f, 1.0f,
-//	-1.0f,0.0f,-1.0f, //6
-//	-1.0f, 1.0f, 1.0f, //7
-//	-1.0f,0.0f, 1.0f,
-//	1.0f,0.0f, 1.0f, //7
-//	1.0f, 1.0f, 1.0f, //8
-//	1.0f,0.0f,-1.0f,
-//	1.0f, 1.0f,-1.0f, //8
-//	1.0f,0.0f,-1.0f, //9
-//	1.0f, 1.0f, 1.0f,
-//	1.0f,0.0f, 1.0f, //9
-//	1.0f, 1.0f, 1.0f, //10
-//	1.0f, 1.0f,-1.0f, 
-//	-1.0f, 1.0f,-1.0f, //10 
-//	1.0f, 1.0f, 1.0f,  //11
-//	-1.0f, 1.0f,-1.0f,
-//	-1.0f, 1.0f, 1.0f, //11
-//	1.0f, 1.0f, 1.0f, //12
-//	-1.0f, 1.0f, 1.0f,
-//	1.0f,0.0f, 1.0f //12
-//};
 
 static const GLfloat cubeNormalsData[] =
 {
+	//Front
 	0, 0, 1,	 0, 0, 1,	0, 0, 1,	0, 0, 1,				// v0-v1-v2-v3 
+	//Right
 	1, 0, 0,	1, 0, 0,	1, 0, 0,	1, 0, 0,				// v0-v3-v4-v5
+	//Top
 	0, 1, 0,	0, 1, 0,	0, 1, 0,	0, 1, 0,				// v0-v5-v6-v1
+	//Left
 	-1, 0, 0,	-1, 0, 0,	-1, 0, 0,	-1, 0, 0,				// v1-v6-v7-v2
+	//Bottom
 	0, -1, 0,	0, -1, 0,	0, -1, 0,	0, -1, 0,				// v7-v4-v3-v2
+	//Back
 	0, 0, -1,	0, 0, -1,	0, 0, -1,	0, 0, -1			// v4-v7-v6-v5
 };
-
-static const char *roadVertexShader =
-"#version 330\n"
-"#define M_PI 3.1415926535897932384626433832795\n"
-"layout(location = 0) in vec3 verts;\n"
-"layout(location = 1) in vec4 pos;\n"  //x pos, y pos, z pos start, z pos end
-"layout(location = 2) in vec3 scale;\n" //x scale, y scale, rot
-"flat out vec4 normalOut;\n"
-"flat out vec4 color;\n"
-"uniform vec3 lightVec;\n"
-"uniform vec3 CameraRight_worldspace;\n"
-"uniform vec3 CameraUp_worldspace;\n"
-"uniform vec3 camPos;\n"
-"uniform mat4 VP;\n"
-"void main() {\n"
-"   vec3 tmp = pos.xyz / 2048.0f;\n"
-"	float theta = scale.z - M_PI / 2.0f;"
-"	vec2 scaled = verts.xz * scale.xy;\n"
-"	vec2 rotated = vec2(scaled.x * cos(theta) + scaled.y * sin(theta), scaled.y * cos(theta) - scaled.x * sin(theta));\n"
-"	vec2 wsp2d = pos.xy + rotated;\n"
-"	vec3 wsp = vec3(wsp2d.x, 0.2f, wsp2d.y);\n"
-"	if (camPos.y > 50.0) wsp.y += camPos.y * 0.04;"
-"	wsp.y = verts.x < 0.0 ? pos.z : pos. w;\n"
-"	gl_Position = VP * vec4(wsp, 1.0f);\n"
-"	vec3 lightVector = normalize(lightVec - wsp.xyz);\n"
-"	float diffuse = 0.5f;\n"
-"   normalOut = vec4(1.0, 0.0, 0.0, 1.0);\n"
-"	color = vec4(0.3, 0.3, 0.3, 1.0);"
-"}\n";
-
-static const char *hMapVertexShaderSource =
-"#version 330\n"
-"layout(location = 0) in vec3 verts;\n"
-"layout(location = 1) in vec4 pos;\n"  //z value of this vertex
-"layout(location = 2) in vec3 norm;\n" //x scale, y scale, rot
-"flat out vec4 normalOut;\n"
-"flat out vec4 color;\n"
-"uniform vec3 lightVec;\n"
-"uniform int gridSize;\n"
-"uniform float quadScale;\n"
-"uniform vec3 CameraRight_worldspace;\n"
-"uniform vec3 CameraUp_worldspace;\n"
-"uniform mat4 VP;\n"
-"void main() {\n"
-"	vec2 translated = verts.xz + vec2(0.5, 0.5);\n" //Warp to origin, forms a quad of unit length
-"	translated *= quadScale;\n"
-// x = / gridDimension, y = % gridDimension
-"	vec2 wsp2d = translated;\n"
-"	wsp2d.x += quadScale * (gl_InstanceID / gridSize);\n"
-"	wsp2d.y += quadScale * mod(gridSize - gl_InstanceID, gridSize);\n"
-"	vec3 wsp = vec3(wsp2d.x, - 0.1f, wsp2d.y);\n"
-"	if (verts.x == -0.5f && verts.z == -0.5f) wsp.y = pos.z;" //bl
-"	else if (verts.x == 0.5f && verts.z == -0.5f) wsp.y = pos.w;" //br
-"	else if (verts.x == -0.5f && verts.z == 0.5f) wsp.y = pos.x;" //tl
-"	else if (verts.x == 0.5f && verts.z == 0.5f) wsp.y = pos.y;" //tr
-"	gl_Position = VP * vec4(wsp, 1.0f);\n"
-"	vec3 lightVector = normalize(lightVec - wsp.xyz);\n"
-"	float diffuse = min(0.8, max(dot(norm, lightVector), 0.2));\n"
-"   normalOut = vec4(norm, 1.0);\n"
-"	color = vec4(0.4f, 1.0f, 0.4f, 1.0f);"
-"   if (pos.y < 0) color = vec4(0.2f, 0.20f, 1.0f, 1.0f);"
-"}\n";
-
-static const char *vertexShaderSource =
-"#version 330\n"
-"#define M_PI 3.1415926535897932384626433832795\n"
-"layout(location = 0) in vec3 verts;\n"
-"layout(location = 1) in vec3 norm;\n"
-"layout(location = 2) in vec4 pos;\n"
-"layout(location = 3) in vec3 scale;\n"
-"out vec4 normalOut;\n"
-"out vec4 color;\n"
-"uniform vec3 lightVec;\n"
-"uniform vec3 CameraRight_worldspace;\n"
-"uniform vec3 Camera_worldspace;\n"
-"uniform mat4 VP;\n"
-"void main() {\n"
-"   vec3 scaled = verts * scale;\n"
-"	float theta = (pos.w + M_PI / 2.0f);\n"
-"	vec3 rotatedVerts = vec3(scaled.x * cos(theta) + scaled.z * sin(theta), scaled.y, scaled.z * cos(theta) - scaled.x * sin(theta)); \n"
-"	vec3 rotatedNorm = vec3(norm.x * cos(theta) + norm.z * sin(theta), norm.y, norm.z * cos(theta) - norm.x * sin(theta)); \n"
-"	vec3 wsp = pos.xyz + rotatedVerts;\n"
-"	gl_Position = VP * vec4(wsp, 1.0f);\n"
-"	vec3 lightVector = normalize(vec3(0.577f, 0.577f, 0.577f) - wsp.xyz);\n"
-"	vec3 lookVec = normalize(Camera_worldspace - wsp.xyz);\n"
-"	float diffuse = max(0.0f, abs(dot(rotatedNorm, lightVector)));\n"
-"   normalOut = vec4(diffuse, diffuse, diffuse, 1.0);\n"
-"	color = vec4(0.4, 0.4, 0.4, 1.0);"
-"}\n";
-
-static const char *texturedQuadVertShader =
-"#version 330\n"
-"layout(location = 0) in vec3 verts;\n"
-"layout(location = 1) in vec3 norm;\n"
-"layout(location = 2) in vec4 pos;\n"
-"layout(location = 3) in vec3 scale;\n"
-"out vec4 normalOut;\n"
-"out vec4 color;\n"
-"uniform vec3 lightVec;\n"
-"uniform vec3 CameraRight_worldspace;\n"
-"uniform vec3 CameraUp_worldspace;\n"
-"uniform vec3 quadColour;\n"
-"uniform mat4 VP;\n"
-"void main() {\n"
-"	vec3 wsp = pos.xyz + (verts * scale);\n"
-"	gl_Position = VP * vec4(wsp, 1.0f);\n"
-"	vec3 lightVector = normalize(lightVec - wsp.xyz);\n"
-"	float diffuse = max(dot(norm, lightVector), 0.2);\n"
-"   normalOut = vec4(diffuse, diffuse, diffuse, 1.0);\n"
-"	color = vec4(0.5, 0.5, 0.8, 0.7);"
-"}\n";
-
-static const char *fragmentShaderSource =
-"flat in lowp vec4 normalOut;\n"
-"flat in lowp vec4 color;\n"
-"void main() {\n"
-"   gl_FragColor = vec4(0.1, 0.1, 0.1, 1.0) + abs(dot(normalOut, vec4(1))) * color;\n"
-"}\n";
-
-static const char *fragmentShaderSourceHMap =
-"flat in lowp vec4 normalOut;\n"
-"flat in lowp vec4 color;\n"
-"void main() {\n"
-"   gl_FragColor = vec4(0.2, 0.2, 0.2, 1.0) + abs(dot(normalOut, vec4(0, 1, 0, 1.0))) * color * 0.2;\n"
-"}\n";
 
 CityView3D::CityView3D(QWindow *parent) :
     QWindow(parent)
@@ -230,6 +69,7 @@ CityView3D::CityView3D(QWindow *parent) :
 	, m_device(0)
 	, initialised(false)
 	, hasCity(false)
+	, shaders_set(false)
 {
 	setSurfaceType(QWindow::OpenGLSurface);
 	this->setCursor(Qt::BlankCursor);
@@ -241,7 +81,6 @@ CityView3D::CityView3D(QWindow *parent) :
 	numRoadPieceRenderMax = 100000;
 	numTerrainQuadRenderMax = 512 * 512;
 }
-
 
 CityView3D::~CityView3D() {
 	delete m_device;
@@ -265,56 +104,13 @@ CityView3D::~CityView3D() {
 
 void CityView3D::initialize() {
 
-	//Set instanced rendering program
+	//Create shaders, then load
+	m_TexturedQuadProg = new QOpenGLShaderProgram(this);
+	m_roadRenderProg = new QOpenGLShaderProgram(this);
 	m_InstancedBuildingProg = new QOpenGLShaderProgram(this);
-
-	m_InstancedBuildingProg->addShaderFromSourceCode(QOpenGLShader::Vertex, vertexShaderSource);
-	m_InstancedBuildingProg->addShaderFromSourceCode(QOpenGLShader::Fragment, fragmentShaderSource);
-	m_InstancedBuildingProg->link();
-
-	cubeInstanceCamID = funcs->glGetUniformLocation(m_InstancedBuildingProg->programId(), "Camera_worldspace");
-	cubeInstanceCamRightID = funcs->glGetUniformLocation(m_InstancedBuildingProg->programId(), "CameraRight_worldspace");
-	cubeInstanceViewProjMatID = funcs->glGetUniformLocation(m_InstancedBuildingProg->programId(), "VP");
-	cubeLightVecID = funcs->glGetUniformLocation(m_InstancedBuildingProg->programId(), "lightVec");
-
-	//Set hMap render program
 	m_hMapRenderProg = new QOpenGLShaderProgram(this);
 
-	m_hMapRenderProg->addShaderFromSourceCode(QOpenGLShader::Vertex, hMapVertexShaderSource);
-	m_hMapRenderProg->addShaderFromSourceCode(QOpenGLShader::Fragment, fragmentShaderSourceHMap);
-	m_hMapRenderProg->link();
-
-	hMapInstanceCamUpID = funcs->glGetUniformLocation(m_hMapRenderProg->programId(), "CameraUp_worldspace");
-	hMapInstanceCamRightID = funcs->glGetUniformLocation(m_hMapRenderProg->programId(), "CameraRight_worldspace");
-	hMapInstanceViewProjMatID = funcs->glGetUniformLocation(m_hMapRenderProg->programId(), "VP");
-	hMapInstanceDimID = funcs->glGetUniformLocation(m_hMapRenderProg->programId(), "quadScale");
-	hMapInstanceGridDimID = funcs->glGetUniformLocation(m_hMapRenderProg->programId(), "gridSize");
-	heightLightVecID = funcs->glGetUniformLocation(m_hMapRenderProg->programId(), "lightVec");
-
-	//Set road render program
-	m_roadRenderProg = new QOpenGLShaderProgram(this);
-
-	m_roadRenderProg->addShaderFromSourceCode(QOpenGLShader::Vertex, roadVertexShader);
-	m_roadRenderProg->addShaderFromSourceCode(QOpenGLShader::Fragment, fragmentShaderSource);
-	m_roadRenderProg->link();
-
-	roadsInstanceCamUpID = funcs->glGetUniformLocation(m_roadRenderProg->programId(), "CameraUp_worldspace");
-	roadsInstanceCamRightID = funcs->glGetUniformLocation(m_roadRenderProg->programId(), "CameraRight_worldspace");
-	roadsInstanceViewProjMatID = funcs->glGetUniformLocation(m_roadRenderProg->programId(), "VP");
-	roadLightVecID = funcs->glGetUniformLocation(m_roadRenderProg->programId(), "lightVec");
-	roadsCamPosID = funcs->glGetUniformLocation(m_roadRenderProg->programId(), "camPos");
-
-	//Set tex quad prog
-	m_TexturedQuadProg = new QOpenGLShaderProgram(this);
-
-	m_TexturedQuadProg->addShaderFromSourceCode(QOpenGLShader::Vertex, texturedQuadVertShader);
-	m_TexturedQuadProg->addShaderFromSourceCode(QOpenGLShader::Fragment, fragmentShaderSource);
-	m_TexturedQuadProg->link();
-
-	quadTexCamUpID = funcs->glGetUniformLocation(m_roadRenderProg->programId(), "CameraUp_worldspace");
-	quadTexCamRightID = funcs->glGetUniformLocation(m_roadRenderProg->programId(), "CameraRight_worldspace");
-	quadTexViewProjMatID = funcs->glGetUniformLocation(m_roadRenderProg->programId(), "VP");
-	quadTexQuadColourID = funcs->glGetUniformLocation(m_roadRenderProg->programId(), "quadColor");
+	loadAllShaders();
 
 	//Create data arrays
 	cube_positions = new GLfloat[4 * numCubeRenderMax];
@@ -338,7 +134,7 @@ void CityView3D::initialize() {
 	//Cube normals
 	glGenBuffers(1, &cubeNormBuffer);
 	glBindBuffer(GL_ARRAY_BUFFER, cubeNormBuffer);
-	glBufferData(GL_ARRAY_BUFFER, sizeof(cubeVertexBufferData), cubeVertexBufferData, GL_STREAM_DRAW);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(cubeNormalsData), cubeNormalsData, GL_STREAM_DRAW);
 
 	//Cube positions
 	glGenBuffers(1, &cubePosBuffer);
@@ -383,6 +179,78 @@ void CityView3D::initialize() {
 
 	updateRoadInstances();
 	updateBuildingInstances();
+}
+
+void CityView3D::loadAllShaders() {
+	// Read shader source
+	roadVertexShader = readShader("../roadVertexShader.glsl");
+	hMapVertexShaderSource = readShader("../hMapVertexShaderSource.glsl");
+	vertexShaderSource = readShader("../vertexShaderSource.glsl");
+	texturedQuadVertShader = readShader("../texturedQuadVertShader.glsl");
+	fragmentShaderSource = readShader("../fragmentShaderSource.glsl");
+	fragmentShaderSourceHMap = readShader("../fragmentShaderSourceHMap.glsl");
+
+	//Simple catch for if running program in the source directory - instead load file from current directory.
+	if (roadVertexShader == "") {
+		roadVertexShader = readShader("roadVertexShader.glsl");
+		hMapVertexShaderSource = readShader("hMapVertexShaderSource.glsl");
+		vertexShaderSource = readShader("vertexShaderSource.glsl");
+		texturedQuadVertShader = readShader("texturedQuadVertShader.glsl");
+		fragmentShaderSource = readShader("fragmentShaderSource.glsl");
+		fragmentShaderSourceHMap = readShader("fragmentShaderSourceHMap.glsl");
+	}
+
+	if (shaders_set) {
+		m_InstancedBuildingProg->removeAllShaders();
+		m_hMapRenderProg->removeAllShaders();
+		m_roadRenderProg->removeAllShaders();
+		m_TexturedQuadProg->removeAllShaders();
+	}
+
+	//Set instanced rendering program
+	m_InstancedBuildingProg->addShaderFromSourceCode(QOpenGLShader::Vertex, vertexShaderSource.c_str());
+	m_InstancedBuildingProg->addShaderFromSourceCode(QOpenGLShader::Fragment, fragmentShaderSource.c_str());
+	m_InstancedBuildingProg->link();
+
+	cubeInstanceCamID = funcs->glGetUniformLocation(m_InstancedBuildingProg->programId(), "Camera_worldspace");
+	cubeInstanceCamRightID = funcs->glGetUniformLocation(m_InstancedBuildingProg->programId(), "CameraRight_worldspace");
+	cubeInstanceViewProjMatID = funcs->glGetUniformLocation(m_InstancedBuildingProg->programId(), "VP");
+	cubeLightVecID = funcs->glGetUniformLocation(m_InstancedBuildingProg->programId(), "lightVec");
+
+	//Set hMap render program
+	m_hMapRenderProg->addShaderFromSourceCode(QOpenGLShader::Vertex, hMapVertexShaderSource.c_str());
+	m_hMapRenderProg->addShaderFromSourceCode(QOpenGLShader::Fragment, fragmentShaderSourceHMap.c_str());
+	m_hMapRenderProg->link();
+
+	hMapInstanceCamUpID = funcs->glGetUniformLocation(m_hMapRenderProg->programId(), "CameraUp_worldspace");
+	hMapInstanceCamRightID = funcs->glGetUniformLocation(m_hMapRenderProg->programId(), "CameraRight_worldspace");
+	hMapInstanceViewProjMatID = funcs->glGetUniformLocation(m_hMapRenderProg->programId(), "VP");
+	hMapInstanceDimID = funcs->glGetUniformLocation(m_hMapRenderProg->programId(), "quadScale");
+	hMapInstanceGridDimID = funcs->glGetUniformLocation(m_hMapRenderProg->programId(), "gridSize");
+	heightLightVecID = funcs->glGetUniformLocation(m_hMapRenderProg->programId(), "lightVec");
+
+	//Set road render program
+	m_roadRenderProg->addShaderFromSourceCode(QOpenGLShader::Vertex, roadVertexShader.c_str());
+	m_roadRenderProg->addShaderFromSourceCode(QOpenGLShader::Fragment, fragmentShaderSource.c_str());
+	m_roadRenderProg->link();
+
+	roadsInstanceCamUpID = funcs->glGetUniformLocation(m_roadRenderProg->programId(), "CameraUp_worldspace");
+	roadsInstanceCamRightID = funcs->glGetUniformLocation(m_roadRenderProg->programId(), "CameraRight_worldspace");
+	roadsInstanceViewProjMatID = funcs->glGetUniformLocation(m_roadRenderProg->programId(), "VP");
+	roadLightVecID = funcs->glGetUniformLocation(m_roadRenderProg->programId(), "lightVec");
+	roadsCamPosID = funcs->glGetUniformLocation(m_roadRenderProg->programId(), "camPos");
+
+	//Set tex quad prog
+	m_TexturedQuadProg->addShaderFromSourceCode(QOpenGLShader::Vertex, texturedQuadVertShader.c_str());
+	m_TexturedQuadProg->addShaderFromSourceCode(QOpenGLShader::Fragment, fragmentShaderSource.c_str());
+	m_TexturedQuadProg->link();
+
+	quadTexCamUpID = funcs->glGetUniformLocation(m_roadRenderProg->programId(), "CameraUp_worldspace");
+	quadTexCamRightID = funcs->glGetUniformLocation(m_roadRenderProg->programId(), "CameraRight_worldspace");
+	quadTexViewProjMatID = funcs->glGetUniformLocation(m_roadRenderProg->programId(), "VP");
+	quadTexQuadColourID = funcs->glGetUniformLocation(m_roadRenderProg->programId(), "quadColor");
+
+	shaders_set = true;
 }
 
 void CityView3D::renderTerrain() {
@@ -730,7 +598,7 @@ void CityView3D::updateCamera() {
 }
 
 void CityView3D::updateBuildingInstances() {
-	//
+
 	numCubeRender = 0;
 	int numRegionRender = 0;
 
@@ -1051,6 +919,9 @@ void CityView3D::keyReleaseEvent(QKeyEvent * event) {
 	case speedUpKey:
 		moveSpeed = defaultMoveSpeed;
 		break;
+	case reloadShaderKey:
+		loadAllShaders();
+		break;
 	default:
 		accepted = false;
 	}
@@ -1142,10 +1013,10 @@ GLuint CityView3D::loadShader(GLenum type, const char *source) {
 	return shader;
 }
 
-std::string CityView3D::readFile(char * fname) {
+std::string CityView3D::readFile(const char * fname) {
 	QFile file(fname);
 	if (!file.open(QIODevice::ReadOnly | QIODevice::Text)) {
-		return NULL;
+		return std::string();
 	}
 
 	QByteArray total;
@@ -1156,6 +1027,11 @@ std::string CityView3D::readFile(char * fname) {
 	}
 
 	return QString(total).toStdString();
+}
+
+std::string CityView3D::readShader(const char * fname)
+{
+	return readFile(fname);
 }
 
 QImage CityView3D::loadTexture(QString fname) {
