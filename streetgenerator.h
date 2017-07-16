@@ -81,6 +81,9 @@ private:
 	void setStreetParameters();
 	void setBuildingParameters();
 
+	void loadConfig(QString fpath = "");
+	void saveConfig(QString destPath = "");
+
 	bool streetsGenerated, streetsFiltered, regionsGenerated, lotsGenerated;
 
 };
