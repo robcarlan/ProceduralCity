@@ -1,6 +1,6 @@
 #pragma once
 #include <string>
-#include <qline.h>
+#include <QLine>
 
 #ifndef Q_MOC_RUN 
 #include <boost/geometry/geometries/point.hpp>

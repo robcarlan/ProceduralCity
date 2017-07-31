@@ -174,7 +174,7 @@ StreetGen::VarList* StreetGen::applyGlobalConstraints(ruleAttr rules, roadAttr r
 
 		//Create unit vector in direction
 		//if (nroads[i].angle < 0.0f) nroads[i].angle += math::two_pi<float>();
-		nroads[i].angle = math::mod<float>(nroads[i].angle, math::two_pi<float>());
+		nroads[i].angle = fmodf(nroads[i].angle, 2.0 * math::pi<float>());
 		Point unit = Point(cosf(nroads[i].angle), sinf(nroads[i].angle));
 		unit *= nroads[i].length;
 		nroads[i].end = nroads[i].start + unit;

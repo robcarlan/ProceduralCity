@@ -10,6 +10,7 @@
 #include <QtGui/QWindow>
 #include <QtGui/QOpenGLFunctions>
 #include <QtGui/qopenglcontext.h>
+#include <QtGui/qopenglfunctions_3_0.h>
 #include <QtGui/qopenglfunctions_4_3_core.h>
 #include <QtGui/qopenglfunctions_4_3_compatibility.h>
 #include <QtGui>

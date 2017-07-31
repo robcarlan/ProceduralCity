@@ -134,7 +134,7 @@ bool StreetManager::shouldSubdivide(Road * road) {
 	float angleDif = abs(road->parent->getAngle() - road->getAngle());
 	
 	//Close to 90 -> not worth culling
-	if (abs(angleDif - math::d2r<float>() * 90.0f) < 0.01f) return true;
+	if (abs(angleDif - 90.0f * (M_PI / 180.0f)) < 0.01f) return true;
 
 	return (angleDif > angleCurveThreshold);
 }

@@ -25,8 +25,10 @@ INCLUDEPATH += ./GeneratedFiles \
 win32:INCLUDEPATH += F:\boost_1_59_0
 unix:INCLUDEPATH += /usr/local/include/
 
-LIBS += -lopengl32 \
+win32:LIBS += -lopengl32 \
     -lglu32
+unix:LIBS += -lGLU
+
 DEPENDPATH += .
 MOC_DIR += ./GeneratedFiles/debug
 OBJECTS_DIR += debug
