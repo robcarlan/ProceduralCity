@@ -2,7 +2,7 @@
 
 //This function creates all of the city regions by walking through each road, and marking each side of each road as visited or not. The algorithm finishes once all sides of all roads are visited.
 std::vector<BuildingRegion> CityRegionGenerator::createRegions(std::list<roadPtr> const roads, std::list<intersectionPtr> const intersections) {
-	//Loop left and right over every intersection. (Over every road. Follow a left / right path). Loop identified by (intersection, index). 
+	//Loop left and right over every intersection. (Over every road. Follow a left / right path). Loop identified by (intersection, index).
 	//Keep looping until max_edges, if we loop mark that as a loop and continue.
 	QElapsedTimer timer;
 	timer.start();
@@ -21,7 +21,7 @@ std::vector<BuildingRegion> CityRegionGenerator::createRegions(std::list<roadPtr
 	bool searchComplete = false;
 	int numRegions = 0;
 	int numCulled = 0;
-	
+
 	while (true) {
 		BOOST_FOREACH(const roadPtr roadStart, roads) {
 			if (!hasVisited(sideToStartSearch, followingRoadForwards, roadStart)) {
@@ -46,7 +46,7 @@ std::vector<BuildingRegion> CityRegionGenerator::createRegions(std::list<roadPtr
 					if (false) {
 					//if (hasVisited(clockwise, followingRoadForwards, currentRoad)) {
 						//assert(isValidRegion(clockwise, followingRoadForwards, currentRoad) == false);
-						
+
 						//Mark all connected as should not be searched
 						searchComplete = true;
 					}
@@ -83,11 +83,11 @@ std::vector<BuildingRegion> CityRegionGenerator::createRegions(std::list<roadPtr
 				if (pathLength > maxEdgeTraversal) {
 					found = false;
 				}
-				
-				if (found) flagRoads(traversing, side, found);
+
+                if (found) flagRoads(traversing, side, found);
 				if (found) {
 					numRegions++;
-										
+
 					//Turn into a region
 					auto bounds = toRegion(traversing, direction, side, angles);
 					BuildingRegion tmp = BuildingRegion(bounds, angles);
@@ -165,8 +165,11 @@ std::vector<BuildingRegion> CityRegionGenerator::createRegions(std::list<roadPtr
 
 bool CityRegionGenerator::hasVisited(bool side, bool forwards, roadPtr traversing) {
 	//Clockwise + Forward or AntiCW + Backwards = search clockwise
-	if ((side && forwards) || (!side && !forwards)) return !(clockwiseVisited.find(traversing) == clockwiseVisited.end());
-	else return !(anticlockwiseVisited.find(traversing) == anticlockwiseVisited.end());
+	if ((side && forwards) || (!side && !forwards))
+		return !(clockwiseVisited.find(traversing) == clockwiseVisited.end());
+	else
+		return !(anticlockwiseVisited.find(traversing)
+				 == anticlockwiseVisited.end());
 }
 
 bool CityRegionGenerator::isValidRegion(bool side, bool forwards, roadPtr traversing) {
@@ -187,7 +190,8 @@ bool CityRegionGenerator::coversIllegalTerritory(std::list<Point>& bounds) {
 
 	for (int x = toCheck.left(); x < toCheck.right(); x++) {
 		for (int y = toCheck.top(); y < toCheck.bottom(); y++) {
-			if (sampleGeog(x, y, *geogSampler) == geogType::PARK || sampleGeog(x, y, *geogSampler) == geogType::WATER)
+			if (sampleGeog(x, y, *geogSampler) == geogType::PARK ||
+				sampleGeog(x, y, *geogSampler) == geogType::WATER)
 				return true;
 		}
 	}
@@ -195,7 +199,9 @@ bool CityRegionGenerator::coversIllegalTerritory(std::list<Point>& bounds) {
 	return false;
 }
 
-void CityRegionGenerator::flagRoads(std::list<roadPtr> traversing, std::list<bool> side, bool flagFound) {
+void CityRegionGenerator::flagRoads(std::list<roadPtr> traversing,
+									std::list<bool> side,
+									bool flagFound) {
 	std::list<bool>::iterator sideItr = side.begin();
 	std::list<roadPtr>::iterator roadItr = traversing.begin();
 
@@ -208,9 +214,14 @@ void CityRegionGenerator::flagRoads(std::list<roadPtr> traversing, std::list<boo
 }
 
 //'Pushes' in the point after road widths have been considered. I.e. the region vertex will not be exactly on the intersection itself.
-Point CityRegionGenerator::getRegionPoint(roadPtr r1, roadPtr r2, intersectionPtr intersection, bool cw1, bool cw2, float angle1, float angle2) {
-	bool r1Away = r1->getStart()->getIntersectionPoint() == intersection->getIntersectionPoint();
-	bool r2Away = r2->getStart()->getIntersectionPoint() == intersection->getIntersectionPoint();
+Point CityRegionGenerator::getRegionPoint(roadPtr r1, roadPtr r2,
+										  intersectionPtr intersection,
+										  bool cw1, bool cw2, float angle1,
+										  float angle2) {
+	bool r1Away = r1->getStart()->getIntersectionPoint()
+		== intersection->getIntersectionPoint();
+	bool r2Away = r2->getStart()->getIntersectionPoint()
+		== intersection->getIntersectionPoint();
 	float r1x = cosf(angle1);
 	float r1y = sinf(angle1);
 	float r2x = cosf(angle2);
@@ -225,15 +236,19 @@ Point CityRegionGenerator::getRegionPoint(roadPtr r1, roadPtr r2, intersectionPt
 	assert(cw1 && !cw2 || !cw1 && cw2);
 
 	//r1x = r1y = r2x = r2y = 0.0f;
-	
-	QLineF roadSide1 = QLineF(r1->getStart()->getIntersectionPoint().x(), r1->getStart()->getIntersectionPoint().y(),
-		r1->getEnd()->getIntersectionPoint().x(), r1->getEnd()->getIntersectionPoint().y());
+
+	QLineF roadSide1 = QLineF(r1->getStart()->getIntersectionPoint().x(),
+							  r1->getStart()->getIntersectionPoint().y(),
+							  r1->getEnd()->getIntersectionPoint().x(),
+							  r1->getEnd()->getIntersectionPoint().y());
 	if (cw1)
 		roadSide1.translate(r1x, -r1y);
 	else roadSide1.translate(-r1x, r1y);
 
-	QLineF roadSide2 = QLineF(r2->getStart()->getIntersectionPoint().x(), r2->getStart()->getIntersectionPoint().y(),
-		r2->getEnd()->getIntersectionPoint().x(), r2->getEnd()->getIntersectionPoint().y());
+	QLineF roadSide2 = QLineF(r2->getStart()->getIntersectionPoint().x(),
+							  r2->getStart()->getIntersectionPoint().y(),
+							  r2->getEnd()->getIntersectionPoint().x(),
+							  r2->getEnd()->getIntersectionPoint().y());
 
 	if (!cw2)
 		roadSide2.translate(r2x, -r2y);
@@ -242,12 +257,18 @@ Point CityRegionGenerator::getRegionPoint(roadPtr r1, roadPtr r2, intersectionPt
 	//Check for nearby angle
 	float dif = abs(angle1 - angle2);
 	float tpi = boost::math::float_constants::two_pi;
-	bool isParallel = ((abs(dif - tpi) < 0.01f) || (abs(tpi - dif) < 0.01f) || dif < 0.01f);
+	bool isParallel = (
+		(abs(dif - tpi) < 0.01f) ||
+		(abs(tpi - dif) < 0.01f) ||
+		dif < 0.01f);
 
 	if (isParallel) {
 		//Too close
 		//return intersection->getIntersectionPoint();
-		return Point(intersection->getIntersectionPoint().x() + (cw1 ? r1x : -r1x), intersection->getIntersectionPoint().y() + (cw1 ? -r1y : r1y));
+		return Point(intersection->getIntersectionPoint().x()
+					 + (cw1 ? r1x : -r1x),
+					 intersection->getIntersectionPoint().y()
+					 + (cw1 ? -r1y : r1y));
 	}
 
 	QPointF intersectPoint;
@@ -260,7 +281,10 @@ Point CityRegionGenerator::getRegionPoint(roadPtr r1, roadPtr r2, intersectionPt
 	return intersectPoint;
 }
 
-std::list<Point> CityRegionGenerator::toRegion(std::list<roadPtr>& roadList, std::list<bool>& travelDirection, std::list<bool>& side, std::list<float>& angles) {
+std::list<Point> CityRegionGenerator::toRegion(std::list<roadPtr>& roadList,
+											   std::list<bool>& travelDirection,
+											   std::list<bool>& side,
+											   std::list<float>& angles) {
 	std::list<Point> bounds;
 	bool clockwisePrev, clockwiseRoad;
 	bool forwardPrev, forward;
@@ -274,7 +298,7 @@ std::list<Point> CityRegionGenerator::toRegion(std::list<roadPtr>& roadList, std
 
 	//Start by using road[n-1], road[0]
 	forwardPrev = travelDirection.back();
-	clockwisePrev = side.back(); 
+	clockwisePrev = side.back();
 	clockwiseRoad = *sItr;
 	anglePrev = angles.back();
 	angleNow = *aItr;
@@ -288,7 +312,15 @@ std::list<Point> CityRegionGenerator::toRegion(std::list<roadPtr>& roadList, std
 		clockwiseRoad = *sItr;
 		angleNow = *aItr;
 
-		bounds.push_back(getRegionPoint(prevRoad, *rItr, intersection, forwardPrev ? !clockwisePrev : clockwisePrev, forward ? clockwiseRoad : !clockwiseRoad, anglePrev, angleNow));
+		bounds.push_back(
+			getRegionPoint(prevRoad,
+						   *rItr,
+						   intersection,
+						   forwardPrev ? !clockwisePrev : clockwisePrev,
+						   forward ? clockwiseRoad : !clockwiseRoad,
+						   anglePrev,
+						   angleNow)
+			);
 
 		clockwisePrev = clockwiseRoad;
 		forwardPrev = forward;
@@ -347,10 +379,13 @@ void CityRegionGenerator::subdivideRegions(std::vector<BuildingRegion>& building
 		if (!regionItr.isValid()) continue;
 
 		//Break into convex regions, if not already convex
-		std::unique_ptr<std::vector<BuildingLot>> resultLots = std::unique_ptr<std::vector<BuildingLot>>(new std::vector<BuildingLot>());
+		std::unique_ptr<std::vector<BuildingLot>> resultLots =
+			std::unique_ptr<std::vector<BuildingLot>>
+			(new std::vector<BuildingLot>());
 
 		if (!regionItr.isConvex()) {
-			std::vector<std::list<Point>> convexLots = std::vector<std::list<Point>>();
+			std::vector<std::list<Point>> convexLots =
+				std::vector<std::list<Point>>();
 			BuildingRegion::splitConvex(regionItr.getPoints(), convexLots);
 
 			BOOST_FOREACH(std::list<Point> convexPoly, convexLots) {
@@ -389,8 +424,12 @@ void CityRegionGenerator::subdivideRegions(std::vector<BuildingRegion>& building
 
 //Recursive approach - split along edge w
 
-//Todo :: track road access, prioritise those roads in the split. Can cull lots with no road access here.
-void CityRegionGenerator::createLotsFromConvexPoly(BuildingRegion& owner, std::list<Point>& bounds, std::list<bool>& roadAccess, std::unique_ptr<std::vector<BuildingLot>>& out) {
+//Todo :: track road access, prioritise those roads in the split.
+//Can cull lots with no road access here.
+void CityRegionGenerator::createLotsFromConvexPoly(BuildingRegion& owner,
+												   std::list<Point>& bounds,
+												   std::list<bool>& roadAccess,
+												   std::unique_ptr<std::vector<BuildingLot>>& out) {
 	auto result = std::vector<BuildingLot>();
 
 	float area = abs(BuildingRegion::getPolyArea(bounds));
@@ -402,7 +441,7 @@ void CityRegionGenerator::createLotsFromConvexPoly(BuildingRegion& owner, std::l
 	}
 
 	if (!hasRoadAccess) return;
-	
+
 	if (area < minBuildArea)
 		return;
 	if (area < maxBuildArea) {
@@ -410,7 +449,7 @@ void CityRegionGenerator::createLotsFromConvexPoly(BuildingRegion& owner, std::l
 		out->push_back(createLot(bounds, owner));
 		return;
 	}
-		
+
 	//O.w. need to break down further. Find two edges to subdivide
 	auto splitEdges = getLongestEdgePair(bounds, roadAccess); //return longest w/ road access, longest w/o.
 	auto longestp1 = splitEdges.first.first;
@@ -427,9 +466,14 @@ void CityRegionGenerator::createLotsFromConvexPoly(BuildingRegion& owner, std::l
 	Point midLongest;
 	midLongest.setX(longestp1.x() + offset * (longestp2.x() - longestp1.x()));
 	midLongest.setY(longestp1.y() + offset * (longestp2.y() - longestp1.y()));
+
 	Point midSecondLongest;
-	midSecondLongest.setX(secondlongestp1.x() + (1 - offset) * (secondlongestp2.x() - secondlongestp1.x()));
-	midSecondLongest.setY(secondlongestp1.y() + (1 - offset) * (secondlongestp2.y() - secondlongestp1.y()));
+	midSecondLongest.setX(
+		secondlongestp1.x() +
+		(1 - offset) * (secondlongestp2.x() - secondlongestp1.x()));
+	midSecondLongest.setY(
+		secondlongestp1.y() +
+		(1 - offset) * (secondlongestp2.y() - secondlongestp1.y()));
 
 	//Construct p1, p2
 	auto polygon1 = std::list<Point>();
@@ -463,7 +507,7 @@ void CityRegionGenerator::createLotsFromConvexPoly(BuildingRegion& owner, std::l
 
 	//pItr == secondLongestp2
 	polygon1.push_back(midSecondLongest);
-	
+
 	auto polygon2 = std::list<Point>();
 	auto roadAccess2 = std::list<bool>();
 	polygon2.push_back(midSecondLongest);
@@ -549,7 +593,6 @@ bool CityRegionGenerator::shouldSplitBoundsFurther(std::list<Point>& bounds) {
 	return false;
 }
 
-
 std::pair<std::pair<Point, Point>, std::pair<Point, Point>> CityRegionGenerator::getLongestEdgePair(const std::list<Point>& bounds,
 	const std::list<bool>& hasRoadAccess) {
 	//Iterate through, keeping track of two max roads
@@ -576,7 +619,7 @@ std::pair<std::pair<Point, Point>, std::pair<Point, Point>> CityRegionGenerator:
 			d2 = d1;
 			d1 = dist;
 		}
-		//Update 
+		//Update
 		pPrev = *pItr;
 		pItr++;
 		rItr++;
@@ -629,16 +672,19 @@ std::pair<std::pair<Point, Point>, std::pair<Point, Point>> CityRegionGenerator:
 	if (!found) {
 		//Try something else
 
-		//Resorts to second longest line 
+		//Resorts to second longest line
 	}
 
 	if (foundBefore)
-		return std::make_pair(std::make_pair(p2Prev, p2), std::make_pair(p1Prev, p1));
+		return std::make_pair(
+			std::make_pair(p2Prev, p2), std::make_pair(p1Prev, p1));
 	else
-		return std::make_pair(std::make_pair(p1Prev, p1), std::make_pair(p2Prev, p2));
+		return std::make_pair(
+			std::make_pair(p1Prev, p1), std::make_pair(p2Prev, p2));
 }
 
-BuildingLot CityRegionGenerator::createLot(std::list<Point> bounds, BuildingRegion& owner) {
+BuildingLot CityRegionGenerator::createLot(std::list<Point> bounds,
+										   BuildingRegion& owner) {
 
 	//Initialises data from image maps
 	assert(bounds.size() > 0);
@@ -655,15 +701,22 @@ void CityRegionGenerator::setMaxEdges(int max) {
 	maxEdgeTraversal = max;
 }
 
-void CityRegionGenerator::setImageData(QImage & density, QImage & buildingType, QImage &height, QImage &geog) {
+void CityRegionGenerator::setImageData(QImage & density,
+									   QImage & buildingType,
+									   QImage &height,
+									   QImage &geog) {
 	densitySampler = &density;
 	buildingTypeSampler = &buildingType;
 	heightSampler = &height;
 	geogSampler = &height;
 }
 
-void CityRegionGenerator::setParams(float minBuildArea, float maxBuildArea, float randomOffset, float minLotDim, float maxLotDim, 
-	float mainRoadWidth, float streetWidth, bool allowLotMerge, float minHeight, float heightScale, int seed) {
+void CityRegionGenerator::setParams(float minBuildArea, float maxBuildArea,
+									float randomOffset, float minLotDim,
+									float maxLotDim, float mainRoadWidth,
+									float streetWidth, bool allowLotMerge,
+									float minHeight, float heightScale,
+									int seed) {
 	this->mainRoadWidth = mainRoadWidth;
 	this->streetWidth = streetWidth;
 	this->minBuildArea = minBuildArea;

@@ -122,7 +122,8 @@ void StreetGenerator::onClickCreateLots() {
 	cityView.createLots();
 
 	qDebug() << cityView.getLots().size() << " lots created.";
-	qDebug() << "Lots created in: " << lotTimer.elapsed() / 1000.0f << " seconds.";
+	qDebug() << "Lots created in: " << \
+		lotTimer.elapsed() / 1000.0f << " seconds.";
 
 	view.addLots(cityView.getLots());
 	view.setDrawLots(true);
@@ -282,7 +283,8 @@ void StreetGenerator::on_buttonSMap_clicked() {
 
 //Load all images from directory by choosing based on filename. 
 void StreetGenerator::cmdLoadDirectory() {
-	QString dName = dir.getExistingDirectory(this, tr("Open Image"), "/");
+    QString working_dir = QCoreApplication::applicationDirPath();
+    QString dName = dir.getExistingDirectory(this, tr("Open Image"), working_dir);
 	QDir directory = QDir(dName);
 	QStringList files = directory.entryList();
 
@@ -424,7 +426,8 @@ void StreetGenerator::initialiseSystem() {
 }
 
 QString StreetGenerator::getFileChoice() {
-	QString fName = fd.getOpenFileName(this, tr("Open Image"), "/", tr("Image Files (*.png *.jpg *.bmp)"));
+    QString working_dir = QCoreApplication::applicationDirPath();
+    QString fName = fd.getOpenFileName(this, tr("Open Image"), working_dir, tr("Image Files (*.png *.jpg *.bmp)"));
 	return fName;
 }
 

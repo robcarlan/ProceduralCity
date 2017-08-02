@@ -312,7 +312,7 @@ void StreetGen::applyLocalConstraints(RoadVariable *toCheck) {
 	//if (lengthAfter < lengthBefore / 1.5) toCheck->road.rtype = roadType::STREET;
 
 	//Stop growing street
-	if (connectedToIntersection) 
+	if (connectedToIntersection)
 		toCheck->road.connected = true;
 
 	std::vector<RoadIntersection *> possibleExistingIntersections;
@@ -352,7 +352,7 @@ bool StreetGen::tryMakeLegal(RoadVariable * toCheck, Road * tempRoad) {
 	//TODO :: Update this to allow bridges. If we end in water we extend the road by maxbridgelength and see if that brings us out. 
 
 	getIllegalSegment(*tempRoad, legalSegment, isBridge);
-	
+
 	isLegal = endsLegal && withinBounds && legalSegment;
 
 	while (!isLegal) {
@@ -369,7 +369,7 @@ bool StreetGen::tryMakeLegal(RoadVariable * toCheck, Road * tempRoad) {
 		//Rotate line, set line length
 		if (pruneFactor == 1.0f) {
 			//Calculate new end position by rotating lines
-			angleToCheck = startAngle + angleChange;				
+			angleToCheck = startAngle + angleChange;
 			QLineF newLine = QLineF(tempRoad->getStart(), tempRoad->getEnd());
 			newLine.setAngle(angleToCheck * r2dFactor);
 			newEnd = newLine.p2();
@@ -402,7 +402,7 @@ bool StreetGen::isUnique(RoadVariable * toCheck, Road * tempRoad) {
 	if (s == nullptr) return true;
 	if (s->connected.size() == 0) return true;
 	BOOST_FOREACH(Road *rItr, s->connected) {
-		if (rItr == tempRoad) continue; 
+		if (rItr == tempRoad) continue;
 		else {
 			if ((rItr->getStart() == tempRoad->getEnd()) && (rItr->getEnd() == tempRoad->getStart())) 
 				return false;
@@ -581,7 +581,6 @@ bool StreetGen::tryConnectToExisting(RoadVariable * toCheck, Road *tempRoad, boo
 			float scale = (tempRoad->length() + extendRadius) / tempRoad->length();
 			Point extended = Point(toCheck->road.start.x() + scale * (toCheck->road.end.x() - toCheck->road.start.x()), 
 				toCheck->road.start.y() + scale * (toCheck->road.end.y() - toCheck->road.start.y()) );
-			
 			streets.getIntersectingEdges(Road(toCheck->road.start, extended), intersections);
 
 			//TODO :: SEARCH FOR MINIMUM
