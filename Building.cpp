@@ -1,5 +1,8 @@
 #include "Building.h"
+#include "BuildingLot.h"
 #include "LSystem/BuildingLSystem.h"
+
+#include "Enums.cpp"
 
 std::vector<Cube>& Building::getCubes() {
 	return geometryCubes;

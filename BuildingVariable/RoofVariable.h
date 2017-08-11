@@ -1,8 +1,8 @@
 #pragma once
-#include "Enums.h"
 #include "GeometryVariable.h"
 
 class LotVariable;
+class BuildingVariable;
 
 class RoofVariable : public GeometryVariable {
 public:

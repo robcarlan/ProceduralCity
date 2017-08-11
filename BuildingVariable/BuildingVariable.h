@@ -7,7 +7,7 @@
 #include "BaseVariable.h"
 #include "GeometryVariable.h"
 
-#include "Enums.h"
+#include "Enums.cpp"
 #include "Shapes/Cube.h"
 
 enum BuildingVariableType {

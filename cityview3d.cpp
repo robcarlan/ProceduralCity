@@ -999,7 +999,7 @@ void CityView3D::setAnimating(bool animating) {
 }
 
 void CityView3D::initaliseCamera() {
-	position = QVector3D(1024, 0, 1024);
+	position = QVector3D(1024, 200, 1024);
 	rotation = QVector3D(0, 0, 0);
 
 	moveSpeed = defaultMoveSpeed;

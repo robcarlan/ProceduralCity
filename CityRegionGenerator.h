@@ -13,7 +13,7 @@
 #include "IntersectionGeometry.h"
 #include "RoadGeometry.h"
 #include "Road.h"
-#include "Enums.h"
+#include "Enums.cpp"
 
 class CityRegionGenerator {
 	int maxEdgeTraversal;

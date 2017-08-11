@@ -1,6 +1,8 @@
 #pragma once
 #include "streetgenerator.h"
-#include "Enums.h"
+#include "Enums.cpp"
+
+#include <QSettings>
 
 const int StreetGenerator::DEFAULT_SIZE_X = 2048;
 const int StreetGenerator::DEFAULT_SIZE_Y = 2048;
@@ -283,13 +285,14 @@ void StreetGenerator::on_buttonSMap_clicked() {
 
 //Load all images from directory by choosing based on filename. 
 void StreetGenerator::cmdLoadDirectory() {
+
     QString working_dir = QCoreApplication::applicationDirPath();
     QString dName = dir.getExistingDirectory(this, tr("Open Image"), working_dir);
 	QDir directory = QDir(dName);
 	QStringList files = directory.entryList();
 
-	bool gotPop, gotHeight, gotGeog, gotPattern, gotBuildings;
-	gotPop = gotHeight = gotGeog = gotPattern = gotBuildings = false;
+	bool gotPop, gotHeight, gotGeog, gotPattern, gotBuildings, gotConfig;
+	gotPop = gotHeight = gotGeog = gotPattern = gotBuildings = gotConfig = false;
 
 	//Find files by exact filename, update render views.
 	BOOST_FOREACH(QString file, files) {
@@ -299,30 +302,39 @@ void StreetGenerator::cmdLoadDirectory() {
 			QFileInfo info(res);
 			ui.labelPMap->setText("Population Map: " + info.fileName());
 			ui.popMapRender->setImage(res.fileName());
-		} else if (file == tr("heightmap.png")) {
+		}
+		else if (file == tr("heightmap.png")) {
 			gotHeight = true;
 			QFile res(dName + "/heightmap.png");
 			QFileInfo info(res);
 			ui.labelHMap->setText("Heightmap: " + info.fileName());
 			ui.hMapRender->setImage(res.fileName());
-		} else if (file == tr("pattern.png")) {
+		}
+		else if (file == tr("pattern.png")) {
 			gotPattern = true;
 			QFile res(dName + "/pattern.png");
 			QFileInfo info(res);
 			ui.labelSMap->setText("Street Patterns: " + info.fileName());
 			ui.patternMapRender->setImage(res.fileName());
-		} else if (file == tr("geography.png")) {
+		}
+		else if (file == tr("geography.png")) {
 			gotGeog = true;
 			QFile res(dName + "/geography.png");
 			QFileInfo info(res);
 			ui.labelGMap->setText("Geography Map: " + info.fileName());
 			ui.geogMapRender->setImage(res.fileName());
-		} else if (file == tr("buildings.png")) {
+		}
+		else if (file == tr("buildings.png")) {
 			gotGeog = true;
 			QFile res(dName + "/buildings.png");
 			QFileInfo info(res);
 			ui.labelBMap->setText("Building Map: " + info.fileName());
 			ui.buildingTypeRender->setImage(res.fileName());
+		}
+		else if (file == tr("parameters.ini")) {
+			//Load config
+			gotConfig = true;
+
 		}
 	}
 
@@ -497,5 +509,21 @@ void StreetGenerator::setBuildingParameters() {
 	chimneyMinHeight = 1.0f;
 	chimneyMaxHeight = 4.0f;
 
+}
+
+void StreetGenerator::loadConfig(QString fpath)
+{
+	QSettings fwrite(fpath, QSettings::Format::IniFormat);
+}
+
+void StreetGenerator::saveConfig(QString destPath)
+{
+	QSettings toWrite;
+
+	toWrite.setValue("key", "value");
+
+
+	toWrite.setPath(QSettings::Format::IniFormat, QSettings::Scope::UserScope, destPath);
+	//Writes to permanent storage on destruction.
 }
 

@@ -1,11 +1,9 @@
 #pragma once
-#include "Enums.h"
 #include "GeometryVariable.h"
-
-#include <QRect>
 
 class LotVariable;
 class BuildingVariable;
+class Point;
 
 //Represent the base of a structure, i.e. the first few floors.
 class BaseVariable : public GeometryVariable {

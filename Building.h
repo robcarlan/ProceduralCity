@@ -1,11 +1,13 @@
 #pragma once
-#include "Enums.h"
-#include "Shapes/Cube.h"
+#include "QRect.h"
 
-#include <QRect>
+#include <vector>
 
+class Cube;
 class BuildingLot;
 class BuildingLSystem;
+
+enum buildingStyle;
 
 //Represents a building made from various basic building pieces
 class Building {
@@ -16,7 +18,7 @@ class Building {
 
 public:
 
-	QRect cosntructionArea;
+	QRect constructionArea;
 	std::vector<Cube>& getCubes();
 	void updateGeometry(int desiredLOD);
 	Building(BuildingLot *lot);

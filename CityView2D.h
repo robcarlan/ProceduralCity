@@ -4,7 +4,7 @@
 #include <QLine>
 #include <QColor>
 
-#include "Enums.h"
+#include "Enums.cpp"
 #include "Road.h"
 #include "RoadGeometry.h"
 #include "RoadIntersection.h"
