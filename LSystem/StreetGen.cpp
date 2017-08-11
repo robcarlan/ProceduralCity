@@ -215,7 +215,7 @@ StreetGen::VarList* StreetGen::applyGlobalConstraints(ruleAttr rules, roadAttr r
 			}
 
 			if (values[SF_PATTERN_INDEX] - 0.01f > 0) {
-				ends[SF_PATTERN_INDEX] = sanFransiscoRule(&nroads[i]);
+                ends[SF_PATTERN_INDEX] = sanFranciscoRule(&nroads[i]);
 			}
 
 			if (values[RADIAL_PATTERN_INDEX] - 0.01f > 0) {
@@ -248,7 +248,7 @@ StreetGen::VarList* StreetGen::applyGlobalConstraints(ruleAttr rules, roadAttr r
 				nroads[i].end = radialRule(&nrules[i], &nroads[i]);
 				roads.radialFactor = 1.0f;
 			} else if (maxIndex == SF_PATTERN_INDEX) {
-				nroads[i].end = sanFransiscoRule(&nroads[i]);
+                nroads[i].end = sanFranciscoRule(&nroads[i]);
 				roads.sfFactor = 1.0f;
 			} else {
 				nroads[i].end = naturalRule(&nroads[i], &nrules[i]);
@@ -947,7 +947,9 @@ Point StreetGen::naturalRule(roadAttr* road, ruleAttr* rules) {
 		rules->followPeakFor = followPeakForDefault;
 	}
 	else {
+        //TODO :: curve gradually
 		rules->followPeakFor--;
+        rules->peakTarget = peak;
 		end = road->end;
 	}
 	
@@ -962,7 +964,7 @@ Point StreetGen::naturalRule(roadAttr* road, ruleAttr* rules) {
 	return end;
 }
 
-Point StreetGen::sanFransiscoRule(const roadAttr* road) {
+Point StreetGen::sanFranciscoRule(const roadAttr* road) {
 	//Set path to point to minimum gradient of heightmap
 	float angleToUse = getLowestGradient(road->angle, road->start, road->length);
 

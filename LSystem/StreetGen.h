@@ -131,7 +131,7 @@ protected:
 	Point naturalRule(roadAttr* road, ruleAttr *rules);
 	//Returns destination if we follow by lowest height gradient
 	// # roads must fall
-	Point sanFransiscoRule(const roadAttr* road);
+    Point sanFranciscoRule(const roadAttr* road);
 	//Returns destination if we follow by rotating along a center
 	Point radialRule(const ruleAttr *rules, const roadAttr *road);
 
