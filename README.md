@@ -17,3 +17,19 @@ Create a makefile with:
 `qmake ProceduralCity.pro` 
 
 and then just `make`. I wasn't able to test the program fully with Linux, as my graphics card (NVidia 480m) doesnt have recent enough OpenGL to support the indexed rendering.
+
+### Todos
+
+**Saving and loading**
+
+Include a configuration file for specifying the whole strucutre - maps, building parameters and final outputs
+Output formats for each stage. i.e. using the OpenStreetMap format. Should allow each stage to be a separate program ideally.
+
+**Better CSG**
+
+Better examples using the CSG models. 
+
+**Unique models**
+
+Allow loading of models of a variety of formats which can be loaded in at placeholders following specific conditions. I.e. a park.
+
